@@ -98,7 +98,7 @@ export default function Performance() {
   const submitSelfReview = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("performance_reviews").update({
-        goals, self_rating: selfRating || null, self_comments, status: "manager_review",
+        goals, self_rating: selfRating || null, self_comments: selfComments, status: "manager_review",
       }).eq("id", id);
       if (error) throw error;
     },
@@ -192,7 +192,7 @@ export default function Performance() {
                           setEditing(r.id); setGoals(r.goals || ""); setSelfRating(r.self_rating || 0); setSelfComments(r.self_comments || "");
                         }}>Write Self Review</Button>
                       )}
-                      {canManagerReview && (r.status === "manager_review" || r.status === "self_review" || r.status === "pending") && r.status !== "complete" && (
+                      {canManagerReview && r.status !== "complete" && (
                         <Button size="sm" variant="outline" onClick={() => {
                           setEditing(r.id); setMgrRating(r.manager_rating || 0); setMgrFeedback(r.manager_feedback || "");
                         }}>Add Manager Review</Button>
