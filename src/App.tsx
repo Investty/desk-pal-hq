@@ -25,6 +25,7 @@ import Onboarding from "@/pages/Onboarding";
 import Payroll from "@/pages/Payroll";
 import Performance from "@/pages/Performance";
 import Reports from "@/pages/Reports";
+import LeaveTypes from "@/pages/LeaveTypes";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -53,6 +54,7 @@ const AppRoutes = () => (
       <Route path="/attendance" element={<Attendance />} />
       <Route path="/attendance-reports" element={<ProtectedRoute roles={["admin", "manager"]}><AttendanceReports /></ProtectedRoute>} />
       <Route path="/leave" element={<Leave />} />
+      <Route path="/leave-types" element={<ProtectedRoute roles={["admin"]}><LeaveTypes /></ProtectedRoute>} />
       <Route path="/approvals" element={<ProtectedRoute roles={["admin", "manager"]}><Approvals /></ProtectedRoute>} />
       <Route path="/departments" element={<ProtectedRoute roles={["admin"]}><Departments /></ProtectedRoute>} />
       <Route path="/notifications" element={<Notifications />} />
