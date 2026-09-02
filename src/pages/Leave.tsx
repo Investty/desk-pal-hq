@@ -103,9 +103,9 @@ export default function Leave() {
                 <Select value={leaveType} onValueChange={(v) => setLeaveType(v as LeaveType)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="sick">Sick Leave</SelectItem>
-                    <SelectItem value="casual">Casual Leave</SelectItem>
-                    <SelectItem value="paid">Paid Leave</SelectItem>
+                    {policies?.map((p) => (
+                      <SelectItem key={p.id} value={p.leave_type}>{p.label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -122,6 +122,13 @@ export default function Leave() {
               <div className="space-y-2">
                 <Label>Reason</Label>
                 <Textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Optional reason..." />
+              </div>
+              <div className="flex items-center justify-between rounded-lg border p-3">
+                <div className="pr-4">
+                  <Label className="text-sm">Show on "On Leave Today"</Label>
+                  <p className="text-xs text-muted-foreground">Let colleagues see you're away on these dates</p>
+                </div>
+                <Switch checked={isPublic} onCheckedChange={setIsPublic} />
               </div>
               <Button onClick={() => apply.mutate()} disabled={apply.isPending} className="w-full">
                 Submit Request
