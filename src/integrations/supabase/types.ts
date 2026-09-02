@@ -213,6 +213,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          date_of_birth: string | null
           department_id: string | null
           email: string
           employee_id: string
@@ -227,6 +228,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          date_of_birth?: string | null
           department_id?: string | null
           email: string
           employee_id: string
@@ -241,6 +243,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          date_of_birth?: string | null
           department_id?: string | null
           email?: string
           employee_id?: string
@@ -292,6 +295,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_celebrations: {
+        Args: never
+        Returns: {
+          date_of_birth: string
+          full_name: string
+          joining_date: string
+        }[]
+      }
       get_manager_user_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
