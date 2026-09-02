@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, Clock, CalendarDays, CheckSquare,
   Building2, Bell, FileText, LogOut, ChevronLeft, ChevronRight,
   ShieldCheck, CalendarOff, Megaphone, BarChart3, UserCircle,
-  Network, FolderOpen, ClipboardList, Wallet, Target, PieChart,
+  Network, FolderOpen, ClipboardList, Wallet, Target, PieChart, Settings2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,7 @@ const navItems = [
   { label: "Attendance", icon: Clock, path: "/attendance", roles: ["admin", "manager", "employee"] },
   { label: "Attendance Reports", icon: BarChart3, path: "/attendance-reports", roles: ["admin", "manager"] },
   { label: "Leave", icon: CalendarDays, path: "/leave", roles: ["admin", "manager", "employee"] },
+  { label: "Leave Types", icon: Settings2, path: "/leave-types", roles: ["admin"] },
   { label: "Approvals", icon: CheckSquare, path: "/approvals", roles: ["admin", "manager"] },
   { label: "Holidays", icon: CalendarOff, path: "/holidays", roles: ["admin", "manager", "employee"] },
   { label: "Announcements", icon: Megaphone, path: "/announcements", roles: ["admin", "manager", "employee"] },
