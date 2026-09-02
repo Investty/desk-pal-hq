@@ -42,10 +42,14 @@ export default function UserRoles() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2"><ShieldCheck className="h-6 w-6" /> User Roles</h1>
-        <p className="text-muted-foreground">Promote or demote users between admin, manager, and employee</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2"><ShieldCheck className="h-6 w-6" /> User Roles</h1>
+          <p className="text-muted-foreground">Promote or demote users between admin, manager, and employee</p>
+        </div>
+        <Button asChild variant="outline"><Link to="/leave-types"><Settings2 className="h-4 w-4 mr-2" /> Leave Policies</Link></Button>
       </div>
+
 
       <Card>
         <CardContent className="pt-6">
