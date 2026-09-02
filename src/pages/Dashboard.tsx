@@ -103,6 +103,8 @@ export default function Dashboard() {
           />
         ))}
       </div>
+
+      <Highlights />
     </div>
   );
 }
