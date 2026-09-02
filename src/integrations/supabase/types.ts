@@ -227,12 +227,43 @@ export type Database = {
         }
         Relationships: []
       }
+      leave_policies: {
+        Row: {
+          created_at: string
+          default_days: number
+          id: string
+          is_enabled: boolean
+          label: string
+          leave_type: Database["public"]["Enums"]["leave_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          default_days?: number
+          id?: string
+          is_enabled?: boolean
+          label: string
+          leave_type: Database["public"]["Enums"]["leave_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          default_days?: number
+          id?: string
+          is_enabled?: boolean
+          label?: string
+          leave_type?: Database["public"]["Enums"]["leave_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       leave_requests: {
         Row: {
           approved_by: string | null
           created_at: string
           end_date: string
           id: string
+          is_public: boolean
           leave_type: Database["public"]["Enums"]["leave_type"]
           reason: string | null
           reviewed_at: string | null
@@ -246,6 +277,7 @@ export type Database = {
           created_at?: string
           end_date: string
           id?: string
+          is_public?: boolean
           leave_type: Database["public"]["Enums"]["leave_type"]
           reason?: string | null
           reviewed_at?: string | null
@@ -259,6 +291,7 @@ export type Database = {
           created_at?: string
           end_date?: string
           id?: string
+          is_public?: boolean
           leave_type?: Database["public"]["Enums"]["leave_type"]
           reason?: string | null
           reviewed_at?: string | null
@@ -588,6 +621,25 @@ export type Database = {
         }[]
       }
       get_manager_user_id: { Args: { _user_id: string }; Returns: string }
+      get_people_on_leave_today: {
+        Args: never
+        Returns: {
+          end_date: string
+          full_name: string
+          leave_type: Database["public"]["Enums"]["leave_type"]
+          start_date: string
+        }[]
+      }
+      get_yesterday_attendance: {
+        Args: never
+        Returns: {
+          check_in: string
+          check_out: string
+          full_name: string
+          status: Database["public"]["Enums"]["attendance_status"]
+          working_hours: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -604,7 +656,7 @@ export type Database = {
       app_role: "admin" | "manager" | "employee"
       attendance_status: "present" | "absent" | "late"
       leave_status: "pending" | "approved" | "rejected"
-      leave_type: "sick" | "casual" | "paid"
+      leave_type: "sick" | "casual" | "paid" | "compensatory" | "bereavement"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -735,7 +787,7 @@ export const Constants = {
       app_role: ["admin", "manager", "employee"],
       attendance_status: ["present", "absent", "late"],
       leave_status: ["pending", "approved", "rejected"],
-      leave_type: ["sick", "casual", "paid"],
+      leave_type: ["sick", "casual", "paid", "compensatory", "bereavement"],
     },
   },
 } as const
