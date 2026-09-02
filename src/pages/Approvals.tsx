@@ -30,7 +30,8 @@ export default function Approvals() {
   const decide = useMutation({
     mutationFn: async ({ id, stage, decision }: { id: string; stage: Stage; decision: "approved" | "rejected" }) => {
       const now = new Date().toISOString();
-      const patch: Record<string, unknown> =
+      type Patch = Partial<import("@/integrations/supabase/types").Database["public"]["Tables"]["leave_requests"]["Update"]>;
+      const patch: Patch =
         stage === "manager"
           ? { manager_status: decision, manager_reviewed_by: user!.id, manager_reviewed_at: now }
           : { hr_status: decision, hr_reviewed_by: user!.id, hr_reviewed_at: now };
