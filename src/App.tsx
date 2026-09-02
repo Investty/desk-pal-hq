@@ -14,6 +14,17 @@ import Approvals from "@/pages/Approvals";
 import Departments from "@/pages/Departments";
 import Notifications from "@/pages/Notifications";
 import AuditLogs from "@/pages/AuditLogs";
+import UserRoles from "@/pages/UserRoles";
+import Holidays from "@/pages/Holidays";
+import Announcements from "@/pages/Announcements";
+import AttendanceReports from "@/pages/AttendanceReports";
+import MyProfile from "@/pages/MyProfile";
+import OrgChart from "@/pages/OrgChart";
+import Documents from "@/pages/Documents";
+import Onboarding from "@/pages/Onboarding";
+import Payroll from "@/pages/Payroll";
+import Performance from "@/pages/Performance";
+import Reports from "@/pages/Reports";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,11 +51,22 @@ const AppRoutes = () => (
       <Route path="/" element={<Dashboard />} />
       <Route path="/employees" element={<ProtectedRoute roles={["admin", "manager"]}><Employees /></ProtectedRoute>} />
       <Route path="/attendance" element={<Attendance />} />
+      <Route path="/attendance-reports" element={<ProtectedRoute roles={["admin", "manager"]}><AttendanceReports /></ProtectedRoute>} />
       <Route path="/leave" element={<Leave />} />
       <Route path="/approvals" element={<ProtectedRoute roles={["admin", "manager"]}><Approvals /></ProtectedRoute>} />
       <Route path="/departments" element={<ProtectedRoute roles={["admin"]}><Departments /></ProtectedRoute>} />
       <Route path="/notifications" element={<Notifications />} />
       <Route path="/audit-logs" element={<ProtectedRoute roles={["admin"]}><AuditLogs /></ProtectedRoute>} />
+      <Route path="/user-roles" element={<ProtectedRoute roles={["admin"]}><UserRoles /></ProtectedRoute>} />
+      <Route path="/holidays" element={<Holidays />} />
+      <Route path="/announcements" element={<Announcements />} />
+      <Route path="/profile" element={<MyProfile />} />
+      <Route path="/org-chart" element={<OrgChart />} />
+      <Route path="/documents" element={<Documents />} />
+      <Route path="/onboarding" element={<Onboarding />} />
+      <Route path="/payroll" element={<Payroll />} />
+      <Route path="/performance" element={<Performance />} />
+      <Route path="/reports" element={<ProtectedRoute roles={["admin"]}><Reports /></ProtectedRoute>} />
     </Route>
     <Route path="*" element={<NotFound />} />
   </Routes>
