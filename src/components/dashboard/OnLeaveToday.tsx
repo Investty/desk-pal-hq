@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { PalmtreeIcon } from "lucide-react";
+import { Plane } from "lucide-react";
 import { format } from "date-fns";
 
 export default function OnLeaveToday() {
@@ -23,7 +23,7 @@ export default function OnLeaveToday() {
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center gap-2">
-          <PalmtreeIcon className="h-4 w-4" /> On Leave Today
+          <Plane className="h-4 w-4" /> On Leave Today
           {people && people.length > 0 && (
             <Badge variant="secondary" className="ml-1">{people.length}</Badge>
           )}
