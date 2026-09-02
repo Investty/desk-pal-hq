@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, Clock, CalendarDays, CheckSquare,
   Building2, Bell, FileText, LogOut, ChevronLeft, ChevronRight,
   ShieldCheck, CalendarOff, Megaphone, BarChart3, UserCircle,
-  Network, FolderOpen, ClipboardList, Wallet, Target, PieChart, Settings2,
+  Network, PieChart, Settings2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
