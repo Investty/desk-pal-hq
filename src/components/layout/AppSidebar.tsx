@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, Clock, CalendarDays, CheckSquare,
   Building2, Bell, FileText, LogOut, ChevronLeft, ChevronRight,
   ShieldCheck, CalendarOff, Megaphone, BarChart3, UserCircle,
-  Network, FolderOpen, ClipboardList, Wallet, Target, PieChart, Settings2,
+  Network, PieChart, Settings2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -22,10 +22,6 @@ const navItems = [
   { label: "Approvals", icon: CheckSquare, path: "/approvals", roles: ["admin", "manager"] },
   { label: "Holidays", icon: CalendarOff, path: "/holidays", roles: ["admin", "manager", "employee"] },
   { label: "Announcements", icon: Megaphone, path: "/announcements", roles: ["admin", "manager", "employee"] },
-  { label: "Documents", icon: FolderOpen, path: "/documents", roles: ["admin", "manager", "employee"] },
-  { label: "Onboarding", icon: ClipboardList, path: "/onboarding", roles: ["admin", "manager", "employee"] },
-  { label: "Payroll", icon: Wallet, path: "/payroll", roles: ["admin", "manager", "employee"] },
-  { label: "Performance", icon: Target, path: "/performance", roles: ["admin", "manager", "employee"] },
   { label: "Reports", icon: PieChart, path: "/reports", roles: ["admin"] },
   { label: "Departments", icon: Building2, path: "/departments", roles: ["admin"] },
   { label: "User Roles", icon: ShieldCheck, path: "/user-roles", roles: ["admin"] },

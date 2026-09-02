@@ -164,7 +164,9 @@ export default function Leave() {
                 <TableHead>From</TableHead>
                 <TableHead>To</TableHead>
                 <TableHead>Reason</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Manager</TableHead>
+                <TableHead>HR</TableHead>
+                <TableHead>Overall</TableHead>
                 <TableHead>Applied</TableHead>
               </TableRow>
             </TableHeader>
@@ -175,12 +177,14 @@ export default function Leave() {
                   <TableCell>{format(new Date(req.start_date), "MMM d, yyyy")}</TableCell>
                   <TableCell>{format(new Date(req.end_date), "MMM d, yyyy")}</TableCell>
                   <TableCell className="max-w-[200px] truncate">{req.reason || "—"}</TableCell>
+                  <TableCell><Badge variant={statusVariant(req.manager_status)}>{req.manager_status}</Badge></TableCell>
+                  <TableCell><Badge variant={statusVariant(req.hr_status)}>{req.hr_status}</Badge></TableCell>
                   <TableCell><Badge variant={statusVariant(req.status)}>{req.status}</Badge></TableCell>
                   <TableCell>{format(new Date(req.created_at), "MMM d")}</TableCell>
                 </TableRow>
               ))}
               {requests?.length === 0 && (
-                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No leave requests</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">No leave requests</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

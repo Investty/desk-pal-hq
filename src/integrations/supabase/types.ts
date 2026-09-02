@@ -262,9 +262,17 @@ export type Database = {
           approved_by: string | null
           created_at: string
           end_date: string
+          hr_comment: string | null
+          hr_reviewed_at: string | null
+          hr_reviewed_by: string | null
+          hr_status: Database["public"]["Enums"]["approval_stage_status"]
           id: string
           is_public: boolean
           leave_type: Database["public"]["Enums"]["leave_type"]
+          manager_comment: string | null
+          manager_reviewed_at: string | null
+          manager_reviewed_by: string | null
+          manager_status: Database["public"]["Enums"]["approval_stage_status"]
           reason: string | null
           reviewed_at: string | null
           start_date: string
@@ -276,9 +284,17 @@ export type Database = {
           approved_by?: string | null
           created_at?: string
           end_date: string
+          hr_comment?: string | null
+          hr_reviewed_at?: string | null
+          hr_reviewed_by?: string | null
+          hr_status?: Database["public"]["Enums"]["approval_stage_status"]
           id?: string
           is_public?: boolean
           leave_type: Database["public"]["Enums"]["leave_type"]
+          manager_comment?: string | null
+          manager_reviewed_at?: string | null
+          manager_reviewed_by?: string | null
+          manager_status?: Database["public"]["Enums"]["approval_stage_status"]
           reason?: string | null
           reviewed_at?: string | null
           start_date: string
@@ -290,9 +306,17 @@ export type Database = {
           approved_by?: string | null
           created_at?: string
           end_date?: string
+          hr_comment?: string | null
+          hr_reviewed_at?: string | null
+          hr_reviewed_by?: string | null
+          hr_status?: Database["public"]["Enums"]["approval_stage_status"]
           id?: string
           is_public?: boolean
           leave_type?: Database["public"]["Enums"]["leave_type"]
+          manager_comment?: string | null
+          manager_reviewed_at?: string | null
+          manager_reviewed_by?: string | null
+          manager_status?: Database["public"]["Enums"]["approval_stage_status"]
           reason?: string | null
           reviewed_at?: string | null
           start_date?: string
@@ -485,57 +509,93 @@ export type Database = {
         Row: {
           address: string | null
           avatar_url: string | null
+          branch: string | null
+          business_unit: string | null
+          company: string | null
+          confirmation_date: string | null
           created_at: string
           date_of_birth: string | null
           department_id: string | null
+          designation: string | null
           email: string
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
           employee_id: string
+          employment_status: string | null
+          employment_type: string | null
           full_name: string
+          functional_manager_id: string | null
           id: string
           is_active: boolean
           joining_date: string
           manager_id: string | null
           phone: string | null
+          region: string | null
+          retirement_date: string | null
+          sub_branch: string | null
+          sub_department: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           address?: string | null
           avatar_url?: string | null
+          branch?: string | null
+          business_unit?: string | null
+          company?: string | null
+          confirmation_date?: string | null
           created_at?: string
           date_of_birth?: string | null
           department_id?: string | null
+          designation?: string | null
           email: string
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           employee_id: string
+          employment_status?: string | null
+          employment_type?: string | null
           full_name: string
+          functional_manager_id?: string | null
           id?: string
           is_active?: boolean
           joining_date?: string
           manager_id?: string | null
           phone?: string | null
+          region?: string | null
+          retirement_date?: string | null
+          sub_branch?: string | null
+          sub_department?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           address?: string | null
           avatar_url?: string | null
+          branch?: string | null
+          business_unit?: string | null
+          company?: string | null
+          confirmation_date?: string | null
           created_at?: string
           date_of_birth?: string | null
           department_id?: string | null
+          designation?: string | null
           email?: string
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           employee_id?: string
+          employment_status?: string | null
+          employment_type?: string | null
           full_name?: string
+          functional_manager_id?: string | null
           id?: string
           is_active?: boolean
           joining_date?: string
           manager_id?: string | null
           phone?: string | null
+          region?: string | null
+          retirement_date?: string | null
+          sub_branch?: string | null
+          sub_department?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -545,6 +605,13 @@ export type Database = {
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_functional_manager_id_fkey"
+            columns: ["functional_manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -654,6 +721,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "manager" | "employee"
+      approval_stage_status: "pending" | "approved" | "rejected"
       attendance_status: "present" | "absent" | "late"
       leave_status: "pending" | "approved" | "rejected"
       leave_type: "sick" | "casual" | "paid" | "compensatory" | "bereavement"
@@ -785,6 +853,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "manager", "employee"],
+      approval_stage_status: ["pending", "approved", "rejected"],
       attendance_status: ["present", "absent", "late"],
       leave_status: ["pending", "approved", "rejected"],
       leave_type: ["sick", "casual", "paid", "compensatory", "bereavement"],
