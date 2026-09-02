@@ -4,6 +4,7 @@ import { Users, Clock, CalendarDays, CheckSquare, TrendingUp, AlertCircle } from
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import Highlights from "@/components/dashboard/Highlights";
 
 function StatCard({ title, value, icon: Icon, description, variant = "default" }: {
   title: string; value: string | number; icon: React.ElementType; description?: string;
@@ -102,6 +103,8 @@ export default function Dashboard() {
           />
         ))}
       </div>
+
+      <Highlights />
     </div>
   );
 }
