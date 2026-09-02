@@ -14,6 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { CalendarDays, Plus } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import type { Database } from "@/integrations/supabase/types";
 
 type LeaveType = Database["public"]["Enums"]["leave_type"];
@@ -26,6 +27,15 @@ export default function Leave() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [reason, setReason] = useState("");
+  const [isPublic, setIsPublic] = useState(true);
+
+  const { data: policies } = useQuery({
+    queryKey: ["leave-policies-enabled"],
+    queryFn: async () => {
+      const { data } = await supabase.from("leave_policies").select("*").eq("is_enabled", true).order("label");
+      return data || [];
+    },
+  });
 
   const { data: balances } = useQuery({
     queryKey: ["leave-balances"],
@@ -55,6 +65,7 @@ export default function Leave() {
         start_date: startDate,
         end_date: endDate,
         reason: reason || null,
+        is_public: isPublic,
       });
       if (error) throw error;
     },
@@ -64,6 +75,7 @@ export default function Leave() {
       setStartDate("");
       setEndDate("");
       setReason("");
+      setIsPublic(true);
       queryClient.invalidateQueries({ queryKey: ["leave-requests"] });
     },
     onError: (e: Error) => toast.error(e.message),
