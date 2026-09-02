@@ -2,6 +2,8 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Users, Clock, CalendarDays, CheckSquare,
   Building2, Bell, FileText, LogOut, ChevronLeft, ChevronRight,
+  ShieldCheck, CalendarOff, Megaphone, BarChart3, UserCircle,
+  Network, FolderOpen, ClipboardList, Wallet, Target, PieChart,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -10,11 +12,22 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/", roles: ["admin", "manager", "employee"] },
+  { label: "My Profile", icon: UserCircle, path: "/profile", roles: ["admin", "manager", "employee"] },
   { label: "Employees", icon: Users, path: "/employees", roles: ["admin", "manager"] },
+  { label: "Org Chart", icon: Network, path: "/org-chart", roles: ["admin", "manager", "employee"] },
   { label: "Attendance", icon: Clock, path: "/attendance", roles: ["admin", "manager", "employee"] },
+  { label: "Attendance Reports", icon: BarChart3, path: "/attendance-reports", roles: ["admin", "manager"] },
   { label: "Leave", icon: CalendarDays, path: "/leave", roles: ["admin", "manager", "employee"] },
   { label: "Approvals", icon: CheckSquare, path: "/approvals", roles: ["admin", "manager"] },
+  { label: "Holidays", icon: CalendarOff, path: "/holidays", roles: ["admin", "manager", "employee"] },
+  { label: "Announcements", icon: Megaphone, path: "/announcements", roles: ["admin", "manager", "employee"] },
+  { label: "Documents", icon: FolderOpen, path: "/documents", roles: ["admin", "manager", "employee"] },
+  { label: "Onboarding", icon: ClipboardList, path: "/onboarding", roles: ["admin", "manager", "employee"] },
+  { label: "Payroll", icon: Wallet, path: "/payroll", roles: ["admin", "manager", "employee"] },
+  { label: "Performance", icon: Target, path: "/performance", roles: ["admin", "manager", "employee"] },
+  { label: "Reports", icon: PieChart, path: "/reports", roles: ["admin"] },
   { label: "Departments", icon: Building2, path: "/departments", roles: ["admin"] },
+  { label: "User Roles", icon: ShieldCheck, path: "/user-roles", roles: ["admin"] },
   { label: "Notifications", icon: Bell, path: "/notifications", roles: ["admin", "manager", "employee"] },
   { label: "Audit Logs", icon: FileText, path: "/audit-logs", roles: ["admin"] },
 ];
