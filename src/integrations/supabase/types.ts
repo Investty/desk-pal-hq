@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcements: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_pinned: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_pinned?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_pinned?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       attendance: {
         Row: {
           check_in: string | null
@@ -99,6 +129,66 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      employee_documents: {
+        Row: {
+          created_at: string
+          document_type: string
+          file_path: string
+          id: string
+          title: string
+          updated_at: string
+          uploaded_by: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          document_type?: string
+          file_path: string
+          id?: string
+          title: string
+          updated_at?: string
+          uploaded_by?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          document_type?: string
+          file_path?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          uploaded_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      holidays: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          is_recurring: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          is_recurring?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          is_recurring?: boolean
           name?: string
           updated_at?: string
         }
@@ -209,49 +299,210 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_checklists: {
+        Row: {
+          checklist_type: string
+          created_at: string
+          id: string
+          is_done: boolean
+          task: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          checklist_type?: string
+          created_at?: string
+          id?: string
+          is_done?: boolean
+          task: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          checklist_type?: string
+          created_at?: string
+          id?: string
+          is_done?: boolean
+          task?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      payslips: {
+        Row: {
+          created_at: string
+          deductions: number
+          generated_by: string | null
+          gross: number
+          id: string
+          month: number
+          net: number
+          updated_at: string
+          user_id: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          deductions?: number
+          generated_by?: string | null
+          gross?: number
+          id?: string
+          month: number
+          net?: number
+          updated_at?: string
+          user_id: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          deductions?: number
+          generated_by?: string | null
+          gross?: number
+          id?: string
+          month?: number
+          net?: number
+          updated_at?: string
+          user_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      performance_cycles: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          name: string
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          name: string
+          start_date: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          name?: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      performance_reviews: {
+        Row: {
+          created_at: string
+          cycle_id: string
+          goals: string | null
+          id: string
+          manager_feedback: string | null
+          manager_rating: number | null
+          self_comments: string | null
+          self_rating: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          cycle_id: string
+          goals?: string | null
+          id?: string
+          manager_feedback?: string | null
+          manager_rating?: number | null
+          self_comments?: string | null
+          self_rating?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          cycle_id?: string
+          goals?: string | null
+          id?: string
+          manager_feedback?: string | null
+          manager_rating?: number | null
+          self_comments?: string | null
+          self_rating?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_reviews_cycle_id_fkey"
+            columns: ["cycle_id"]
+            isOneToOne: false
+            referencedRelation: "performance_cycles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
+          address: string | null
           avatar_url: string | null
           created_at: string
           date_of_birth: string | null
           department_id: string | null
           email: string
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
           employee_id: string
           full_name: string
           id: string
           is_active: boolean
           joining_date: string
           manager_id: string | null
+          phone: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          address?: string | null
           avatar_url?: string | null
           created_at?: string
           date_of_birth?: string | null
           department_id?: string | null
           email: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
           employee_id: string
           full_name: string
           id?: string
           is_active?: boolean
           joining_date?: string
           manager_id?: string | null
+          phone?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          address?: string | null
           avatar_url?: string | null
           created_at?: string
           date_of_birth?: string | null
           department_id?: string | null
           email?: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
           employee_id?: string
           full_name?: string
           id?: string
           is_active?: boolean
           joining_date?: string
           manager_id?: string | null
+          phone?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -271,6 +522,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      salary_structures: {
+        Row: {
+          allowances: number
+          basic: number
+          created_at: string
+          deductions: number
+          effective_from: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          allowances?: number
+          basic?: number
+          created_at?: string
+          deductions?: number
+          effective_from?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          allowances?: number
+          basic?: number
+          created_at?: string
+          deductions?: number
+          effective_from?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
