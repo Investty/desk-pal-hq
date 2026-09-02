@@ -1,10 +1,11 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Clock, CalendarDays, CheckSquare, TrendingUp, AlertCircle } from "lucide-react";
+import { Users, Clock, CalendarDays, AlertCircle, CalendarOff, Megaphone } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import Highlights from "@/components/dashboard/Highlights";
+import { Link } from "react-router-dom";
 
 function StatCard({ title, value, icon: Icon, description, variant = "default" }: {
   title: string; value: string | number; icon: React.ElementType; description?: string;
@@ -70,6 +71,22 @@ export default function Dashboard() {
     },
   });
 
+  const { data: upcomingHolidays } = useQuery({
+    queryKey: ["dashboard-holidays", today],
+    queryFn: async () => {
+      const { data } = await supabase.from("holidays").select("*").gte("date", today).order("date").limit(4);
+      return data || [];
+    },
+  });
+
+  const { data: latestAnnouncements } = useQuery({
+    queryKey: ["dashboard-announcements"],
+    queryFn: async () => {
+      const { data } = await supabase.from("announcements").select("*").order("created_at", { ascending: false }).limit(3);
+      return data || [];
+    },
+  });
+
   return (
     <div className="space-y-6">
       <div>
@@ -102,6 +119,40 @@ export default function Dashboard() {
             description="Days remaining"
           />
         ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-base flex items-center gap-2"><CalendarOff className="h-4 w-4" /> Upcoming Holidays</CardTitle>
+            <Link to="/holidays" className="text-xs text-primary hover:underline">View all</Link>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {upcomingHolidays?.map((h) => (
+              <div key={h.id} className="flex items-center justify-between text-sm">
+                <span>{h.name}</span>
+                <span className="text-muted-foreground">{format(new Date(h.date), "EEE, MMM d")}</span>
+              </div>
+            ))}
+            {upcomingHolidays?.length === 0 && <p className="text-sm text-muted-foreground">No upcoming holidays</p>}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-base flex items-center gap-2"><Megaphone className="h-4 w-4" /> Announcements</CardTitle>
+            <Link to="/announcements" className="text-xs text-primary hover:underline">View all</Link>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {latestAnnouncements?.map((a) => (
+              <div key={a.id} className="text-sm">
+                <p className="font-medium">{a.title}</p>
+                <p className="text-muted-foreground line-clamp-1">{a.body}</p>
+              </div>
+            ))}
+            {latestAnnouncements?.length === 0 && <p className="text-sm text-muted-foreground">No announcements yet</p>}
+          </CardContent>
+        </Card>
       </div>
 
       <Highlights />
