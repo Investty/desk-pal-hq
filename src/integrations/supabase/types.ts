@@ -388,37 +388,58 @@ export type Database = {
       }
       payslips: {
         Row: {
+          basic: number
           created_at: string
+          da: number
           deductions: number
           generated_by: string | null
           gross: number
+          hra: number
           id: string
           month: number
           net: number
+          pf: number
+          professional_tax: number
+          special_allowance: number
+          tds: number
           updated_at: string
           user_id: string
           year: number
         }
         Insert: {
+          basic?: number
           created_at?: string
+          da?: number
           deductions?: number
           generated_by?: string | null
           gross?: number
+          hra?: number
           id?: string
           month: number
           net?: number
+          pf?: number
+          professional_tax?: number
+          special_allowance?: number
+          tds?: number
           updated_at?: string
           user_id: string
           year: number
         }
         Update: {
+          basic?: number
           created_at?: string
+          da?: number
           deductions?: number
           generated_by?: string | null
           gross?: number
+          hra?: number
           id?: string
           month?: number
           net?: number
+          pf?: number
+          professional_tax?: number
+          special_allowance?: number
+          tds?: number
           updated_at?: string
           user_id?: string
           year?: number
@@ -628,9 +649,15 @@ export type Database = {
           allowances: number
           basic: number
           created_at: string
+          da: number
           deductions: number
           effective_from: string
+          hra: number
           id: string
+          pf_rate: number
+          professional_tax: number
+          special_allowance: number
+          tds: number
           updated_at: string
           user_id: string
         }
@@ -638,9 +665,15 @@ export type Database = {
           allowances?: number
           basic?: number
           created_at?: string
+          da?: number
           deductions?: number
           effective_from?: string
+          hra?: number
           id?: string
+          pf_rate?: number
+          professional_tax?: number
+          special_allowance?: number
+          tds?: number
           updated_at?: string
           user_id: string
         }
@@ -648,9 +681,15 @@ export type Database = {
           allowances?: number
           basic?: number
           created_at?: string
+          da?: number
           deductions?: number
           effective_from?: string
+          hra?: number
           id?: string
+          pf_rate?: number
+          professional_tax?: number
+          special_allowance?: number
+          tds?: number
           updated_at?: string
           user_id?: string
         }
