@@ -23,6 +23,7 @@ import OrgChart from "@/pages/OrgChart";
 import Documents from "@/pages/Documents";
 import Onboarding from "@/pages/Onboarding";
 import Payroll from "@/pages/Payroll";
+import SalaryEntry from "@/pages/SalaryEntry";
 import Performance from "@/pages/Performance";
 import Reports from "@/pages/Reports";
 import LeaveTypes from "@/pages/LeaveTypes";
@@ -67,6 +68,7 @@ const AppRoutes = () => (
       <Route path="/documents" element={<Documents />} />
       <Route path="/onboarding" element={<Onboarding />} />
       <Route path="/payroll" element={<Payroll />} />
+      <Route path="/salary" element={<ProtectedRoute roles={["admin"]}><SalaryEntry /></ProtectedRoute>} />
       <Route path="/performance" element={<Performance />} />
       <Route path="/reports" element={<ProtectedRoute roles={["admin"]}><Reports /></ProtectedRoute>} />
     </Route>
