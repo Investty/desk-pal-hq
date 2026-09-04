@@ -5,21 +5,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Wallet, Play, Printer, Pencil } from "lucide-react";
+import { Wallet, Play, Printer, IndianRupee } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { computeSalary, formatINR as fmt } from "@/lib/salary";
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-const fmt = (n: number) => `₹${Number(n).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 
 interface PayslipRow {
   id: string; user_id: string; month: number; year: number;
   gross: number; deductions: number; net: number; created_at: string;
+  basic: number; da: number; hra: number; special_allowance: number;
+  pf: number; professional_tax: number; tds: number;
 }
 
 interface EmpRow {
@@ -37,15 +39,10 @@ export default function Payroll() {
   const queryClient = useQueryClient();
   const { isAdmin, user } = useAuth();
   const now = new Date();
-  const [editUser, setEditUser] = useState("");
-  const [basic, setBasic] = useState("");
-  const [allowances, setAllowances] = useState("");
-  const [deductions, setDeductions] = useState("");
   const [runMonth, setRunMonth] = useState(String(now.getMonth() + 1));
   const [runYear, setRunYear] = useState(String(now.getFullYear()));
   const [viewSlip, setViewSlip] = useState<PayslipRow | null>(null);
 
-  // Employment details for everyone the current user can see (self, or all for admin)
   const { data: employees } = useQuery({
     queryKey: ["payroll-employees", isAdmin, user?.id],
     queryFn: async () => {
@@ -63,7 +60,7 @@ export default function Payroll() {
   });
 
   const { data: salaries } = useQuery({
-    queryKey: ["salary-structures", isAdmin],
+    queryKey: ["salary-structures"],
     queryFn: async () => {
       const { data } = await supabase.from("salary_structures").select("*");
       return data || [];
@@ -79,37 +76,20 @@ export default function Payroll() {
     },
   });
 
-  const saveSalary = useMutation({
-    mutationFn: async () => {
-      if (!editUser) throw new Error("Select an employee");
-      const { error } = await supabase.from("salary_structures").upsert({
-        user_id: editUser,
-        basic: Number(basic) || 0,
-        allowances: Number(allowances) || 0,
-        deductions: Number(deductions) || 0,
-        effective_from: new Date().toISOString().slice(0, 10),
-      }, { onConflict: "user_id" });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Salary structure saved!");
-      setEditUser(""); setBasic(""); setAllowances(""); setDeductions("");
-      queryClient.invalidateQueries({ queryKey: ["salary-structures"] });
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
-
   const runPayroll = useMutation({
     mutationFn: async () => {
       const m = Number(runMonth), y = Number(runYear);
-      if (!salaries?.length) throw new Error("No salary structures defined");
-      const rows = salaries.map((s) => ({
-        user_id: s.user_id, month: m, year: y,
-        gross: Number(s.basic) + Number(s.allowances),
-        deductions: Number(s.deductions),
-        net: Number(s.basic) + Number(s.allowances) - Number(s.deductions),
-        generated_by: user!.id,
-      }));
+      if (!salaries?.length) throw new Error("No salary structures defined — add salaries in Salary Entry first");
+      const rows = salaries.map((s) => {
+        const c = computeSalary(s);
+        return {
+          user_id: s.user_id, month: m, year: y,
+          basic: c.basic, da: c.da, hra: c.hra, special_allowance: c.special_allowance,
+          pf: c.pf, professional_tax: c.professional_tax, tds: c.tds,
+          gross: c.gross, deductions: c.deductions, net: c.net,
+          generated_by: user!.id,
+        };
+      });
       const { error } = await supabase.from("payslips").upsert(rows, { onConflict: "user_id,month,year" });
       if (error) throw error;
       return rows.length;
@@ -122,21 +102,21 @@ export default function Payroll() {
   });
 
   const emp = (uid: string) => employees?.find((e) => e.user_id === uid);
-  const salaryOf = (uid: string) => salaries?.find((s) => s.user_id === uid);
   const slipEmp = viewSlip ? emp(viewSlip.user_id) : undefined;
 
   const printSlip = () => {
     if (!viewSlip) return;
     const e = slipEmp;
-    const s = salaryOf(viewSlip.user_id);
+    const p = viewSlip;
     const win = window.open("", "_blank", "width=800,height=900");
     if (!win) return;
     const row = (l: string, v: string, strong = false) =>
       `<tr><td>${l}</td><td style="text-align:right;${strong ? "font-weight:700" : ""}">${v}</td></tr>`;
-    win.document.write(`<!doctype html><html><head><title>Payslip ${MONTHS[viewSlip.month - 1]} ${viewSlip.year}</title>
+    win.document.write(`<!doctype html><html><head><title>Payslip ${MONTHS[p.month - 1]} ${p.year}</title>
       <style>
         body{font-family:ui-sans-serif,system-ui,sans-serif;padding:40px;color:#111}
         h1{font-size:20px;margin:0 0 4px}
+        h2{font-size:13px;margin:18px 0 6px;text-transform:uppercase;letter-spacing:.05em;color:#555}
         .muted{color:#666;font-size:12px}
         .grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;margin:20px 0;font-size:13px}
         table{width:100%;border-collapse:collapse;font-size:13px}
@@ -144,7 +124,7 @@ export default function Payroll() {
         .total td{border-top:2px solid #111;border-bottom:none;font-size:15px}
       </style></head><body>
       <h1>${e?.company || "Payslip"}</h1>
-      <div class="muted">Payslip for ${MONTHS[viewSlip.month - 1]} ${viewSlip.year}</div>
+      <div class="muted">Payslip for ${MONTHS[p.month - 1]} ${p.year}</div>
       <div class="grid">
         <div><b>Employee:</b> ${e?.full_name || "—"}</div>
         <div><b>Employee ID:</b> ${e?.employee_id || "—"}</div>
@@ -153,128 +133,83 @@ export default function Payroll() {
         <div><b>Employment type:</b> ${e?.employment_type || "—"}</div>
         <div><b>Date of joining:</b> ${e?.joining_date ? format(new Date(e.joining_date), "dd MMM yyyy") : "—"}</div>
       </div>
+      <h2>Earnings</h2>
       <table>
-        ${s ? row("Basic", fmt(Number(s.basic))) + row("Allowances", fmt(Number(s.allowances))) : ""}
-        ${row("Gross Earnings", fmt(viewSlip.gross), true)}
-        ${row("Deductions", "-" + fmt(viewSlip.deductions))}
-        <tr class="total"><td>Net Pay</td><td style="text-align:right;font-weight:700">${fmt(viewSlip.net)}</td></tr>
+        ${row("Basic pay", fmt(p.basic))}
+        ${row("Dearness Allowance (DA)", fmt(p.da))}
+        ${row("HRA", fmt(p.hra))}
+        ${row("Other allowances", fmt(p.special_allowance))}
+        ${row("Gross earnings", fmt(p.gross), true)}
       </table>
-      <p class="muted" style="margin-top:24px">Generated on ${format(new Date(viewSlip.created_at), "dd MMM yyyy")}. This is a computer-generated payslip.</p>
+      <h2>Deductions</h2>
+      <table>
+        ${row("Provident Fund (PF)", fmt(p.pf))}
+        ${row("Professional tax", fmt(p.professional_tax))}
+        ${row("Income tax (TDS)", fmt(p.tds))}
+        ${row("Total deductions", fmt(p.deductions), true)}
+        <tr class="total"><td>Net Pay</td><td style="text-align:right;font-weight:700">${fmt(p.net)}</td></tr>
+      </table>
+      <p class="muted" style="margin-top:24px">Generated on ${format(new Date(p.created_at), "dd MMM yyyy")}. This is a computer-generated payslip.</p>
       </body></html>`);
     win.document.close();
     win.focus();
     win.print();
   };
 
+  const mySalary = employees?.[0] ? salaries?.find((s) => s.user_id === employees[0].user_id) : undefined;
+  const myCalc = mySalary ? computeSalary(mySalary) : null;
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2"><Wallet className="h-6 w-6" /> Payroll</h1>
-        <p className="text-muted-foreground">{isAdmin ? "Salary structures and payslip generation" : "Your salary structure and payslips"}</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2"><Wallet className="h-6 w-6" /> Payroll</h1>
+          <p className="text-muted-foreground">{isAdmin ? "Generate payslips from saved salary structures" : "Your salary structure and payslips"}</p>
+        </div>
+        {isAdmin && (
+          <Button variant="outline" asChild><Link to="/salary"><IndianRupee className="h-4 w-4 mr-2" /> Salary Entry</Link></Button>
+        )}
       </div>
 
       {isAdmin && (
-        <>
-          <Card>
-            <CardHeader><CardTitle className="text-base">Salary Structure</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-wrap items-end gap-3">
-                <div className="space-y-1 min-w-56">
-                  <Label>Employee</Label>
-                  <Select value={editUser} onValueChange={(v) => {
-                    setEditUser(v);
-                    const s = salaryOf(v);
-                    setBasic(s ? String(s.basic) : "");
-                    setAllowances(s ? String(s.allowances) : "");
-                    setDeductions(s ? String(s.deductions) : "");
-                  }}>
-                    <SelectTrigger><SelectValue placeholder="Select employee" /></SelectTrigger>
-                    <SelectContent>
-                      {employees?.map((e) => <SelectItem key={e.user_id} value={e.user_id}>{e.full_name} ({e.employee_id})</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1 w-32"><Label>Basic</Label><Input type="number" value={basic} onChange={(e) => setBasic(e.target.value)} /></div>
-                <div className="space-y-1 w-32"><Label>Allowances</Label><Input type="number" value={allowances} onChange={(e) => setAllowances(e.target.value)} /></div>
-                <div className="space-y-1 w-32"><Label>Deductions</Label><Input type="number" value={deductions} onChange={(e) => setDeductions(e.target.value)} /></div>
-                <Button onClick={() => saveSalary.mutate()} disabled={saveSalary.isPending}><Pencil className="h-4 w-4 mr-2" /> Save</Button>
-              </div>
-              {editUser && emp(editUser) && (
-                <p className="text-xs text-muted-foreground">
-                  {emp(editUser)!.designation || "No designation"} · {emp(editUser)!.departments?.name || "No department"} · joined {format(new Date(emp(editUser)!.joining_date), "dd MMM yyyy")}
-                  {" · "}Net monthly: <span className="font-medium text-foreground">{fmt((Number(basic) || 0) + (Number(allowances) || 0) - (Number(deductions) || 0))}</span>
-                </p>
-              )}
-
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Employee</TableHead>
-                    <TableHead>Designation</TableHead>
-                    <TableHead className="text-right">Basic</TableHead>
-                    <TableHead className="text-right">Allowances</TableHead>
-                    <TableHead className="text-right">Deductions</TableHead>
-                    <TableHead className="text-right">Net</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {employees?.map((e) => {
-                    const s = salaryOf(e.user_id);
-                    return (
-                      <TableRow key={e.user_id}>
-                        <TableCell className="font-medium">{e.full_name} <span className="text-muted-foreground text-xs">({e.employee_id})</span></TableCell>
-                        <TableCell className="text-muted-foreground">{e.designation || "—"}</TableCell>
-                        {s ? (
-                          <>
-                            <TableCell className="text-right">{fmt(Number(s.basic))}</TableCell>
-                            <TableCell className="text-right">{fmt(Number(s.allowances))}</TableCell>
-                            <TableCell className="text-right">{fmt(Number(s.deductions))}</TableCell>
-                            <TableCell className="text-right font-semibold">{fmt(Number(s.basic) + Number(s.allowances) - Number(s.deductions))}</TableCell>
-                          </>
-                        ) : (
-                          <TableCell colSpan={4} className="text-right"><Badge variant="outline">Not set</Badge></TableCell>
-                        )}
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader><CardTitle className="text-base">Run Payroll</CardTitle></CardHeader>
-            <CardContent className="flex flex-wrap items-end gap-3">
-              <div className="space-y-1 w-40">
-                <Label>Month</Label>
-                <Select value={runMonth} onValueChange={setRunMonth}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{MONTHS.map((m, i) => <SelectItem key={i} value={String(i + 1)}>{m}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1 w-28"><Label>Year</Label><Input type="number" value={runYear} onChange={(e) => setRunYear(e.target.value)} /></div>
-              <Button onClick={() => runPayroll.mutate()} disabled={runPayroll.isPending}>
-                <Play className="h-4 w-4 mr-2" /> Generate Payslips
-              </Button>
-              <p className="text-xs text-muted-foreground self-center">One click generates payslips for all {salaries?.length || 0} employees with a salary structure (existing ones are overwritten).</p>
-            </CardContent>
-          </Card>
-        </>
+        <Card>
+          <CardHeader><CardTitle className="text-base">Run Payroll</CardTitle></CardHeader>
+          <CardContent className="flex flex-wrap items-end gap-3">
+            <div className="space-y-1 w-40">
+              <Label>Month</Label>
+              <Select value={runMonth} onValueChange={setRunMonth}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{MONTHS.map((m, i) => <SelectItem key={i} value={String(i + 1)}>{m}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1 w-28"><Label>Year</Label><Input type="number" value={runYear} onChange={(e) => setRunYear(e.target.value)} /></div>
+            <Button onClick={() => runPayroll.mutate()} disabled={runPayroll.isPending}>
+              <Play className="h-4 w-4 mr-2" /> Generate Payslips
+            </Button>
+            <p className="text-xs text-muted-foreground self-center">
+              Generates payslips for all {salaries?.length || 0} employees with a salary structure. PF is computed on Basic + DA (existing payslips are overwritten).
+            </p>
+          </CardContent>
+        </Card>
       )}
 
       {!isAdmin && employees?.[0] && (
         <Card>
           <CardHeader><CardTitle className="text-base">My Salary Structure</CardTitle></CardHeader>
-          <CardContent className="text-sm space-y-1">
+          <CardContent className="text-sm space-y-2">
             <p className="text-muted-foreground">
               {employees[0].designation || "—"} · {employees[0].departments?.name || "—"} · joined {format(new Date(employees[0].joining_date), "dd MMM yyyy")}
             </p>
-            {salaryOf(employees[0].user_id) ? (
+            {myCalc ? (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                <div><p className="text-xs text-muted-foreground">Basic</p><p className="font-medium">{fmt(Number(salaryOf(employees[0].user_id)!.basic))}</p></div>
-                <div><p className="text-xs text-muted-foreground">Allowances</p><p className="font-medium">{fmt(Number(salaryOf(employees[0].user_id)!.allowances))}</p></div>
-                <div><p className="text-xs text-muted-foreground">Deductions</p><p className="font-medium">{fmt(Number(salaryOf(employees[0].user_id)!.deductions))}</p></div>
-                <div><p className="text-xs text-muted-foreground">Net monthly</p><p className="font-semibold">{fmt(Number(salaryOf(employees[0].user_id)!.basic) + Number(salaryOf(employees[0].user_id)!.allowances) - Number(salaryOf(employees[0].user_id)!.deductions))}</p></div>
+                <div><p className="text-xs text-muted-foreground">Basic</p><p className="font-medium">{fmt(myCalc.basic)}</p></div>
+                <div><p className="text-xs text-muted-foreground">DA</p><p className="font-medium">{fmt(myCalc.da)}</p></div>
+                <div><p className="text-xs text-muted-foreground">HRA</p><p className="font-medium">{fmt(myCalc.hra)}</p></div>
+                <div><p className="text-xs text-muted-foreground">Other allowances</p><p className="font-medium">{fmt(myCalc.special_allowance)}</p></div>
+                <div><p className="text-xs text-muted-foreground">Gross</p><p className="font-medium">{fmt(myCalc.gross)}</p></div>
+                <div><p className="text-xs text-muted-foreground">PF ({myCalc.pf_rate}%)</p><p className="font-medium">{fmt(myCalc.pf)}</p></div>
+                <div><p className="text-xs text-muted-foreground">Deductions</p><p className="font-medium">{fmt(myCalc.deductions)}</p></div>
+                <div><p className="text-xs text-muted-foreground">Net monthly</p><p className="font-semibold">{fmt(myCalc.net)}</p></div>
               </div>
             ) : (
               <p className="text-muted-foreground pt-2">No salary structure has been set for you yet.</p>
@@ -291,7 +226,11 @@ export default function Payroll() {
               <TableRow>
                 {isAdmin && <TableHead>Employee</TableHead>}
                 <TableHead>Period</TableHead>
+                <TableHead className="text-right">Basic</TableHead>
+                <TableHead className="text-right">DA</TableHead>
+                <TableHead className="text-right">HRA</TableHead>
                 <TableHead className="text-right">Gross</TableHead>
+                <TableHead className="text-right">PF</TableHead>
                 <TableHead className="text-right">Deductions</TableHead>
                 <TableHead className="text-right">Net Pay</TableHead>
                 <TableHead className="w-16"></TableHead>
@@ -302,7 +241,11 @@ export default function Payroll() {
                 <TableRow key={p.id}>
                   {isAdmin && <TableCell className="font-medium">{emp(p.user_id)?.full_name || "—"}</TableCell>}
                   <TableCell>{MONTHS[p.month - 1]} {p.year}</TableCell>
+                  <TableCell className="text-right">{fmt(p.basic)}</TableCell>
+                  <TableCell className="text-right">{fmt(p.da)}</TableCell>
+                  <TableCell className="text-right">{fmt(p.hra)}</TableCell>
                   <TableCell className="text-right">{fmt(p.gross)}</TableCell>
+                  <TableCell className="text-right">{fmt(p.pf)}</TableCell>
                   <TableCell className="text-right">{fmt(p.deductions)}</TableCell>
                   <TableCell className="text-right font-semibold">{fmt(p.net)}</TableCell>
                   <TableCell>
@@ -311,7 +254,7 @@ export default function Payroll() {
                 </TableRow>
               ))}
               {payslips?.length === 0 && (
-                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No payslips yet</TableCell></TableRow>
+                <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">No payslips yet</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
@@ -332,14 +275,16 @@ export default function Payroll() {
                 <p className="text-sm text-muted-foreground">{MONTHS[viewSlip.month - 1]} {viewSlip.year}</p>
               </div>
               <div className="space-y-2 text-sm">
-                {salaryOf(viewSlip.user_id) && (
-                  <>
-                    <div className="flex justify-between"><span>Basic</span><span>{fmt(Number(salaryOf(viewSlip.user_id)!.basic))}</span></div>
-                    <div className="flex justify-between"><span>Allowances</span><span>{fmt(Number(salaryOf(viewSlip.user_id)!.allowances))}</span></div>
-                  </>
-                )}
-                <div className="flex justify-between"><span>Gross Earnings</span><span>{fmt(viewSlip.gross)}</span></div>
-                <div className="flex justify-between text-destructive"><span>Deductions</span><span>-{fmt(viewSlip.deductions)}</span></div>
+                <p className="text-xs font-medium text-muted-foreground uppercase">Earnings</p>
+                <div className="flex justify-between"><span>Basic pay</span><span>{fmt(viewSlip.basic)}</span></div>
+                <div className="flex justify-between"><span>Dearness Allowance</span><span>{fmt(viewSlip.da)}</span></div>
+                <div className="flex justify-between"><span>HRA</span><span>{fmt(viewSlip.hra)}</span></div>
+                <div className="flex justify-between"><span>Other allowances</span><span>{fmt(viewSlip.special_allowance)}</span></div>
+                <div className="flex justify-between font-medium border-t pt-2"><span>Gross earnings</span><span>{fmt(viewSlip.gross)}</span></div>
+                <p className="text-xs font-medium text-muted-foreground uppercase pt-2">Deductions</p>
+                <div className="flex justify-between text-destructive"><span>Provident Fund</span><span>-{fmt(viewSlip.pf)}</span></div>
+                <div className="flex justify-between text-destructive"><span>Professional tax</span><span>-{fmt(viewSlip.professional_tax)}</span></div>
+                <div className="flex justify-between text-destructive"><span>Income tax (TDS)</span><span>-{fmt(viewSlip.tds)}</span></div>
                 <div className="flex justify-between font-bold border-t pt-2"><span>Net Pay</span><span>{fmt(viewSlip.net)}</span></div>
               </div>
               <p className="text-xs text-muted-foreground">Generated on {format(new Date(viewSlip.created_at), "MMM d, yyyy")}</p>
