@@ -1,0 +1,1 @@
+ALTER TYPE public.approval_stage_status ADD VALUE IF NOT EXISTS 'cancelled';

@@ -89,7 +89,7 @@ export default function Leave() {
         .update({ status: "cancelled" })
         .eq("id", id)
         .eq("user_id", user!.id)
-        .eq("status", "pending");
+        .in("status", ["pending", "approved"]);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -203,7 +203,9 @@ export default function Leave() {
                   <TableCell><Badge variant={statusVariant(req.status)}>{req.status}</Badge></TableCell>
                   <TableCell>{format(new Date(req.created_at), "MMM d")}</TableCell>
                   <TableCell className="text-right">
-                    {req.status === "pending" && req.user_id === user?.id ? (
+                    {(req.status === "pending" || req.status === "approved") &&
+                    req.user_id === user?.id &&
+                    req.start_date >= format(new Date(), "yyyy-MM-dd") ? (
                       <Button
                         variant="outline"
                         size="sm"

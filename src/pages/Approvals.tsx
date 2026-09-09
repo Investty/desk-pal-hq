@@ -57,6 +57,19 @@ export default function Approvals() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const { data: cancelled } = useQuery({
+    queryKey: ["cancelled-leaves"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("leave_requests")
+        .select("*, profiles!leave_requests_user_id_fkey(full_name, employee_id)")
+        .eq("status", "cancelled")
+        .order("updated_at", { ascending: false })
+        .limit(20);
+      return data || [];
+    },
+  });
+
   const managerQueue = (requests || []).filter((r) => r.manager_status === "pending");
   const hrQueue = (requests || []).filter((r) => r.manager_status === "approved" && r.hr_status === "pending");
 
@@ -125,6 +138,48 @@ export default function Approvals() {
           <CardContent>{renderTable(hrQueue, "hr", "No requests awaiting HR review")}</CardContent>
         </Card>
       )}
+
+      <Card>
+        <CardHeader><CardTitle>Cancelled by employees</CardTitle></CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Employee</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>From</TableHead>
+                <TableHead>To</TableHead>
+                <TableHead>Manager</TableHead>
+                <TableHead>HR</TableHead>
+                <TableHead>Days returned</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {(cancelled || []).map((req) => {
+                const profile = (req as unknown as { profiles?: { full_name?: string; employee_id?: string } }).profiles;
+                const days = Math.round((new Date(req.end_date).getTime() - new Date(req.start_date).getTime()) / 86400000) + 1;
+                return (
+                  <TableRow key={req.id}>
+                    <TableCell>
+                      <p className="font-medium">{profile?.full_name || "Unknown"}</p>
+                      <p className="text-xs text-muted-foreground">{profile?.employee_id}</p>
+                    </TableCell>
+                    <TableCell className="capitalize">{req.leave_type}</TableCell>
+                    <TableCell>{format(new Date(req.start_date), "MMM d, yyyy")}</TableCell>
+                    <TableCell>{format(new Date(req.end_date), "MMM d, yyyy")}</TableCell>
+                    <TableCell><Badge variant="outline">{req.manager_status}</Badge></TableCell>
+                    <TableCell><Badge variant="outline">{req.hr_status}</Badge></TableCell>
+                    <TableCell>{days}</TableCell>
+                  </TableRow>
+                );
+              })}
+              {(cancelled || []).length === 0 && (
+                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">No cancelled requests</TableCell></TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }
