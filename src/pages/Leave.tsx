@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { CalendarDays, Plus } from "lucide-react";
+import { CalendarDays, Plus, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import type { Database } from "@/integrations/supabase/types";
 
