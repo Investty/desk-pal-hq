@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { CalendarDays, Plus } from "lucide-react";
+import { CalendarDays, Plus, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -77,6 +77,25 @@ export default function Leave() {
       setReason("");
       setIsPublic(true);
       queryClient.invalidateQueries({ queryKey: ["leave-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["leave-balances"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const cancel = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("leave_requests")
+        .update({ status: "cancelled" })
+        .eq("id", id)
+        .eq("user_id", user!.id)
+        .eq("status", "pending");
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Leave request cancelled");
+      queryClient.invalidateQueries({ queryKey: ["leave-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["leave-balances"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -84,6 +103,7 @@ export default function Leave() {
   const statusVariant = (s: string) => {
     if (s === "approved") return "default" as const;
     if (s === "rejected") return "destructive" as const;
+    if (s === "cancelled") return "outline" as const;
     return "secondary" as const;
   };
 
@@ -168,6 +188,7 @@ export default function Leave() {
                 <TableHead>HR</TableHead>
                 <TableHead>Overall</TableHead>
                 <TableHead>Applied</TableHead>
+                <TableHead className="text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -181,10 +202,24 @@ export default function Leave() {
                   <TableCell><Badge variant={statusVariant(req.hr_status)}>{req.hr_status}</Badge></TableCell>
                   <TableCell><Badge variant={statusVariant(req.status)}>{req.status}</Badge></TableCell>
                   <TableCell>{format(new Date(req.created_at), "MMM d")}</TableCell>
+                  <TableCell className="text-right">
+                    {req.status === "pending" && req.user_id === user?.id ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={cancel.isPending}
+                        onClick={() => cancel.mutate(req.id)}
+                      >
+                        <X className="h-3.5 w-3.5 mr-1" /> Cancel
+                      </Button>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
               {requests?.length === 0 && (
-                <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">No leave requests</TableCell></TableRow>
+                <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">No leave requests</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
