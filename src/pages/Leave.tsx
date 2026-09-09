@@ -89,7 +89,7 @@ export default function Leave() {
         .update({ status: "cancelled" })
         .eq("id", id)
         .eq("user_id", user!.id)
-        .eq("status", "pending");
+        .in("status", ["pending", "approved"]);
       if (error) throw error;
     },
     onSuccess: () => {

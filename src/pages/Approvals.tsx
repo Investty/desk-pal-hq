@@ -57,6 +57,19 @@ export default function Approvals() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const { data: cancelled } = useQuery({
+    queryKey: ["cancelled-leaves"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("leave_requests")
+        .select("*, profiles!leave_requests_user_id_fkey(full_name, employee_id)")
+        .eq("status", "cancelled")
+        .order("updated_at", { ascending: false })
+        .limit(20);
+      return data || [];
+    },
+  });
+
   const managerQueue = (requests || []).filter((r) => r.manager_status === "pending");
   const hrQueue = (requests || []).filter((r) => r.manager_status === "approved" && r.hr_status === "pending");
 
