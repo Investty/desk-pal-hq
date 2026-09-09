@@ -77,6 +77,7 @@ export default function Leave() {
       setReason("");
       setIsPublic(true);
       queryClient.invalidateQueries({ queryKey: ["leave-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["leave-balances"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
