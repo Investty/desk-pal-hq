@@ -81,9 +81,28 @@ export default function Leave() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const cancel = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("leave_requests")
+        .update({ status: "cancelled" })
+        .eq("id", id)
+        .eq("user_id", user!.id)
+        .eq("status", "pending");
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Leave request cancelled");
+      queryClient.invalidateQueries({ queryKey: ["leave-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["leave-balances"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const statusVariant = (s: string) => {
     if (s === "approved") return "default" as const;
     if (s === "rejected") return "destructive" as const;
+    if (s === "cancelled") return "outline" as const;
     return "secondary" as const;
   };
 
