@@ -757,6 +757,7 @@ export type Database = {
         Args: { _employee_user_id: string; _manager_user_id: string }
         Returns: boolean
       }
+      leave_days: { Args: { _end: string; _start: string }; Returns: number }
     }
     Enums: {
       app_role: "admin" | "manager" | "employee"
