@@ -762,7 +762,7 @@ export type Database = {
       app_role: "admin" | "manager" | "employee"
       approval_stage_status: "pending" | "approved" | "rejected"
       attendance_status: "present" | "absent" | "late"
-      leave_status: "pending" | "approved" | "rejected"
+      leave_status: "pending" | "approved" | "rejected" | "cancelled"
       leave_type: "sick" | "casual" | "paid" | "compensatory" | "bereavement"
     }
     CompositeTypes: {
@@ -894,7 +894,7 @@ export const Constants = {
       app_role: ["admin", "manager", "employee"],
       approval_stage_status: ["pending", "approved", "rejected"],
       attendance_status: ["present", "absent", "late"],
-      leave_status: ["pending", "approved", "rejected"],
+      leave_status: ["pending", "approved", "rejected", "cancelled"],
       leave_type: ["sick", "casual", "paid", "compensatory", "bereavement"],
     },
   },
