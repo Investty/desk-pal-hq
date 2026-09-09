@@ -11,7 +11,7 @@ import { Link } from "react-router-dom";
 
 import { useAuth } from "@/contexts/AuthContext";
 
-type Role = "admin" | "manager" | "employee";
+type Role = "admin" | "hr" | "manager" | "employee";
 
 export default function UserRoles() {
   const queryClient = useQueryClient();
@@ -81,6 +81,7 @@ export default function UserRoles() {
                       <SelectContent>
                         <SelectItem value="employee">Employee</SelectItem>
                         <SelectItem value="manager">Manager</SelectItem>
+                        <SelectItem value="hr">HR</SelectItem>
                         <SelectItem value="admin">Admin</SelectItem>
                       </SelectContent>
                     </Select>
