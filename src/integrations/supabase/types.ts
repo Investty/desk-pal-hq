@@ -753,6 +753,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_hr: { Args: { _user_id: string }; Returns: boolean }
       is_manager_of: {
         Args: { _employee_user_id: string; _manager_user_id: string }
         Returns: boolean
@@ -760,7 +761,7 @@ export type Database = {
       leave_days: { Args: { _end: string; _start: string }; Returns: number }
     }
     Enums: {
-      app_role: "admin" | "manager" | "employee"
+      app_role: "admin" | "manager" | "employee" | "hr"
       approval_stage_status: "pending" | "approved" | "rejected" | "cancelled"
       attendance_status: "present" | "absent" | "late"
       leave_status: "pending" | "approved" | "rejected" | "cancelled"
@@ -892,7 +893,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "manager", "employee"],
+      app_role: ["admin", "manager", "employee", "hr"],
       approval_stage_status: ["pending", "approved", "rejected", "cancelled"],
       attendance_status: ["present", "absent", "late"],
       leave_status: ["pending", "approved", "rejected", "cancelled"],
