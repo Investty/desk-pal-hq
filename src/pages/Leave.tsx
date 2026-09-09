@@ -202,10 +202,24 @@ export default function Leave() {
                   <TableCell><Badge variant={statusVariant(req.hr_status)}>{req.hr_status}</Badge></TableCell>
                   <TableCell><Badge variant={statusVariant(req.status)}>{req.status}</Badge></TableCell>
                   <TableCell>{format(new Date(req.created_at), "MMM d")}</TableCell>
+                  <TableCell className="text-right">
+                    {req.status === "pending" && req.user_id === user?.id ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={cancel.isPending}
+                        onClick={() => cancel.mutate(req.id)}
+                      >
+                        <X className="h-3.5 w-3.5 mr-1" /> Cancel
+                      </Button>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
               {requests?.length === 0 && (
-                <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">No leave requests</TableCell></TableRow>
+                <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">No leave requests</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
