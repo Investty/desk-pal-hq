@@ -203,7 +203,9 @@ export default function Leave() {
                   <TableCell><Badge variant={statusVariant(req.status)}>{req.status}</Badge></TableCell>
                   <TableCell>{format(new Date(req.created_at), "MMM d")}</TableCell>
                   <TableCell className="text-right">
-                    {req.status === "pending" && req.user_id === user?.id ? (
+                    {(req.status === "pending" || req.status === "approved") &&
+                    req.user_id === user?.id &&
+                    req.start_date >= format(new Date(), "yyyy-MM-dd") ? (
                       <Button
                         variant="outline"
                         size="sm"
