@@ -193,6 +193,8 @@ export default function Approvals() {
         <CardContent>{renderTable(managerQueue, "manager", "No requests awaiting manager review")}</CardContent>
       </Card>
 
+      <AttendanceApprovals />
+
       {isAdmin && (
         <Card>
           <CardHeader><CardTitle>Stage 2 — HR</CardTitle></CardHeader>
