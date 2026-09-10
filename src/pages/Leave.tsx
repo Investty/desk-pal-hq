@@ -18,6 +18,18 @@ import { Switch } from "@/components/ui/switch";
 import type { Database } from "@/integrations/supabase/types";
 
 type LeaveType = Database["public"]["Enums"]["leave_type"];
+type DayPortion = Database["public"]["Enums"]["day_portion"];
+
+const portionLabel: Record<DayPortion, string> = {
+  full_day: "Full day",
+  first_half: "First half",
+  second_half: "Second half",
+};
+
+const requestDays = (start: string, end: string, portion: DayPortion) =>
+  portion === "full_day"
+    ? Math.round((new Date(end).getTime() - new Date(start).getTime()) / 86400000) + 1
+    : 0.5;
 
 export default function Leave() {
   const { user } = useAuth();
@@ -28,6 +40,7 @@ export default function Leave() {
   const [endDate, setEndDate] = useState("");
   const [reason, setReason] = useState("");
   const [isPublic, setIsPublic] = useState(true);
+  const [dayPortion, setDayPortion] = useState<DayPortion>("full_day");
 
   const { data: policies } = useQuery({
     queryKey: ["leave-policies-enabled"],
