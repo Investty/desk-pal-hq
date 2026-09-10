@@ -57,6 +57,47 @@ export default function Approvals() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const { data: approved } = useQuery({
+    queryKey: ["approved-leaves"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("leave_requests")
+        .select("*, profiles!leave_requests_user_id_fkey(full_name, employee_id)")
+        .eq("status", "approved")
+        .order("start_date", { ascending: false })
+        .limit(50);
+      return data || [];
+    },
+  });
+
+  const revoke = useMutation({
+    mutationFn: async ({ id, action }: { id: string; action: "cancelled" | "rejected" }) => {
+      const now = new Date().toISOString();
+      const { error } = await supabase
+        .from("leave_requests")
+        .update({
+          status: action,
+          hr_status: action,
+          hr_reviewed_by: user!.id,
+          hr_reviewed_at: now,
+          hr_comment: action === "cancelled" ? "Cancelled by HR" : "Rejected by HR after approval",
+          approved_by: user!.id,
+          reviewed_at: now,
+        })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_d, v) => {
+      toast.success(v.action === "cancelled" ? "Leave cancelled and days returned" : "Leave rejected and days returned");
+      queryClient.invalidateQueries({ queryKey: ["approved-leaves"] });
+      queryClient.invalidateQueries({ queryKey: ["cancelled-leaves"] });
+      queryClient.invalidateQueries({ queryKey: ["pending-approvals"] });
+      queryClient.invalidateQueries({ queryKey: ["leave-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["leave-balances"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const { data: cancelled } = useQuery({
     queryKey: ["cancelled-leaves"],
     queryFn: async () => {
@@ -136,6 +177,69 @@ export default function Approvals() {
         <Card>
           <CardHeader><CardTitle>Stage 2 — HR</CardTitle></CardHeader>
           <CardContent>{renderTable(hrQueue, "hr", "No requests awaiting HR review")}</CardContent>
+        </Card>
+      )}
+
+      {isAdmin && (
+        <Card>
+          <CardHeader><CardTitle>Approved leaves — cancel or reject</CardTitle></CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Employee</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>From</TableHead>
+                  <TableHead>To</TableHead>
+                  <TableHead>Days</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(approved || []).map((req) => {
+                  const profile = (req as unknown as { profiles?: { full_name?: string; employee_id?: string } }).profiles;
+                  const days = Math.round((new Date(req.end_date).getTime() - new Date(req.start_date).getTime()) / 86400000) + 1;
+                  const started = req.start_date < new Date().toISOString().slice(0, 10);
+                  return (
+                    <TableRow key={req.id}>
+                      <TableCell>
+                        <p className="font-medium">{profile?.full_name || "Unknown"}</p>
+                        <p className="text-xs text-muted-foreground">{profile?.employee_id}</p>
+                      </TableCell>
+                      <TableCell className="capitalize">{req.leave_type}</TableCell>
+                      <TableCell>{format(new Date(req.start_date), "MMM d, yyyy")}</TableCell>
+                      <TableCell>{format(new Date(req.end_date), "MMM d, yyyy")}</TableCell>
+                      <TableCell>{days}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center gap-2 justify-end">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={revoke.isPending || started}
+                            title={started ? "This leave has already started" : undefined}
+                            onClick={() => revoke.mutate({ id: req.id, action: "cancelled" })}
+                          >
+                            <X className="h-4 w-4 mr-1" /> Cancel
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            disabled={revoke.isPending}
+                            onClick={() => revoke.mutate({ id: req.id, action: "rejected" })}
+                          >
+                            <X className="h-4 w-4 mr-1" /> Reject
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+                {(approved || []).length === 0 && (
+                  <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No approved leaves</TableCell></TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
         </Card>
       )}
 

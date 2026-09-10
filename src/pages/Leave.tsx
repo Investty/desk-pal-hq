@@ -187,6 +187,7 @@ export default function Leave() {
                 <TableHead>Manager</TableHead>
                 <TableHead>HR</TableHead>
                 <TableHead>Overall</TableHead>
+                <TableHead>Note</TableHead>
                 <TableHead>Applied</TableHead>
                 <TableHead className="text-right">Action</TableHead>
               </TableRow>
@@ -201,6 +202,7 @@ export default function Leave() {
                   <TableCell><Badge variant={statusVariant(req.manager_status)}>{req.manager_status}</Badge></TableCell>
                   <TableCell><Badge variant={statusVariant(req.hr_status)}>{req.hr_status}</Badge></TableCell>
                   <TableCell><Badge variant={statusVariant(req.status)}>{req.status}</Badge></TableCell>
+                  <TableCell className="max-w-[180px] truncate text-xs text-muted-foreground">{req.hr_comment || req.manager_comment || "—"}</TableCell>
                   <TableCell>{format(new Date(req.created_at), "MMM d")}</TableCell>
                   <TableCell className="text-right">
                     {(req.status === "pending" || req.status === "approved") &&
@@ -221,7 +223,7 @@ export default function Leave() {
                 </TableRow>
               ))}
               {requests?.length === 0 && (
-                <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">No leave requests</TableCell></TableRow>
+                <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">No leave requests</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
