@@ -216,6 +216,7 @@ export default function Leave() {
                 <TableHead>Type</TableHead>
                 <TableHead>From</TableHead>
                 <TableHead>To</TableHead>
+                <TableHead>Duration</TableHead>
                 <TableHead>Reason</TableHead>
                 <TableHead>Manager</TableHead>
                 <TableHead>HR</TableHead>
@@ -231,6 +232,9 @@ export default function Leave() {
                   <TableCell className="capitalize">{req.leave_type}</TableCell>
                   <TableCell>{format(new Date(req.start_date), "MMM d, yyyy")}</TableCell>
                   <TableCell>{format(new Date(req.end_date), "MMM d, yyyy")}</TableCell>
+                  <TableCell className="whitespace-nowrap text-xs">
+                    {portionLabel[req.day_portion]} · {requestDays(req.start_date, req.end_date, req.day_portion)}d
+                  </TableCell>
                   <TableCell className="max-w-[200px] truncate">{req.reason || "—"}</TableCell>
                   <TableCell><Badge variant={statusVariant(req.manager_status)}>{req.manager_status}</Badge></TableCell>
                   <TableCell><Badge variant={statusVariant(req.hr_status)}>{req.hr_status}</Badge></TableCell>
