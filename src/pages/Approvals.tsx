@@ -79,24 +79,34 @@ export default function Approvals() {
   });
 
   const revoke = useMutation({
-    mutationFn: async ({ id, action }: { id: string; action: "cancelled" | "rejected" }) => {
+    mutationFn: async ({ id, action, comment }: { id: string; action: RevokeAction; comment: string }) => {
       const now = new Date().toISOString();
-      const { error } = await supabase
-        .from("leave_requests")
-        .update({
-          status: action,
-          hr_status: action,
-          hr_reviewed_by: user!.id,
-          hr_reviewed_at: now,
-          hr_comment: action === "cancelled" ? "Cancelled by HR" : "Rejected by HR after approval",
-          approved_by: user!.id,
-          reviewed_at: now,
-        })
-        .eq("id", id);
+      const who = isAdmin ? "HR" : "your reporting manager";
+      const text = comment.trim() || (action === "cancelled" ? `Cancelled by ${who}` : `Rejected by ${who} after approval`);
+      type Patch = Partial<import("@/integrations/supabase/types").Database["public"]["Tables"]["leave_requests"]["Update"]>;
+      const patch: Patch = {
+        status: action,
+        approved_by: user!.id,
+        reviewed_at: now,
+      };
+      if (isAdmin) {
+        patch.hr_status = action;
+        patch.hr_reviewed_by = user!.id;
+        patch.hr_reviewed_at = now;
+        patch.hr_comment = text;
+      } else {
+        patch.manager_status = action;
+        patch.manager_reviewed_by = user!.id;
+        patch.manager_reviewed_at = now;
+        patch.manager_comment = text;
+      }
+      const { error } = await supabase.from("leave_requests").update(patch).eq("id", id);
       if (error) throw error;
     },
     onSuccess: (_d, v) => {
       toast.success(v.action === "cancelled" ? "Leave cancelled and days returned" : "Leave rejected and days returned");
+      setNoteTarget(null);
+      setNote("");
       queryClient.invalidateQueries({ queryKey: ["approved-leaves"] });
       queryClient.invalidateQueries({ queryKey: ["cancelled-leaves"] });
       queryClient.invalidateQueries({ queryKey: ["pending-approvals"] });
@@ -105,6 +115,7 @@ export default function Approvals() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const { data: cancelled } = useQuery({
     queryKey: ["cancelled-leaves"],
