@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { CheckSquare, Check, X } from "lucide-react";
+import AttendanceApprovals from "@/components/attendance/AttendanceApprovals";
 
 type Stage = "manager" | "hr";
 type RevokeAction = "cancelled" | "rejected";
