@@ -80,6 +80,54 @@ export type Database = {
         }
         Relationships: []
       }
+      attendance_requests: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          reason: string
+          request_type: Database["public"]["Enums"]["attendance_request_type"]
+          requested_check_in: string | null
+          requested_check_out: string | null
+          review_comment: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["approval_stage_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          reason: string
+          request_type?: Database["public"]["Enums"]["attendance_request_type"]
+          requested_check_in?: string | null
+          requested_check_out?: string | null
+          review_comment?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["approval_stage_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          reason?: string
+          request_type?: Database["public"]["Enums"]["attendance_request_type"]
+          requested_check_in?: string | null
+          requested_check_out?: string | null
+          review_comment?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["approval_stage_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -261,6 +309,7 @@ export type Database = {
         Row: {
           approved_by: string | null
           created_at: string
+          day_portion: Database["public"]["Enums"]["day_portion"]
           end_date: string
           hr_comment: string | null
           hr_reviewed_at: string | null
@@ -283,6 +332,7 @@ export type Database = {
         Insert: {
           approved_by?: string | null
           created_at?: string
+          day_portion?: Database["public"]["Enums"]["day_portion"]
           end_date: string
           hr_comment?: string | null
           hr_reviewed_at?: string | null
@@ -305,6 +355,7 @@ export type Database = {
         Update: {
           approved_by?: string | null
           created_at?: string
+          day_portion?: Database["public"]["Enums"]["day_portion"]
           end_date?: string
           hr_comment?: string | null
           hr_reviewed_at?: string | null
@@ -759,11 +810,21 @@ export type Database = {
         Returns: boolean
       }
       leave_days: { Args: { _end: string; _start: string }; Returns: number }
+      request_days: {
+        Args: {
+          _end: string
+          _portion: Database["public"]["Enums"]["day_portion"]
+          _start: string
+        }
+        Returns: number
+      }
     }
     Enums: {
       app_role: "admin" | "manager" | "employee" | "hr"
       approval_stage_status: "pending" | "approved" | "rejected" | "cancelled"
+      attendance_request_type: "regularization" | "early_leave"
       attendance_status: "present" | "absent" | "late"
+      day_portion: "full_day" | "first_half" | "second_half"
       leave_status: "pending" | "approved" | "rejected" | "cancelled"
       leave_type: "sick" | "casual" | "paid" | "compensatory" | "bereavement"
     }
@@ -895,7 +956,9 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "manager", "employee", "hr"],
       approval_stage_status: ["pending", "approved", "rejected", "cancelled"],
+      attendance_request_type: ["regularization", "early_leave"],
       attendance_status: ["present", "absent", "late"],
+      day_portion: ["full_day", "first_half", "second_half"],
       leave_status: ["pending", "approved", "rejected", "cancelled"],
       leave_type: ["sick", "casual", "paid", "compensatory", "bereavement"],
     },

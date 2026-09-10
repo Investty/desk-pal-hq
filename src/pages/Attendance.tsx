@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { format, differenceInMinutes } from "date-fns";
 import { Clock, LogIn, LogOut } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import AttendanceRequests from "@/components/attendance/AttendanceRequests";
 
 export default function Attendance() {
   const { user } = useAuth();
@@ -122,6 +123,8 @@ export default function Attendance() {
           </div>
         </CardContent>
       </Card>
+
+      <AttendanceRequests />
 
       <Card>
         <CardHeader><CardTitle>History</CardTitle></CardHeader>

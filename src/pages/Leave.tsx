@@ -18,6 +18,18 @@ import { Switch } from "@/components/ui/switch";
 import type { Database } from "@/integrations/supabase/types";
 
 type LeaveType = Database["public"]["Enums"]["leave_type"];
+type DayPortion = Database["public"]["Enums"]["day_portion"];
+
+const portionLabel: Record<DayPortion, string> = {
+  full_day: "Full day",
+  first_half: "First half",
+  second_half: "Second half",
+};
+
+const requestDays = (start: string, end: string, portion: DayPortion) =>
+  portion === "full_day"
+    ? Math.round((new Date(end).getTime() - new Date(start).getTime()) / 86400000) + 1
+    : 0.5;
 
 export default function Leave() {
   const { user } = useAuth();
@@ -28,6 +40,7 @@ export default function Leave() {
   const [endDate, setEndDate] = useState("");
   const [reason, setReason] = useState("");
   const [isPublic, setIsPublic] = useState(true);
+  const [dayPortion, setDayPortion] = useState<DayPortion>("full_day");
 
   const { data: policies } = useQuery({
     queryKey: ["leave-policies-enabled"],
@@ -55,15 +68,18 @@ export default function Leave() {
 
   const apply = useMutation({
     mutationFn: async () => {
-      if (!startDate || !endDate) throw new Error("Please select dates");
-      if (new Date(startDate) > new Date(endDate)) throw new Error("End date must be after start date");
+      const half = dayPortion !== "full_day";
+      const finalEnd = half ? startDate : endDate;
+      if (!startDate || !finalEnd) throw new Error("Please select dates");
+      if (new Date(startDate) > new Date(finalEnd)) throw new Error("End date must be after start date");
       if (new Date(startDate) < new Date(format(new Date(), "yyyy-MM-dd"))) throw new Error("Cannot apply for past dates");
 
       const { error } = await supabase.from("leave_requests").insert({
         user_id: user!.id,
         leave_type: leaveType,
         start_date: startDate,
-        end_date: endDate,
+        end_date: finalEnd,
+        day_portion: dayPortion,
         reason: reason || null,
         is_public: isPublic,
       });
@@ -76,6 +92,7 @@ export default function Leave() {
       setEndDate("");
       setReason("");
       setIsPublic(true);
+      setDayPortion("full_day");
       queryClient.invalidateQueries({ queryKey: ["leave-requests"] });
       queryClient.invalidateQueries({ queryKey: ["leave-balances"] });
     },
@@ -129,15 +146,31 @@ export default function Leave() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2">
+                <Label>Duration</Label>
+                <Select value={dayPortion} onValueChange={(v) => setDayPortion(v as DayPortion)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="full_day">Full day(s)</SelectItem>
+                    <SelectItem value="first_half">Half day — first half (morning off)</SelectItem>
+                    <SelectItem value="second_half">Half day — second half (early leave)</SelectItem>
+                  </SelectContent>
+                </Select>
+                {dayPortion !== "full_day" && (
+                  <p className="text-xs text-muted-foreground">Half day counts as 0.5 day and applies to a single date.</p>
+                )}
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Start Date</Label>
+                  <Label>{dayPortion === "full_day" ? "Start Date" : "Date"}</Label>
                   <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
                 </div>
-                <div className="space-y-2">
-                  <Label>End Date</Label>
-                  <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-                </div>
+                {dayPortion === "full_day" && (
+                  <div className="space-y-2">
+                    <Label>End Date</Label>
+                    <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Reason</Label>
@@ -183,6 +216,7 @@ export default function Leave() {
                 <TableHead>Type</TableHead>
                 <TableHead>From</TableHead>
                 <TableHead>To</TableHead>
+                <TableHead>Duration</TableHead>
                 <TableHead>Reason</TableHead>
                 <TableHead>Manager</TableHead>
                 <TableHead>HR</TableHead>
@@ -198,6 +232,9 @@ export default function Leave() {
                   <TableCell className="capitalize">{req.leave_type}</TableCell>
                   <TableCell>{format(new Date(req.start_date), "MMM d, yyyy")}</TableCell>
                   <TableCell>{format(new Date(req.end_date), "MMM d, yyyy")}</TableCell>
+                  <TableCell className="whitespace-nowrap text-xs">
+                    {portionLabel[req.day_portion]} · {requestDays(req.start_date, req.end_date, req.day_portion)}d
+                  </TableCell>
                   <TableCell className="max-w-[200px] truncate">{req.reason || "—"}</TableCell>
                   <TableCell><Badge variant={statusVariant(req.manager_status)}>{req.manager_status}</Badge></TableCell>
                   <TableCell><Badge variant={statusVariant(req.hr_status)}>{req.hr_status}</Badge></TableCell>
@@ -223,7 +260,7 @@ export default function Leave() {
                 </TableRow>
               ))}
               {requests?.length === 0 && (
-                <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">No leave requests</TableCell></TableRow>
+                <TableRow><TableCell colSpan={11} className="text-center text-muted-foreground py-8">No leave requests</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

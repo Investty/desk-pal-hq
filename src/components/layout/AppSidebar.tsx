@@ -15,6 +15,7 @@ const ALL = ["admin", "hr", "manager", "employee"];
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/", roles: ALL },
   { label: "My Profile", icon: UserCircle, path: "/profile", roles: ALL },
+  { label: "My Team", icon: Users, path: "/team", roles: ["admin", "hr", "manager"] },
   { label: "Employees", icon: Users, path: "/employees", roles: ["admin", "hr", "manager"] },
   { label: "Org Chart", icon: Network, path: "/org-chart", roles: ALL },
   { label: "Attendance", icon: Clock, path: "/attendance", roles: ALL },

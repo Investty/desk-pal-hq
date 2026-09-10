@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { CheckSquare, Check, X } from "lucide-react";
+import AttendanceApprovals from "@/components/attendance/AttendanceApprovals";
 
 type Stage = "manager" | "hr";
 type RevokeAction = "cancelled" | "rejected";
@@ -141,6 +142,7 @@ export default function Approvals() {
           <TableHead>Type</TableHead>
           <TableHead>From</TableHead>
           <TableHead>To</TableHead>
+          <TableHead>Duration</TableHead>
           <TableHead>Reason</TableHead>
           {stage === "hr" && <TableHead>Manager</TableHead>}
           <TableHead className="text-right">Actions</TableHead>
@@ -158,6 +160,11 @@ export default function Approvals() {
               <TableCell className="capitalize">{req.leave_type}</TableCell>
               <TableCell>{format(new Date(req.start_date), "MMM d, yyyy")}</TableCell>
               <TableCell>{format(new Date(req.end_date), "MMM d, yyyy")}</TableCell>
+              <TableCell className="whitespace-nowrap text-xs">
+                {req.day_portion === "full_day"
+                  ? `Full day · ${Math.round((new Date(req.end_date).getTime() - new Date(req.start_date).getTime()) / 86400000) + 1}d`
+                  : `${req.day_portion === "first_half" ? "First half" : "Second half"} · 0.5d`}
+              </TableCell>
               <TableCell className="max-w-[200px] truncate">{req.reason || "—"}</TableCell>
               {stage === "hr" && <TableCell><Badge>Approved</Badge></TableCell>}
               <TableCell className="text-right">
@@ -174,7 +181,7 @@ export default function Approvals() {
           );
         })}
         {rows.length === 0 && (
-          <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">{emptyText}</TableCell></TableRow>
+          <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">{emptyText}</TableCell></TableRow>
         )}
       </TableBody>
     </Table>
@@ -191,6 +198,8 @@ export default function Approvals() {
         <CardHeader><CardTitle>Stage 1 — Reporting Manager</CardTitle></CardHeader>
         <CardContent>{renderTable(managerQueue, "manager", "No requests awaiting manager review")}</CardContent>
       </Card>
+
+      <AttendanceApprovals />
 
       {isAdmin && (
         <Card>
