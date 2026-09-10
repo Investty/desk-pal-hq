@@ -57,6 +57,47 @@ export default function Approvals() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const { data: approved } = useQuery({
+    queryKey: ["approved-leaves"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("leave_requests")
+        .select("*, profiles!leave_requests_user_id_fkey(full_name, employee_id)")
+        .eq("status", "approved")
+        .order("start_date", { ascending: false })
+        .limit(50);
+      return data || [];
+    },
+  });
+
+  const revoke = useMutation({
+    mutationFn: async ({ id, action }: { id: string; action: "cancelled" | "rejected" }) => {
+      const now = new Date().toISOString();
+      const { error } = await supabase
+        .from("leave_requests")
+        .update({
+          status: action,
+          hr_status: action,
+          hr_reviewed_by: user!.id,
+          hr_reviewed_at: now,
+          hr_comment: action === "cancelled" ? "Cancelled by HR" : "Rejected by HR after approval",
+          approved_by: user!.id,
+          reviewed_at: now,
+        })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_d, v) => {
+      toast.success(v.action === "cancelled" ? "Leave cancelled and days returned" : "Leave rejected and days returned");
+      queryClient.invalidateQueries({ queryKey: ["approved-leaves"] });
+      queryClient.invalidateQueries({ queryKey: ["cancelled-leaves"] });
+      queryClient.invalidateQueries({ queryKey: ["pending-approvals"] });
+      queryClient.invalidateQueries({ queryKey: ["leave-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["leave-balances"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const { data: cancelled } = useQuery({
     queryKey: ["cancelled-leaves"],
     queryFn: async () => {
