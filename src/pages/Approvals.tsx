@@ -1,19 +1,27 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { CheckSquare, Check, X } from "lucide-react";
 
 type Stage = "manager" | "hr";
+type RevokeAction = "cancelled" | "rejected";
 
 export default function Approvals() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isManager } = useAuth();
   const queryClient = useQueryClient();
+  const [noteTarget, setNoteTarget] = useState<{ id: string; action: RevokeAction } | null>(null);
+  const [note, setNote] = useState("");
+
 
   const { data: requests } = useQuery({
     queryKey: ["pending-approvals"],
