@@ -305,6 +305,33 @@ export default function Approvals() {
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={!!noteTarget} onOpenChange={(o) => { if (!o) setNoteTarget(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{noteTarget?.action === "cancelled" ? "Cancel this leave" : "Reject this leave"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label>Note for the employee</Label>
+            <Textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Explain why, e.g. project deadline moved"
+            />
+            <p className="text-xs text-muted-foreground">The employee gets a notification with this note, and the days go back to their balance.</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNoteTarget(null)}>Back</Button>
+            <Button
+              disabled={revoke.isPending}
+              onClick={() => noteTarget && revoke.mutate({ ...noteTarget, comment: note })}
+            >
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
+
   );
 }
