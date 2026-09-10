@@ -237,7 +237,7 @@ export default function Approvals() {
                             variant="outline"
                             disabled={revoke.isPending || started}
                             title={started ? "This leave has already started" : undefined}
-                            onClick={() => revoke.mutate({ id: req.id, action: "cancelled" })}
+                            onClick={() => { setNote(""); setNoteTarget({ id: req.id, action: "cancelled" }); }}
                           >
                             <X className="h-4 w-4 mr-1" /> Cancel
                           </Button>
@@ -245,7 +245,8 @@ export default function Approvals() {
                             size="sm"
                             variant="destructive"
                             disabled={revoke.isPending}
-                            onClick={() => revoke.mutate({ id: req.id, action: "rejected" })}
+                            onClick={() => { setNote(""); setNoteTarget({ id: req.id, action: "rejected" }); }}
+
                           >
                             <X className="h-4 w-4 mr-1" /> Reject
                           </Button>
