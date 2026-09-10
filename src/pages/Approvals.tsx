@@ -199,9 +199,10 @@ export default function Approvals() {
         </Card>
       )}
 
-      {isAdmin && (
+      {(isAdmin || isManager) && (
         <Card>
           <CardHeader><CardTitle>Approved leaves — cancel or reject</CardTitle></CardHeader>
+
           <CardContent>
             <Table>
               <TableHeader>
