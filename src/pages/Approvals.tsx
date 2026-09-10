@@ -142,6 +142,7 @@ export default function Approvals() {
           <TableHead>Type</TableHead>
           <TableHead>From</TableHead>
           <TableHead>To</TableHead>
+          <TableHead>Duration</TableHead>
           <TableHead>Reason</TableHead>
           {stage === "hr" && <TableHead>Manager</TableHead>}
           <TableHead className="text-right">Actions</TableHead>
@@ -159,6 +160,11 @@ export default function Approvals() {
               <TableCell className="capitalize">{req.leave_type}</TableCell>
               <TableCell>{format(new Date(req.start_date), "MMM d, yyyy")}</TableCell>
               <TableCell>{format(new Date(req.end_date), "MMM d, yyyy")}</TableCell>
+              <TableCell className="whitespace-nowrap text-xs">
+                {req.day_portion === "full_day"
+                  ? `Full day · ${Math.round((new Date(req.end_date).getTime() - new Date(req.start_date).getTime()) / 86400000) + 1}d`
+                  : `${req.day_portion === "first_half" ? "First half" : "Second half"} · 0.5d`}
+              </TableCell>
               <TableCell className="max-w-[200px] truncate">{req.reason || "—"}</TableCell>
               {stage === "hr" && <TableCell><Badge>Approved</Badge></TableCell>}
               <TableCell className="text-right">
