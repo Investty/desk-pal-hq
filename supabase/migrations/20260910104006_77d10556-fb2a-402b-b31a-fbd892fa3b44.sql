@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.notify_leave_events() FROM PUBLIC, anon, authenticated;

@@ -1,19 +1,27 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { CheckSquare, Check, X } from "lucide-react";
 
 type Stage = "manager" | "hr";
+type RevokeAction = "cancelled" | "rejected";
 
 export default function Approvals() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isManager } = useAuth();
   const queryClient = useQueryClient();
+  const [noteTarget, setNoteTarget] = useState<{ id: string; action: RevokeAction } | null>(null);
+  const [note, setNote] = useState("");
+
 
   const { data: requests } = useQuery({
     queryKey: ["pending-approvals"],
@@ -71,24 +79,34 @@ export default function Approvals() {
   });
 
   const revoke = useMutation({
-    mutationFn: async ({ id, action }: { id: string; action: "cancelled" | "rejected" }) => {
+    mutationFn: async ({ id, action, comment }: { id: string; action: RevokeAction; comment: string }) => {
       const now = new Date().toISOString();
-      const { error } = await supabase
-        .from("leave_requests")
-        .update({
-          status: action,
-          hr_status: action,
-          hr_reviewed_by: user!.id,
-          hr_reviewed_at: now,
-          hr_comment: action === "cancelled" ? "Cancelled by HR" : "Rejected by HR after approval",
-          approved_by: user!.id,
-          reviewed_at: now,
-        })
-        .eq("id", id);
+      const who = isAdmin ? "HR" : "your reporting manager";
+      const text = comment.trim() || (action === "cancelled" ? `Cancelled by ${who}` : `Rejected by ${who} after approval`);
+      type Patch = Partial<import("@/integrations/supabase/types").Database["public"]["Tables"]["leave_requests"]["Update"]>;
+      const patch: Patch = {
+        status: action,
+        approved_by: user!.id,
+        reviewed_at: now,
+      };
+      if (isAdmin) {
+        patch.hr_status = action;
+        patch.hr_reviewed_by = user!.id;
+        patch.hr_reviewed_at = now;
+        patch.hr_comment = text;
+      } else {
+        patch.manager_status = action;
+        patch.manager_reviewed_by = user!.id;
+        patch.manager_reviewed_at = now;
+        patch.manager_comment = text;
+      }
+      const { error } = await supabase.from("leave_requests").update(patch).eq("id", id);
       if (error) throw error;
     },
     onSuccess: (_d, v) => {
       toast.success(v.action === "cancelled" ? "Leave cancelled and days returned" : "Leave rejected and days returned");
+      setNoteTarget(null);
+      setNote("");
       queryClient.invalidateQueries({ queryKey: ["approved-leaves"] });
       queryClient.invalidateQueries({ queryKey: ["cancelled-leaves"] });
       queryClient.invalidateQueries({ queryKey: ["pending-approvals"] });
@@ -97,6 +115,7 @@ export default function Approvals() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const { data: cancelled } = useQuery({
     queryKey: ["cancelled-leaves"],
@@ -180,9 +199,10 @@ export default function Approvals() {
         </Card>
       )}
 
-      {isAdmin && (
+      {(isAdmin || isManager) && (
         <Card>
           <CardHeader><CardTitle>Approved leaves — cancel or reject</CardTitle></CardHeader>
+
           <CardContent>
             <Table>
               <TableHeader>
@@ -217,7 +237,7 @@ export default function Approvals() {
                             variant="outline"
                             disabled={revoke.isPending || started}
                             title={started ? "This leave has already started" : undefined}
-                            onClick={() => revoke.mutate({ id: req.id, action: "cancelled" })}
+                            onClick={() => { setNote(""); setNoteTarget({ id: req.id, action: "cancelled" }); }}
                           >
                             <X className="h-4 w-4 mr-1" /> Cancel
                           </Button>
@@ -225,7 +245,8 @@ export default function Approvals() {
                             size="sm"
                             variant="destructive"
                             disabled={revoke.isPending}
-                            onClick={() => revoke.mutate({ id: req.id, action: "rejected" })}
+                            onClick={() => { setNote(""); setNoteTarget({ id: req.id, action: "rejected" }); }}
+
                           >
                             <X className="h-4 w-4 mr-1" /> Reject
                           </Button>
@@ -284,6 +305,33 @@ export default function Approvals() {
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={!!noteTarget} onOpenChange={(o) => { if (!o) setNoteTarget(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{noteTarget?.action === "cancelled" ? "Cancel this leave" : "Reject this leave"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label>Note for the employee</Label>
+            <Textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Explain why, e.g. project deadline moved"
+            />
+            <p className="text-xs text-muted-foreground">The employee gets a notification with this note, and the days go back to their balance.</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNoteTarget(null)}>Back</Button>
+            <Button
+              disabled={revoke.isPending}
+              onClick={() => noteTarget && revoke.mutate({ ...noteTarget, comment: note })}
+            >
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
+
   );
 }
