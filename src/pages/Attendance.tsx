@@ -124,6 +124,8 @@ export default function Attendance() {
         </CardContent>
       </Card>
 
+      <AttendanceRequests />
+
       <Card>
         <CardHeader><CardTitle>History</CardTitle></CardHeader>
         <CardContent>
