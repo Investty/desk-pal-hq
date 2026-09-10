@@ -202,6 +202,7 @@ export default function Leave() {
                   <TableCell><Badge variant={statusVariant(req.manager_status)}>{req.manager_status}</Badge></TableCell>
                   <TableCell><Badge variant={statusVariant(req.hr_status)}>{req.hr_status}</Badge></TableCell>
                   <TableCell><Badge variant={statusVariant(req.status)}>{req.status}</Badge></TableCell>
+                  <TableCell className="max-w-[180px] truncate text-xs text-muted-foreground">{req.hr_comment || req.manager_comment || "—"}</TableCell>
                   <TableCell>{format(new Date(req.created_at), "MMM d")}</TableCell>
                   <TableCell className="text-right">
                     {(req.status === "pending" || req.status === "approved") &&
