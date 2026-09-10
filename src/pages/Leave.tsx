@@ -187,6 +187,7 @@ export default function Leave() {
                 <TableHead>Manager</TableHead>
                 <TableHead>HR</TableHead>
                 <TableHead>Overall</TableHead>
+                <TableHead>Note</TableHead>
                 <TableHead>Applied</TableHead>
                 <TableHead className="text-right">Action</TableHead>
               </TableRow>
