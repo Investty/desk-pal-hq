@@ -146,15 +146,31 @@ export default function Leave() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2">
+                <Label>Duration</Label>
+                <Select value={dayPortion} onValueChange={(v) => setDayPortion(v as DayPortion)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="full_day">Full day(s)</SelectItem>
+                    <SelectItem value="first_half">Half day — first half (morning off)</SelectItem>
+                    <SelectItem value="second_half">Half day — second half (early leave)</SelectItem>
+                  </SelectContent>
+                </Select>
+                {dayPortion !== "full_day" && (
+                  <p className="text-xs text-muted-foreground">Half day counts as 0.5 day and applies to a single date.</p>
+                )}
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Start Date</Label>
+                  <Label>{dayPortion === "full_day" ? "Start Date" : "Date"}</Label>
                   <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
                 </div>
-                <div className="space-y-2">
-                  <Label>End Date</Label>
-                  <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-                </div>
+                {dayPortion === "full_day" && (
+                  <div className="space-y-2">
+                    <Label>End Date</Label>
+                    <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Reason</Label>
