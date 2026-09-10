@@ -25,10 +25,17 @@ export default function AttendanceApprovals() {
     queryFn: async () => {
       const { data } = await supabase
         .from("attendance_requests")
-        .select("*, profiles:profiles!attendance_requests_user_id_fkey(full_name, employee_id)")
+        .select("*")
         .eq("status", "pending")
         .order("date", { ascending: false });
-      return data || [];
+      const list = data || [];
+      if (!list.length) return [];
+      const { data: people } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, employee_id")
+        .in("user_id", [...new Set(list.map((r) => r.user_id))]);
+      const byUser = new Map((people || []).map((p) => [p.user_id, p]));
+      return list.map((r) => ({ ...r, profiles: byUser.get(r.user_id) }));
     },
   });
 
