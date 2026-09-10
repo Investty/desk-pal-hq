@@ -68,15 +68,18 @@ export default function Leave() {
 
   const apply = useMutation({
     mutationFn: async () => {
-      if (!startDate || !endDate) throw new Error("Please select dates");
-      if (new Date(startDate) > new Date(endDate)) throw new Error("End date must be after start date");
+      const half = dayPortion !== "full_day";
+      const finalEnd = half ? startDate : endDate;
+      if (!startDate || !finalEnd) throw new Error("Please select dates");
+      if (new Date(startDate) > new Date(finalEnd)) throw new Error("End date must be after start date");
       if (new Date(startDate) < new Date(format(new Date(), "yyyy-MM-dd"))) throw new Error("Cannot apply for past dates");
 
       const { error } = await supabase.from("leave_requests").insert({
         user_id: user!.id,
         leave_type: leaveType,
         start_date: startDate,
-        end_date: endDate,
+        end_date: finalEnd,
+        day_portion: dayPortion,
         reason: reason || null,
         is_public: isPublic,
       });
@@ -89,6 +92,7 @@ export default function Leave() {
       setEndDate("");
       setReason("");
       setIsPublic(true);
+      setDayPortion("full_day");
       queryClient.invalidateQueries({ queryKey: ["leave-requests"] });
       queryClient.invalidateQueries({ queryKey: ["leave-balances"] });
     },
