@@ -223,7 +223,7 @@ export default function Leave() {
                 </TableRow>
               ))}
               {requests?.length === 0 && (
-                <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">No leave requests</TableCell></TableRow>
+                <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">No leave requests</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
