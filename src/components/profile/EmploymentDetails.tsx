@@ -49,7 +49,7 @@ export default function EmploymentDetails() {
 
   const { data: people } = useQuery({
     queryKey: ["profiles-minimal"],
-    queryFn: async () => (await supabase.from("profiles").select("id, full_name").order("full_name")).data || [],
+    queryFn: async () => (await supabase.from("profiles").select("id, full_name").eq("status", "active").order("full_name")).data || [],
   });
 
   useEffect(() => {

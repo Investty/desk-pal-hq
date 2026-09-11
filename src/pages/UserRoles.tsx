@@ -20,7 +20,7 @@ export default function UserRoles() {
   const { data: users } = useQuery({
     queryKey: ["all-user-roles"],
     queryFn: async () => {
-      const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, email, employee_id").order("full_name");
+      const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, email, employee_id").eq("status", "active").order("full_name");
       const { data: roles } = await supabase.from("user_roles").select("user_id, role");
       return (profiles || []).map((p) => ({
         ...p,

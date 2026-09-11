@@ -267,21 +267,71 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          notes: string | null
+          plan: string
+          seat_limit: number
+          status: string
+          trial_ends_at: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           id?: string
           name: string
+          notes?: string | null
+          plan?: string
+          seat_limit?: number
+          status?: string
+          trial_ends_at?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           id?: string
           name?: string
+          notes?: string | null
+          plan?: string
+          seat_limit?: number
+          status?: string
+          trial_ends_at?: string | null
           updated_at?: string
         }
         Relationships: []
+      }
+      company_features: {
+        Row: {
+          company_id: string
+          created_at: string
+          feature_key: string
+          id: string
+          is_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          feature_key: string
+          id?: string
+          is_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          feature_key?: string
+          id?: string
+          is_enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_features_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       company_invites: {
         Row: {
@@ -866,6 +916,21 @@ export type Database = {
           },
         ]
       }
+      platform_admins: {
+        Row: {
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string | null
@@ -890,10 +955,15 @@ export type Database = {
           id: string
           is_active: boolean
           joining_date: string
+          last_working_day: string | null
           manager_id: string | null
           phone: string | null
           region: string | null
+          removal_reason: string | null
+          removed_at: string | null
+          removed_by: string | null
           retirement_date: string | null
+          status: string
           sub_branch: string | null
           sub_department: string | null
           updated_at: string
@@ -922,10 +992,15 @@ export type Database = {
           id?: string
           is_active?: boolean
           joining_date?: string
+          last_working_day?: string | null
           manager_id?: string | null
           phone?: string | null
           region?: string | null
+          removal_reason?: string | null
+          removed_at?: string | null
+          removed_by?: string | null
           retirement_date?: string | null
+          status?: string
           sub_branch?: string | null
           sub_department?: string | null
           updated_at?: string
@@ -954,10 +1029,15 @@ export type Database = {
           id?: string
           is_active?: boolean
           joining_date?: string
+          last_working_day?: string | null
           manager_id?: string | null
           phone?: string | null
           region?: string | null
+          removal_reason?: string | null
+          removed_at?: string | null
+          removed_by?: string | null
           retirement_date?: string | null
+          status?: string
           sub_branch?: string | null
           sub_department?: string | null
           updated_at?: string
@@ -1056,6 +1136,32 @@ export type Database = {
           },
         ]
       }
+      user_active_company: {
+        Row: {
+          company_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_active_company_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           company_id: string
@@ -1100,6 +1206,17 @@ export type Database = {
         }[]
       }
       get_manager_user_id: { Args: { _user_id: string }; Returns: string }
+      get_my_memberships: {
+        Args: never
+        Returns: {
+          company_id: string
+          company_name: string
+          company_status: string
+          is_active: boolean
+          role: Database["public"]["Enums"]["app_role"]
+          status: string
+        }[]
+      }
       get_people_on_leave_today: {
         Args: never
         Returns: {
@@ -1131,7 +1248,51 @@ export type Database = {
         Args: { _employee_user_id: string; _manager_user_id: string }
         Returns: boolean
       }
+      is_platform_admin: { Args: { _user_id?: string }; Returns: boolean }
       leave_days: { Args: { _end: string; _start: string }; Returns: number }
+      owner_list_companies: {
+        Args: never
+        Returns: {
+          active_people: number
+          admins: number
+          created_at: string
+          features: Json
+          id: string
+          name: string
+          notes: string
+          plan: string
+          removed_people: number
+          seat_limit: number
+          status: string
+          trial_ends_at: string
+        }[]
+      }
+      owner_set_feature: {
+        Args: {
+          _company_id: string
+          _feature_key: string
+          _is_enabled: boolean
+        }
+        Returns: undefined
+      }
+      owner_stats: { Args: never; Returns: Json }
+      owner_update_company: {
+        Args: {
+          _company_id: string
+          _name?: string
+          _notes?: string
+          _plan?: string
+          _seat_limit?: number
+          _status?: string
+          _trial_ends_at?: string
+        }
+        Returns: undefined
+      }
+      redeem_invite: { Args: { _code: string }; Returns: string }
+      remove_employee: {
+        Args: { _last_working_day?: string; _reason?: string; _user_id: string }
+        Returns: undefined
+      }
       request_days: {
         Args: {
           _end: string
@@ -1140,6 +1301,14 @@ export type Database = {
         }
         Returns: number
       }
+      restore_employee: {
+        Args: {
+          _role?: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: undefined
+      }
+      set_active_company: { Args: { _company_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "manager" | "employee" | "hr"

@@ -6,8 +6,11 @@ import Documents from "@/pages/Documents";
 import Onboarding from "@/pages/Onboarding";
 import Payroll from "@/pages/Payroll";
 import Performance from "@/pages/Performance";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function MyProfile() {
+  const { hasFeature } = useAuth();
+
   return (
     <div className="space-y-6">
       <div>
@@ -19,18 +22,18 @@ export default function MyProfile() {
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="personal">Personal</TabsTrigger>
           <TabsTrigger value="employment">Employment &amp; Position</TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
-          <TabsTrigger value="onboarding">Onboarding</TabsTrigger>
-          <TabsTrigger value="payroll">Payroll</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
+          {hasFeature("documents") && <TabsTrigger value="documents">Documents</TabsTrigger>}
+          {hasFeature("onboarding") && <TabsTrigger value="onboarding">Onboarding</TabsTrigger>}
+          {hasFeature("payroll") && <TabsTrigger value="payroll">Payroll</TabsTrigger>}
+          {hasFeature("performance") && <TabsTrigger value="performance">Performance</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="personal"><PersonalDetails /></TabsContent>
         <TabsContent value="employment"><EmploymentDetails /></TabsContent>
-        <TabsContent value="documents"><Documents /></TabsContent>
-        <TabsContent value="onboarding"><Onboarding /></TabsContent>
-        <TabsContent value="payroll"><Payroll /></TabsContent>
-        <TabsContent value="performance"><Performance /></TabsContent>
+        {hasFeature("documents") && <TabsContent value="documents"><Documents /></TabsContent>}
+        {hasFeature("onboarding") && <TabsContent value="onboarding"><Onboarding /></TabsContent>}
+        {hasFeature("payroll") && <TabsContent value="payroll"><Payroll /></TabsContent>}
+        {hasFeature("performance") && <TabsContent value="performance"><Performance /></TabsContent>}
       </Tabs>
     </div>
   );

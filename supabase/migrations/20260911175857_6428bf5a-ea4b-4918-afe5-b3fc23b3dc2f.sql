@@ -1,0 +1,28 @@
+
+REVOKE EXECUTE ON FUNCTION public.is_platform_admin(uuid) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.current_company_id() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.has_role(uuid, app_role) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.is_hr(uuid) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.is_manager_of(uuid, uuid) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.get_my_memberships() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.set_active_company(uuid) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.remove_employee(uuid, text, date) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.restore_employee(uuid, app_role) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.redeem_invite(text) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.owner_list_companies() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.owner_update_company(uuid, text, text, text, integer, date, text) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.owner_set_feature(uuid, text, boolean) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.owner_stats() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.get_manager_user_id(uuid) FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.get_celebrations() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.get_people_on_leave_today() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.get_yesterday_attendance() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.notify_leave_events() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.notify_attendance_flag() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.notify_attendance_request_events() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.resolve_flag_on_approval() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.apply_leave_balance() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.handle_leave_cancellation() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.generate_employee_id() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.update_updated_at_column() FROM anon, authenticated;

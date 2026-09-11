@@ -19,7 +19,7 @@ type Stage = "manager" | "hr";
 type RevokeAction = "cancelled" | "rejected";
 
 export default function Approvals() {
-  const { user, isAdmin, isManager } = useAuth();
+  const { user, isAdmin, isManager, hasFeature } = useAuth();
   const queryClient = useQueryClient();
   const [noteTarget, setNoteTarget] = useState<{ id: string; action: RevokeAction } | null>(null);
   const [note, setNote] = useState("");
@@ -202,7 +202,7 @@ export default function Approvals() {
 
       <AttendanceApprovals />
 
-      {isAdmin && <AttendanceFlags />}
+      {isAdmin && hasFeature("attendance_regularization") && <AttendanceFlags />}
 
       {isAdmin && (
         <Card>
