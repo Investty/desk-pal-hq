@@ -1,0 +1,21 @@
+
+REVOKE EXECUTE ON FUNCTION public.get_my_memberships() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.is_platform_admin(uuid) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.owner_list_companies() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.owner_set_feature(uuid, text, boolean) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.owner_stats() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.owner_update_company(uuid, text, text, text, integer, date, text) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.redeem_invite(text) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.remove_employee(uuid, text, date) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.restore_employee(uuid, app_role) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.set_active_company(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.get_my_memberships() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.is_platform_admin(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.owner_list_companies() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.owner_set_feature(uuid, text, boolean) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.owner_stats() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.owner_update_company(uuid, text, text, text, integer, date, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.redeem_invite(text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.remove_employee(uuid, text, date) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.restore_employee(uuid, app_role) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.set_active_company(uuid) TO authenticated;

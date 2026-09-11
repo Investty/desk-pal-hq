@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import AttendanceRequests from "@/components/attendance/AttendanceRequests";
 
 export default function Attendance() {
-  const { user } = useAuth();
+  const { user, hasFeature } = useAuth();
   const queryClient = useQueryClient();
   const today = format(new Date(), "yyyy-MM-dd");
 
@@ -124,7 +124,7 @@ export default function Attendance() {
         </CardContent>
       </Card>
 
-      <AttendanceRequests />
+      {hasFeature("attendance_regularization") && <AttendanceRequests />}
 
       <Card>
         <CardHeader><CardTitle>History</CardTitle></CardHeader>
