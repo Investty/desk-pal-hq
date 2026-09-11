@@ -16,6 +16,7 @@ interface Profile {
   joining_date: string;
   is_active: boolean;
   avatar_url: string | null;
+  company_id: string;
 }
 
 interface AuthContextType {
@@ -25,7 +26,13 @@ interface AuthContextType {
   role: AppRole | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
+  signUp: (
+    email: string,
+    password: string,
+    fullName: string,
+    org: { companyName?: string; inviteCode?: string },
+  ) => Promise<{ error: Error | null }>;
+  company: { id: string; name: string } | null;
   signOut: () => Promise<void>;
   isAdmin: boolean;
   isManager: boolean;
