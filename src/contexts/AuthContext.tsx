@@ -211,6 +211,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setMemberships([]);
     setFeatures({});
     setIsPlatformAdmin(false);
+    setSupportSession(null);
+  };
+
+  const endSupport = async () => {
+    await supabase.rpc("owner_end_support");
+    setSupportSession(null);
+    if (user) await fetchUserData(user.id);
   };
 
   const hasFeature = (key: string) => features[key] !== false;
@@ -218,8 +225,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <AuthContext.Provider value={{
       session, user, profile, role, loading, company, memberships, features, hasFeature,
-      isPlatformAdmin, companySuspended: !!company && company.status !== "active",
+      isPlatformAdmin, companySuspended: !supportSession && !!company && company.status !== "active" && company.status !== "trial",
+      supportSession, endSupport,
       switchCompany, refresh,
+
       signIn, signUp, signOut,
       isAdmin: role === "admin" || role === "hr",
       isManager: role === "manager",
