@@ -36,7 +36,7 @@ const navItems = [
 
 export default function AppSidebar() {
   const { pathname } = useLocation();
-  const { profile, role, signOut } = useAuth();
+  const { profile, role, signOut, company } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const filteredItems = navItems.filter((item) => role && item.roles.includes(role));
 
@@ -49,7 +49,10 @@ export default function AppSidebar() {
     )}>
       <div className="flex items-center gap-2 px-4 h-16 border-b border-sidebar-border">
         {!collapsed && (
-          <span className="text-lg font-bold text-sidebar-foreground tracking-tight">MiniHRMS</span>
+          <div className="min-w-0">
+            <span className="block text-lg font-bold text-sidebar-foreground tracking-tight leading-tight">MiniHRMS</span>
+            <span className="block text-xs text-sidebar-muted truncate">{company?.name}</span>
+          </div>
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
