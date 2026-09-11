@@ -156,7 +156,34 @@ export default function AttendanceRequests() {
           </DialogContent>
         </Dialog>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        {(flags || []).map((f) => (
+          <div key={f.id} className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 flex items-start justify-between gap-4">
+            <div className="flex gap-3">
+              <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
+              <div>
+                <p className="font-medium">
+                  HR flagged your attendance: {format(new Date(f.start_date), "MMM d")} – {format(new Date(f.end_date), "MMM d, yyyy")}
+                </p>
+                <p className="text-sm text-muted-foreground">{f.reason}</p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => {
+                setFlagId(f.id);
+                setType("regularization");
+                setDate(f.start_date);
+                setCheckIn("");
+                setCheckOut("");
+                setReason("");
+                setOpen(true);
+              }}
+            >
+              Apply correction
+            </Button>
+          </div>
+        ))}
         <Table>
           <TableHeader>
             <TableRow>
