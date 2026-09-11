@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { CheckSquare, Check, X } from "lucide-react";
 import AttendanceApprovals from "@/components/attendance/AttendanceApprovals";
+import AttendanceFlags from "@/components/attendance/AttendanceFlags";
 
 type Stage = "manager" | "hr";
 type RevokeAction = "cancelled" | "rejected";
@@ -200,6 +201,8 @@ export default function Approvals() {
       </Card>
 
       <AttendanceApprovals />
+
+      {isAdmin && <AttendanceFlags />}
 
       {isAdmin && (
         <Card>

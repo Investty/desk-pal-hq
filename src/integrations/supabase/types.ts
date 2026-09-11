@@ -80,10 +80,50 @@ export type Database = {
         }
         Relationships: []
       }
+      attendance_flags: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          end_date: string
+          id: string
+          reason: string
+          resolved_at: string | null
+          start_date: string
+          status: Database["public"]["Enums"]["flag_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          end_date: string
+          id?: string
+          reason: string
+          resolved_at?: string | null
+          start_date: string
+          status?: Database["public"]["Enums"]["flag_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          end_date?: string
+          id?: string
+          reason?: string
+          resolved_at?: string | null
+          start_date?: string
+          status?: Database["public"]["Enums"]["flag_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       attendance_requests: {
         Row: {
           created_at: string
           date: string
+          flag_id: string | null
           id: string
           reason: string
           request_type: Database["public"]["Enums"]["attendance_request_type"]
@@ -99,6 +139,7 @@ export type Database = {
         Insert: {
           created_at?: string
           date: string
+          flag_id?: string | null
           id?: string
           reason: string
           request_type?: Database["public"]["Enums"]["attendance_request_type"]
@@ -114,6 +155,7 @@ export type Database = {
         Update: {
           created_at?: string
           date?: string
+          flag_id?: string | null
           id?: string
           reason?: string
           request_type?: Database["public"]["Enums"]["attendance_request_type"]
@@ -126,7 +168,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "attendance_requests_flag_id_fkey"
+            columns: ["flag_id"]
+            isOneToOne: false
+            referencedRelation: "attendance_flags"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       audit_logs: {
         Row: {
@@ -825,6 +875,7 @@ export type Database = {
       attendance_request_type: "regularization" | "early_leave"
       attendance_status: "present" | "absent" | "late"
       day_portion: "full_day" | "first_half" | "second_half"
+      flag_status: "open" | "resolved"
       leave_status: "pending" | "approved" | "rejected" | "cancelled"
       leave_type: "sick" | "casual" | "paid" | "compensatory" | "bereavement"
     }
@@ -959,6 +1010,7 @@ export const Constants = {
       attendance_request_type: ["regularization", "early_leave"],
       attendance_status: ["present", "absent", "late"],
       day_portion: ["full_day", "first_half", "second_half"],
+      flag_status: ["open", "resolved"],
       leave_status: ["pending", "approved", "rejected", "cancelled"],
       leave_type: ["sick", "casual", "paid", "compensatory", "bereavement"],
     },
