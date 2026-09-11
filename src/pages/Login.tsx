@@ -44,16 +44,37 @@ export default function Login() {
           </div>
           <CardTitle className="text-2xl">MiniHRMS</CardTitle>
           <CardDescription>
-            {isSignUp ? "Create your account" : "Sign in to your account"}
+            {isSignUp ? "Set up your company or join one" : "Sign in to your account"}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {isSignUp && (
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
-              </div>
+              <>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button type="button" variant={mode === "create" ? "default" : "outline"} onClick={() => setMode("create")}>
+                    New company
+                  </Button>
+                  <Button type="button" variant={mode === "join" ? "default" : "outline"} onClick={() => setMode("join")}>
+                    I have an invite
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                </div>
+                {mode === "create" ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="company">Company Name</Label>
+                    <Input id="company" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="Acme Pvt Ltd" required />
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="invite">Invite Code</Label>
+                    <Input id="invite" value={inviteCode} onChange={(e) => setInviteCode(e.target.value.toUpperCase())} placeholder="A1B2C3D4" required />
+                  </div>
+                )}
+              </>
             )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
