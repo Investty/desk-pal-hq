@@ -1,0 +1,12 @@
+REVOKE ALL ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.generate_employee_id() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.notify_attendance_flag() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.notify_attendance_request_events() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.notify_leave_events() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.apply_attendance_request() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.apply_leave_balance() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.is_manager_of(uuid, uuid) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.current_company_id() FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.get_celebrations() FROM anon;
+REVOKE ALL ON FUNCTION public.get_people_on_leave_today() FROM anon;
+REVOKE ALL ON FUNCTION public.get_yesterday_attendance() FROM anon;

@@ -10,22 +10,27 @@ import { Building2 } from "lucide-react";
 export default function Login() {
   const { signIn, signUp } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
+  const [mode, setMode] = useState<"create" | "join">("create");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     const { error } = isSignUp
-      ? await signUp(email, password, fullName)
+      ? await signUp(email, password, fullName, mode === "create"
+        ? { companyName: companyName.trim() }
+        : { inviteCode: inviteCode.trim() })
       : await signIn(email, password);
 
     if (error) {
-      toast.error(error.message);
+      toast.error(error.message.replace(/^Database error saving new user$/, "Sign-up failed. Check your invite code."));
     } else if (isSignUp) {
-      toast.success("Account created! Check your email to verify.");
+      toast.success(mode === "create" ? "Company created! You are its admin." : "Account created!");
     }
     setLoading(false);
   };
@@ -39,16 +44,37 @@ export default function Login() {
           </div>
           <CardTitle className="text-2xl">MiniHRMS</CardTitle>
           <CardDescription>
-            {isSignUp ? "Create your account" : "Sign in to your account"}
+            {isSignUp ? "Set up your company or join one" : "Sign in to your account"}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {isSignUp && (
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
-              </div>
+              <>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button type="button" variant={mode === "create" ? "default" : "outline"} onClick={() => setMode("create")}>
+                    New company
+                  </Button>
+                  <Button type="button" variant={mode === "join" ? "default" : "outline"} onClick={() => setMode("join")}>
+                    I have an invite
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                </div>
+                {mode === "create" ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="company">Company Name</Label>
+                    <Input id="company" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="Acme Pvt Ltd" required />
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="invite">Invite Code</Label>
+                    <Input id="invite" value={inviteCode} onChange={(e) => setInviteCode(e.target.value.toUpperCase())} placeholder="A1B2C3D4" required />
+                  </div>
+                )}
+              </>
             )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>

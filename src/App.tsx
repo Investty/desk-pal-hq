@@ -28,6 +28,7 @@ import Performance from "@/pages/Performance";
 import Reports from "@/pages/Reports";
 import LeaveTypes from "@/pages/LeaveTypes";
 import Team from "@/pages/Team";
+import Company from "@/pages/Company";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -63,6 +64,7 @@ const AppRoutes = () => (
       <Route path="/notifications" element={<Notifications />} />
       <Route path="/audit-logs" element={<ProtectedRoute roles={["admin", "hr"]}><AuditLogs /></ProtectedRoute>} />
       <Route path="/user-roles" element={<ProtectedRoute roles={["admin"]}><UserRoles /></ProtectedRoute>} />
+      <Route path="/company" element={<ProtectedRoute roles={["admin", "hr"]}><Company /></ProtectedRoute>} />
       <Route path="/holidays" element={<Holidays />} />
       <Route path="/announcements" element={<Announcements />} />
       <Route path="/profile" element={<MyProfile />} />

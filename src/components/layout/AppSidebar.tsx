@@ -28,6 +28,7 @@ const navItems = [
   { label: "Reports", icon: PieChart, path: "/reports", roles: ["admin", "hr"] },
   { label: "Salary Entry", icon: IndianRupee, path: "/salary", roles: ["admin", "hr"] },
   { label: "Departments", icon: Building2, path: "/departments", roles: ["admin", "hr"] },
+  { label: "Company", icon: Building2, path: "/company", roles: ["admin", "hr"] },
   { label: "User Roles", icon: ShieldCheck, path: "/user-roles", roles: ["admin"] },
   { label: "Notifications", icon: Bell, path: "/notifications", roles: ALL },
   { label: "Audit Logs", icon: FileText, path: "/audit-logs", roles: ["admin", "hr"] },
@@ -35,7 +36,7 @@ const navItems = [
 
 export default function AppSidebar() {
   const { pathname } = useLocation();
-  const { profile, role, signOut } = useAuth();
+  const { profile, role, signOut, company } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const filteredItems = navItems.filter((item) => role && item.roles.includes(role));
 
@@ -48,7 +49,10 @@ export default function AppSidebar() {
     )}>
       <div className="flex items-center gap-2 px-4 h-16 border-b border-sidebar-border">
         {!collapsed && (
-          <span className="text-lg font-bold text-sidebar-foreground tracking-tight">MiniHRMS</span>
+          <div className="min-w-0">
+            <span className="block text-lg font-bold text-sidebar-foreground tracking-tight leading-tight">MiniHRMS</span>
+            <span className="block text-xs text-sidebar-muted truncate">{company?.name}</span>
+          </div>
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
