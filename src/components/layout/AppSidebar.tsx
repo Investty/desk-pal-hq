@@ -28,6 +28,7 @@ const navItems = [
   { label: "Reports", icon: PieChart, path: "/reports", roles: ["admin", "hr"] },
   { label: "Salary Entry", icon: IndianRupee, path: "/salary", roles: ["admin", "hr"] },
   { label: "Departments", icon: Building2, path: "/departments", roles: ["admin", "hr"] },
+  { label: "Company", icon: Building2, path: "/company", roles: ["admin", "hr"] },
   { label: "User Roles", icon: ShieldCheck, path: "/user-roles", roles: ["admin"] },
   { label: "Notifications", icon: Bell, path: "/notifications", roles: ALL },
   { label: "Audit Logs", icon: FileText, path: "/audit-logs", roles: ["admin", "hr"] },

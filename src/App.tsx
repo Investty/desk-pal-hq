@@ -64,6 +64,7 @@ const AppRoutes = () => (
       <Route path="/notifications" element={<Notifications />} />
       <Route path="/audit-logs" element={<ProtectedRoute roles={["admin", "hr"]}><AuditLogs /></ProtectedRoute>} />
       <Route path="/user-roles" element={<ProtectedRoute roles={["admin"]}><UserRoles /></ProtectedRoute>} />
+      <Route path="/company" element={<ProtectedRoute roles={["admin", "hr"]}><Company /></ProtectedRoute>} />
       <Route path="/holidays" element={<Holidays />} />
       <Route path="/announcements" element={<Announcements />} />
       <Route path="/profile" element={<MyProfile />} />
