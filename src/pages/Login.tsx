@@ -10,22 +10,27 @@ import { Building2 } from "lucide-react";
 export default function Login() {
   const { signIn, signUp } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
+  const [mode, setMode] = useState<"create" | "join">("create");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     const { error } = isSignUp
-      ? await signUp(email, password, fullName)
+      ? await signUp(email, password, fullName, mode === "create"
+        ? { companyName: companyName.trim() }
+        : { inviteCode: inviteCode.trim() })
       : await signIn(email, password);
 
     if (error) {
-      toast.error(error.message);
+      toast.error(error.message.replace(/^Database error saving new user$/, "Sign-up failed. Check your invite code."));
     } else if (isSignUp) {
-      toast.success("Account created! Check your email to verify.");
+      toast.success(mode === "create" ? "Company created! You are its admin." : "Account created!");
     }
     setLoading(false);
   };
