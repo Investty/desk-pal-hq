@@ -28,6 +28,7 @@ import Performance from "@/pages/Performance";
 import Reports from "@/pages/Reports";
 import LeaveTypes from "@/pages/LeaveTypes";
 import Team from "@/pages/Team";
+import Company from "@/pages/Company";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
