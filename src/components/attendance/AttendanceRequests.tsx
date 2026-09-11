@@ -116,7 +116,7 @@ export default function AttendanceRequests() {
         </CardTitle>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button size="sm"><Plus className="h-4 w-4 mr-2" /> Raise request</Button>
+            <Button size="sm" onClick={() => setFlagId(null)}><Plus className="h-4 w-4 mr-2" /> Raise request</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>Attendance request</DialogTitle></DialogHeader>
