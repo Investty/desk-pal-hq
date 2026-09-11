@@ -69,18 +69,21 @@ export default function AttendanceRequests() {
         requested_check_in: toStamp(date, checkIn),
         requested_check_out: toStamp(date, checkOut),
         reason: reason.trim(),
+        flag_id: flagId,
       });
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Request sent to your reporting manager");
+      toast.success("Request sent for approval");
       setOpen(false);
       setDate("");
       setCheckIn("");
       setCheckOut("");
       setReason("");
       setType("regularization");
+      setFlagId(null);
       queryClient.invalidateQueries({ queryKey: ["my-attendance-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["my-attendance-flags"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
