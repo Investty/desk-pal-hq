@@ -377,6 +377,70 @@ export type Database = {
           },
         ]
       }
+      company_limits: {
+        Row: {
+          company_id: string
+          created_at: string
+          monthly_notification_limit: number
+          soft_warn_pct: number
+          storage_mb_limit: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          monthly_notification_limit?: number
+          soft_warn_pct?: number
+          storage_mb_limit?: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          monthly_notification_limit?: number
+          soft_warn_pct?: number
+          storage_mb_limit?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_limits_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_usage_counters: {
+        Row: {
+          company_id: string
+          notifications_sent: number
+          period_month: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          notifications_sent?: number
+          period_month: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          notifications_sent?: number
+          period_month?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_usage_counters_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       departments: {
         Row: {
           company_id: string
@@ -418,6 +482,7 @@ export type Database = {
           created_at: string
           document_type: string
           file_path: string
+          file_size_bytes: number
           id: string
           title: string
           updated_at: string
@@ -429,6 +494,7 @@ export type Database = {
           created_at?: string
           document_type?: string
           file_path: string
+          file_size_bytes?: number
           id?: string
           title: string
           updated_at?: string
@@ -440,6 +506,7 @@ export type Database = {
           created_at?: string
           document_type?: string
           file_path?: string
+          file_size_bytes?: number
           id?: string
           title?: string
           updated_at?: string
@@ -487,6 +554,44 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "holidays_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      impersonation_sessions: {
+        Row: {
+          admin_user_id: string
+          company_id: string
+          ended_at: string | null
+          expires_at: string
+          id: string
+          reason: string | null
+          started_at: string
+        }
+        Insert: {
+          admin_user_id: string
+          company_id: string
+          ended_at?: string | null
+          expires_at: string
+          id?: string
+          reason?: string | null
+          started_at?: string
+        }
+        Update: {
+          admin_user_id?: string
+          company_id?: string
+          ended_at?: string | null
+          expires_at?: string
+          id?: string
+          reason?: string | null
+          started_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "impersonation_sessions_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
@@ -931,6 +1036,33 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_audit_logs: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          company_id: string | null
+          created_at: string
+          details: Json
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          company_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          company_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string | null
@@ -1197,6 +1329,15 @@ export type Database = {
     }
     Functions: {
       current_company_id: { Args: never; Returns: string }
+      current_impersonation: { Args: never; Returns: string }
+      current_support_session: {
+        Args: never
+        Returns: {
+          company_id: string
+          company_name: string
+          expires_at: string
+        }[]
+      }
       get_celebrations: {
         Args: never
         Returns: {
@@ -1250,6 +1391,27 @@ export type Database = {
       }
       is_platform_admin: { Args: { _user_id?: string }; Returns: boolean }
       leave_days: { Args: { _end: string; _start: string }; Returns: number }
+      owner_audit: {
+        Args: { _action: string; _company_id: string; _details: Json }
+        Returns: undefined
+      }
+      owner_audit_log: {
+        Args: { _company_id?: string; _limit?: number }
+        Returns: {
+          action: string
+          actor_email: string
+          company_id: string
+          company_name: string
+          created_at: string
+          details: Json
+          id: string
+        }[]
+      }
+      owner_delete_company: {
+        Args: { _company_id: string }
+        Returns: undefined
+      }
+      owner_end_support: { Args: never; Returns: undefined }
       owner_list_companies: {
         Args: never
         Returns: {
@@ -1258,12 +1420,17 @@ export type Database = {
           created_at: string
           features: Json
           id: string
+          monthly_notification_limit: number
           name: string
           notes: string
+          notifications_this_month: number
           plan: string
           removed_people: number
           seat_limit: number
+          soft_warn_pct: number
           status: string
+          storage_mb_limit: number
+          storage_used_mb: number
           trial_ends_at: string
         }[]
       }
@@ -1274,6 +1441,20 @@ export type Database = {
           _is_enabled: boolean
         }
         Returns: undefined
+      }
+      owner_set_limits: {
+        Args: {
+          _company_id: string
+          _monthly_notification_limit?: number
+          _seat_limit?: number
+          _soft_warn_pct?: number
+          _storage_mb_limit?: number
+        }
+        Returns: undefined
+      }
+      owner_start_support: {
+        Args: { _company_id: string; _minutes?: number; _reason?: string }
+        Returns: string
       }
       owner_stats: { Args: never; Returns: Json }
       owner_update_company: {
@@ -1287,6 +1468,20 @@ export type Database = {
           _trial_ends_at?: string
         }
         Returns: undefined
+      }
+      owner_usage: {
+        Args: never
+        Returns: {
+          attendance_rows: number
+          company_id: string
+          company_name: string
+          document_rows: number
+          leave_rows: number
+          payslip_rows: number
+          people: number
+          rows_last_30d: number
+          storage_mb: number
+        }[]
       }
       redeem_invite: { Args: { _code: string }; Returns: string }
       remove_employee: {

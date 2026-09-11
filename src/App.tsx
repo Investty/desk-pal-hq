@@ -50,13 +50,14 @@ function ProtectedRoute({ children, roles, feature }: { children: React.ReactNod
 }
 
 function WorkspaceRoute() {
-  const { user, loading, memberships, companySuspended, isPlatformAdmin } = useAuth();
+  const { user, loading, memberships, companySuspended, isPlatformAdmin, supportSession } = useAuth();
   if (loading) return <Loading />;
   if (!user) return <Navigate to="/login" replace />;
-  if (memberships.length === 0) return <Navigate to={isPlatformAdmin ? "/owner" : "/join"} replace />;
+  if (!supportSession && memberships.length === 0) return <Navigate to={isPlatformAdmin ? "/owner" : "/join"} replace />;
   if (companySuspended) return <Suspended />;
   return <AppLayout />;
 }
+
 
 function OwnerRoute() {
   const { user, loading, isPlatformAdmin } = useAuth();

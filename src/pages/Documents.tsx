@@ -51,9 +51,14 @@ export default function Documents() {
       const { error: upErr } = await supabase.storage.from("employee-documents").upload(path, file);
       if (upErr) throw upErr;
       const { error } = await supabase.from("employee_documents").insert({
-        user_id: uid, title: title.trim(), document_type: docType, file_path: path, uploaded_by: user!.id,
+        user_id: uid, title: title.trim(), document_type: docType, file_path: path,
+        uploaded_by: user!.id, file_size_bytes: file.size,
       });
-      if (error) throw error;
+      if (error) {
+        await supabase.storage.from("employee-documents").remove([path]);
+        throw error;
+      }
+
     },
     onSuccess: () => {
       toast.success("Document uploaded!");

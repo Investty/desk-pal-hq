@@ -38,6 +38,12 @@ export interface CompanyInfo {
   trial_ends_at: string | null;
 }
 
+export interface SupportSession {
+  company_id: string;
+  company_name: string;
+  expires_at: string;
+}
+
 interface AuthContextType {
   session: Session | null;
   user: User | null;
@@ -59,11 +65,14 @@ interface AuthContextType {
   hasFeature: (key: string) => boolean;
   isPlatformAdmin: boolean;
   companySuspended: boolean;
+  supportSession: SupportSession | null;
+  endSupport: () => Promise<void>;
   signOut: () => Promise<void>;
   isAdmin: boolean;
   isManager: boolean;
   isHR: boolean;
 }
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -76,18 +85,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [memberships, setMemberships] = useState<Membership[]>([]);
   const [features, setFeatures] = useState<Record<string, boolean>>({});
   const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
+  const [supportSession, setSupportSession] = useState<SupportSession | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const loadCompanyContext = async (companyId: string, userId: string) => {
+    const [profileRes, companyRes, featureRes] = await Promise.all([
+      supabase.from("profiles").select("*").eq("user_id", userId).eq("company_id", companyId).maybeSingle(),
+      supabase.from("companies").select("id, name, status, plan, seat_limit, trial_ends_at").eq("id", companyId).maybeSingle(),
+      supabase.from("company_features").select("feature_key, is_enabled").eq("company_id", companyId),
+    ]);
+    setProfile((profileRes.data as Profile) ?? null);
+    setCompany((companyRes.data as CompanyInfo) ?? null);
+    const map: Record<string, boolean> = {};
+    (featureRes.data ?? []).forEach((f) => { map[f.feature_key] = f.is_enabled; });
+    setFeatures(map);
+  };
+
   const fetchUserData = useCallback(async (userId: string) => {
-    const [membershipRes, ownerRes] = await Promise.all([
+    const [membershipRes, ownerRes, supportRes] = await Promise.all([
       supabase.rpc("get_my_memberships"),
       supabase.rpc("is_platform_admin", {}),
+      supabase.rpc("current_support_session"),
     ]);
 
     setIsPlatformAdmin(Boolean(ownerRes.data));
 
     const list = (membershipRes.data ?? []) as Membership[];
     setMemberships(list);
+
+    const support = ((supportRes.data ?? []) as SupportSession[])[0] ?? null;
+    setSupportSession(support);
+
+    if (support) {
+      setRole("admin");
+      await loadCompanyContext(support.company_id, userId);
+      return;
+    }
 
     const active = list.find((m) => m.is_active) ?? list[0] ?? null;
     if (!active) {
@@ -99,19 +132,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     setRole(active.role ?? null);
-
-    const [profileRes, companyRes, featureRes] = await Promise.all([
-      supabase.from("profiles").select("*").eq("user_id", userId).eq("company_id", active.company_id).maybeSingle(),
-      supabase.from("companies").select("id, name, status, plan, seat_limit, trial_ends_at").eq("id", active.company_id).maybeSingle(),
-      supabase.from("company_features").select("feature_key, is_enabled").eq("company_id", active.company_id),
-    ]);
-
-    setProfile((profileRes.data as Profile) ?? null);
-    setCompany((companyRes.data as CompanyInfo) ?? null);
-    const map: Record<string, boolean> = {};
-    (featureRes.data ?? []).forEach((f) => { map[f.feature_key] = f.is_enabled; });
-    setFeatures(map);
+    await loadCompanyContext(active.company_id, userId);
   }, []);
+
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -188,6 +211,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setMemberships([]);
     setFeatures({});
     setIsPlatformAdmin(false);
+    setSupportSession(null);
+  };
+
+  const endSupport = async () => {
+    await supabase.rpc("owner_end_support");
+    setSupportSession(null);
+    if (user) await fetchUserData(user.id);
   };
 
   const hasFeature = (key: string) => features[key] !== false;
@@ -195,8 +225,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <AuthContext.Provider value={{
       session, user, profile, role, loading, company, memberships, features, hasFeature,
-      isPlatformAdmin, companySuspended: !!company && company.status !== "active",
+      isPlatformAdmin, companySuspended: !supportSession && !!company && company.status !== "active" && company.status !== "trial",
+      supportSession, endSupport,
       switchCompany, refresh,
+
       signIn, signUp, signOut,
       isAdmin: role === "admin" || role === "hr",
       isManager: role === "manager",
