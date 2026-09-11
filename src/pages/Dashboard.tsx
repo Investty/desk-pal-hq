@@ -59,12 +59,14 @@ export default function Dashboard() {
   });
 
   const { data: myLeaveBalances } = useQuery({
-    queryKey: ["my-leave-balances"],
+    queryKey: ["my-leave-balances", user?.id],
     queryFn: async () => {
-      const { data } = await supabase.from("leave_balances").select("*");
+      const { data } = await supabase.from("leave_balances").select("*").eq("user_id", user!.id);
       return data || [];
     },
+    enabled: !!user?.id,
   });
+
 
   const { data: myTodayAttendance } = useQuery({
     queryKey: ["my-today-attendance", today],
