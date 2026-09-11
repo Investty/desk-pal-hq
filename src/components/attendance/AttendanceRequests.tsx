@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { ClipboardCheck, Plus, X } from "lucide-react";
+import { AlertTriangle, ClipboardCheck, Plus, X } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type RequestType = Database["public"]["Enums"]["attendance_request_type"];
@@ -29,6 +29,20 @@ export default function AttendanceRequests() {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [reason, setReason] = useState("");
+  const [flagId, setFlagId] = useState<string | null>(null);
+
+  const { data: flags } = useQuery({
+    queryKey: ["my-attendance-flags"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("attendance_flags")
+        .select("*")
+        .eq("user_id", user!.id)
+        .eq("status", "open")
+        .order("start_date", { ascending: false });
+      return data || [];
+    },
+  });
 
   const { data: requests } = useQuery({
     queryKey: ["my-attendance-requests"],
