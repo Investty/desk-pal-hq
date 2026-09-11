@@ -46,6 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
+  const [company, setCompany] = useState<{ id: string; name: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchUserData = async (userId: string) => {
@@ -55,6 +56,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     ]);
     if (profileRes.data) setProfile(profileRes.data as Profile);
     if (roleRes.data) setRole(roleRes.data.role);
+    const { data: companyRow } = await supabase.from("companies").select("id, name").maybeSingle();
+    setCompany(companyRow ?? null);
   };
 
   useEffect(() => {
@@ -87,11 +90,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error: error as Error | null };
   };
 
-  const signUp = async (email: string, password: string, fullName: string) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    fullName: string,
+    org: { companyName?: string; inviteCode?: string },
+  ) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName }, emailRedirectTo: window.location.origin },
+      options: {
+        data: {
+          full_name: fullName,
+          ...(org.companyName ? { company_name: org.companyName } : {}),
+          ...(org.inviteCode ? { invite_code: org.inviteCode } : {}),
+        },
+        emailRedirectTo: window.location.origin,
+      },
     });
     return { error: error as Error | null };
   };
@@ -100,11 +115,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await supabase.auth.signOut();
     setProfile(null);
     setRole(null);
+    setCompany(null);
   };
 
   return (
     <AuthContext.Provider value={{
-      session, user, profile, role, loading,
+      session, user, profile, role, loading, company,
       signIn, signUp, signOut,
       isAdmin: role === "admin" || role === "hr",
       isManager: role === "manager",
