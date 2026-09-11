@@ -38,6 +38,12 @@ export interface CompanyInfo {
   trial_ends_at: string | null;
 }
 
+export interface SupportSession {
+  company_id: string;
+  company_name: string;
+  expires_at: string;
+}
+
 interface AuthContextType {
   session: Session | null;
   user: User | null;
@@ -59,11 +65,14 @@ interface AuthContextType {
   hasFeature: (key: string) => boolean;
   isPlatformAdmin: boolean;
   companySuspended: boolean;
+  supportSession: SupportSession | null;
+  endSupport: () => Promise<void>;
   signOut: () => Promise<void>;
   isAdmin: boolean;
   isManager: boolean;
   isHR: boolean;
 }
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
