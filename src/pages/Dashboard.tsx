@@ -35,7 +35,7 @@ function StatCard({ title, value, icon: Icon, description, variant = "default" }
 }
 
 export default function Dashboard() {
-  const { isAdmin, isManager, profile } = useAuth();
+  const { isAdmin, isManager, profile, user } = useAuth();
   const today = format(new Date(), "yyyy-MM-dd");
 
   const { data: stats } = useQuery({
