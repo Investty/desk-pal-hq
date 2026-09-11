@@ -85,18 +85,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [memberships, setMemberships] = useState<Membership[]>([]);
   const [features, setFeatures] = useState<Record<string, boolean>>({});
   const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
+  const [supportSession, setSupportSession] = useState<SupportSession | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const loadCompanyContext = async (companyId: string, userId: string) => {
+    const [profileRes, companyRes, featureRes] = await Promise.all([
+      supabase.from("profiles").select("*").eq("user_id", userId).eq("company_id", companyId).maybeSingle(),
+      supabase.from("companies").select("id, name, status, plan, seat_limit, trial_ends_at").eq("id", companyId).maybeSingle(),
+      supabase.from("company_features").select("feature_key, is_enabled").eq("company_id", companyId),
+    ]);
+    setProfile((profileRes.data as Profile) ?? null);
+    setCompany((companyRes.data as CompanyInfo) ?? null);
+    const map: Record<string, boolean> = {};
+    (featureRes.data ?? []).forEach((f) => { map[f.feature_key] = f.is_enabled; });
+    setFeatures(map);
+  };
+
   const fetchUserData = useCallback(async (userId: string) => {
-    const [membershipRes, ownerRes] = await Promise.all([
+    const [membershipRes, ownerRes, supportRes] = await Promise.all([
       supabase.rpc("get_my_memberships"),
       supabase.rpc("is_platform_admin", {}),
+      supabase.rpc("current_support_session"),
     ]);
 
     setIsPlatformAdmin(Boolean(ownerRes.data));
 
     const list = (membershipRes.data ?? []) as Membership[];
     setMemberships(list);
+
+    const support = ((supportRes.data ?? []) as SupportSession[])[0] ?? null;
+    setSupportSession(support);
+
+    if (support) {
+      setRole("admin");
+      await loadCompanyContext(support.company_id, userId);
+      return;
+    }
 
     const active = list.find((m) => m.is_active) ?? list[0] ?? null;
     if (!active) {
@@ -108,19 +132,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     setRole(active.role ?? null);
-
-    const [profileRes, companyRes, featureRes] = await Promise.all([
-      supabase.from("profiles").select("*").eq("user_id", userId).eq("company_id", active.company_id).maybeSingle(),
-      supabase.from("companies").select("id, name, status, plan, seat_limit, trial_ends_at").eq("id", active.company_id).maybeSingle(),
-      supabase.from("company_features").select("feature_key, is_enabled").eq("company_id", active.company_id),
-    ]);
-
-    setProfile((profileRes.data as Profile) ?? null);
-    setCompany((companyRes.data as CompanyInfo) ?? null);
-    const map: Record<string, boolean> = {};
-    (featureRes.data ?? []).forEach((f) => { map[f.feature_key] = f.is_enabled; });
-    setFeatures(map);
+    await loadCompanyContext(active.company_id, userId);
   }, []);
+
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
