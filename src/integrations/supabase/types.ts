@@ -262,35 +262,115 @@ export type Database = {
           },
         ]
       }
+      broadcast_reads: {
+        Row: {
+          broadcast_id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          broadcast_id: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          broadcast_id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broadcast_reads_broadcast_id_fkey"
+            columns: ["broadcast_id"]
+            isOneToOne: false
+            referencedRelation: "broadcasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      broadcasts: {
+        Row: {
+          audience: string
+          body: string
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          is_published: boolean
+          publish_at: string
+          severity: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          audience?: string
+          body: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_published?: boolean
+          publish_at?: string
+          severity?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          audience?: string
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_published?: boolean
+          publish_at?: string
+          severity?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       companies: {
         Row: {
+          billing_interval: string
+          churned_at: string | null
           created_at: string
+          custom_price: number | null
           id: string
           name: string
           notes: string | null
           plan: string
+          plan_started_at: string
           seat_limit: number
           status: string
           trial_ends_at: string | null
           updated_at: string
         }
         Insert: {
+          billing_interval?: string
+          churned_at?: string | null
           created_at?: string
+          custom_price?: number | null
           id?: string
           name: string
           notes?: string | null
           plan?: string
+          plan_started_at?: string
           seat_limit?: number
           status?: string
           trial_ends_at?: string | null
           updated_at?: string
         }
         Update: {
+          billing_interval?: string
+          churned_at?: string | null
           created_at?: string
+          custom_price?: number | null
           id?: string
           name?: string
           notes?: string | null
           plan?: string
+          plan_started_at?: string
           seat_limit?: number
           status?: string
           trial_ends_at?: string | null
@@ -1021,6 +1101,51 @@ export type Database = {
           },
         ]
       }
+      plans: {
+        Row: {
+          annual_price: number
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          included_seats: number
+          is_active: boolean
+          key: string
+          monthly_price: number
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          annual_price?: number
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          included_seats?: number
+          is_active?: boolean
+          key: string
+          monthly_price?: number
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          annual_price?: number
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          included_seats?: number
+          is_active?: boolean
+          key?: string
+          monthly_price?: number
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       platform_admins: {
         Row: {
           created_at: string
@@ -1391,6 +1516,17 @@ export type Database = {
       }
       is_platform_admin: { Args: { _user_id?: string }; Returns: boolean }
       leave_days: { Args: { _end: string; _start: string }; Returns: number }
+      my_broadcasts: {
+        Args: never
+        Returns: {
+          body: string
+          expires_at: string
+          id: string
+          publish_at: string
+          severity: string
+          title: string
+        }[]
+      }
       owner_audit: {
         Args: { _action: string; _company_id: string; _details: Json }
         Returns: undefined
@@ -1407,11 +1543,34 @@ export type Database = {
           id: string
         }[]
       }
+      owner_delete_broadcast: { Args: { _id: string }; Returns: undefined }
       owner_delete_company: {
         Args: { _company_id: string }
         Returns: undefined
       }
       owner_end_support: { Args: never; Returns: undefined }
+      owner_list_broadcasts: {
+        Args: never
+        Returns: {
+          audience: string
+          body: string
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          is_published: boolean
+          publish_at: string
+          severity: string
+          title: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "broadcasts"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       owner_list_companies: {
         Args: never
         Returns: {
@@ -1433,6 +1592,45 @@ export type Database = {
           storage_used_mb: number
           trial_ends_at: string
         }[]
+      }
+      owner_list_plans: {
+        Args: never
+        Returns: {
+          annual_price: number
+          companies: number
+          currency: string
+          description: string
+          id: string
+          included_seats: number
+          is_active: boolean
+          key: string
+          monthly_price: number
+          mrr: number
+          name: string
+          sort_order: number
+        }[]
+      }
+      owner_revenue: { Args: never; Returns: Json }
+      owner_revenue_by_company: {
+        Args: never
+        Returns: {
+          active_seats: number
+          billing_interval: string
+          company_id: string
+          company_name: string
+          mrr: number
+          plan: string
+          seat_limit: number
+          status: string
+        }[]
+      }
+      owner_set_billing: {
+        Args: {
+          _billing_interval: string
+          _company_id: string
+          _custom_price: number
+        }
+        Returns: undefined
       }
       owner_set_feature: {
         Args: {
@@ -1468,6 +1666,34 @@ export type Database = {
           _trial_ends_at?: string
         }
         Returns: undefined
+      }
+      owner_upsert_broadcast: {
+        Args: {
+          _audience: string
+          _body: string
+          _expires_at: string
+          _id: string
+          _is_published: boolean
+          _publish_at: string
+          _severity: string
+          _title: string
+        }
+        Returns: string
+      }
+      owner_upsert_plan: {
+        Args: {
+          _annual_price: number
+          _currency: string
+          _description: string
+          _id: string
+          _included_seats: number
+          _is_active: boolean
+          _key: string
+          _monthly_price: number
+          _name: string
+          _sort_order: number
+        }
+        Returns: string
       }
       owner_usage: {
         Args: never

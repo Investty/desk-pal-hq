@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import AppSidebar from "./AppSidebar";
 import SupportModeBanner from "./SupportModeBanner";
 import LimitBanner from "./LimitBanner";
+import BroadcastBanner from "./BroadcastBanner";
 
 export default function AppLayout() {
   return (
@@ -10,7 +11,9 @@ export default function AppLayout() {
       <main className="flex-1 overflow-auto">
         <SupportModeBanner />
         <div className="p-6 max-w-7xl mx-auto animate-fade-in space-y-4">
+          <BroadcastBanner />
           <LimitBanner />
+
           <Outlet />
         </div>
       </main>
