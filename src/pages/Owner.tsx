@@ -18,7 +18,11 @@ import { toast } from "sonner";
 import { Building2, Search, Users, ShieldAlert, LayoutGrid, LogOut, Eye, Trash2, Download } from "lucide-react";
 import { Link } from "react-router-dom";
 import { FEATURES, PLANS } from "@/lib/features";
+import RevenueTab from "@/components/owner/RevenueTab";
+import PlansTab from "@/components/owner/PlansTab";
+import BroadcastsTab from "@/components/owner/BroadcastsTab";
 import { format, differenceInCalendarDays } from "date-fns";
+
 
 const STATUSES = ["trial", "active", "past_due", "suspended"] as const;
 const STATUS_LABEL: Record<string, string> = {
@@ -71,6 +75,7 @@ export default function Owner() {
   const [form, setForm] = useState({
     name: "", plan: "free", status: "active", seat_limit: 25, trial_ends_at: "", notes: "",
     storage_mb_limit: 1024, monthly_notification_limit: 5000, soft_warn_pct: 90,
+    billing_interval: "monthly", custom_price: "" as string,
   });
 
   const { data: stats } = useQuery({
@@ -80,6 +85,25 @@ export default function Owner() {
       return (data ?? {}) as Record<string, number>;
     },
   });
+
+  const { data: planOptions } = useQuery({
+    queryKey: ["owner-plans"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("owner_list_plans");
+      if (error) throw error;
+      return (data ?? []) as unknown as { key: string; name: string; is_active: boolean }[];
+    },
+  });
+
+  const { data: billing } = useQuery({
+    queryKey: ["owner-company-billing"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("companies").select("id, billing_interval, custom_price");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
 
   const { data: companies, isLoading } = useQuery({
     queryKey: ["owner-companies"],
@@ -182,6 +206,22 @@ export default function Owner() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const setBilling = useMutation({
+    mutationFn: async (p: { id: string; billing_interval: string; custom_price: number | null }) => {
+      const { error } = await supabase.rpc("owner_set_billing", {
+        _company_id: p.id, _billing_interval: p.billing_interval, _custom_price: p.custom_price,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["owner-company-billing"] });
+      queryClient.invalidateQueries({ queryKey: ["owner-revenue"] });
+      queryClient.invalidateQueries({ queryKey: ["owner-revenue-by-company"] });
+      queryClient.invalidateQueries({ queryKey: ["owner-plans"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const filtered = useMemo(
     () => (companies ?? []).filter((c) =>
       c.name.toLowerCase().includes(search.toLowerCase()) &&
@@ -191,14 +231,18 @@ export default function Owner() {
   );
 
   const openEdit = (c: OwnerCompany) => {
+    const b = (billing ?? []).find((x) => x.id === c.id);
     setEditing(c);
     setForm({
       name: c.name, plan: c.plan, status: c.status, seat_limit: c.seat_limit,
       trial_ends_at: c.trial_ends_at ?? "", notes: c.notes ?? "",
       storage_mb_limit: c.storage_mb_limit, monthly_notification_limit: c.monthly_notification_limit,
       soft_warn_pct: c.soft_warn_pct,
+      billing_interval: b?.billing_interval ?? "monthly",
+      custom_price: b?.custom_price != null ? String(b.custom_price) : "",
     });
   };
+
 
   const exportAudit = () => {
     const rows = auditLog ?? [];
@@ -263,9 +307,17 @@ export default function Owner() {
         <Tabs defaultValue="companies">
           <TabsList>
             <TabsTrigger value="companies">Companies</TabsTrigger>
+            <TabsTrigger value="revenue">Revenue</TabsTrigger>
+            <TabsTrigger value="plans">Plans</TabsTrigger>
+            <TabsTrigger value="broadcasts">Messages</TabsTrigger>
             <TabsTrigger value="usage">Usage &amp; storage</TabsTrigger>
             <TabsTrigger value="audit">Action log</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="revenue" className="mt-4"><RevenueTab /></TabsContent>
+          <TabsContent value="plans" className="mt-4"><PlansTab /></TabsContent>
+          <TabsContent value="broadcasts" className="mt-4"><BroadcastsTab /></TabsContent>
+
 
           <TabsContent value="companies" className="mt-4">
             <Card>
@@ -455,7 +507,9 @@ export default function Owner() {
                   <Select value={form.plan} onValueChange={(v) => setForm({ ...form, plan: v })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {PLANS.map((p) => <SelectItem key={p} value={p} className="capitalize">{p}</SelectItem>)}
+                      {(planOptions ?? []).map((p) => (
+                        <SelectItem key={p.key} value={p.key}>{p.name}{p.is_active ? "" : " (hidden)"}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -472,7 +526,28 @@ export default function Owner() {
                   <Label>Trial ends on</Label>
                   <Input type="date" value={form.trial_ends_at} onChange={(e) => setForm({ ...form, trial_ends_at: e.target.value })} />
                 </div>
+                <div className="space-y-2">
+                  <Label>Billing cycle</Label>
+                  <Select value={form.billing_interval} onValueChange={(v) => setForm({ ...form, billing_interval: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                      <SelectItem value="annual">Yearly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Agreed price (optional)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    placeholder="Leave blank to use plan price"
+                    value={form.custom_price}
+                    onChange={(e) => setForm({ ...form, custom_price: e.target.value })}
+                  />
+                </div>
               </div>
+
 
               <div className="space-y-3 rounded-md border p-4">
                 <Label>Limits</Label>
@@ -542,7 +617,13 @@ export default function Owner() {
                   id: editing.id, seat_limit: form.seat_limit, storage_mb_limit: form.storage_mb_limit,
                   monthly_notification_limit: form.monthly_notification_limit, soft_warn_pct: form.soft_warn_pct,
                 });
+                await setBilling.mutateAsync({
+                  id: editing.id,
+                  billing_interval: form.billing_interval,
+                  custom_price: form.custom_price === "" ? null : Number(form.custom_price),
+                });
                 setEditing(null);
+
               }}
             >
               Save changes

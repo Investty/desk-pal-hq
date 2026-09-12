@@ -1,0 +1,18 @@
+REVOKE EXECUTE ON FUNCTION public.owner_list_plans() FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.owner_upsert_plan(uuid, text, text, text, numeric, numeric, text, integer, boolean, integer) FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.owner_set_billing(uuid, text, numeric) FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.owner_revenue() FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.owner_revenue_by_company() FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.owner_list_broadcasts() FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.owner_upsert_broadcast(uuid, text, text, text, text, boolean, timestamptz, timestamptz) FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.owner_delete_broadcast(uuid) FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.my_broadcasts() FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.owner_list_plans() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.owner_upsert_plan(uuid, text, text, text, numeric, numeric, text, integer, boolean, integer) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.owner_set_billing(uuid, text, numeric) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.owner_revenue() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.owner_revenue_by_company() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.owner_list_broadcasts() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.owner_upsert_broadcast(uuid, text, text, text, text, boolean, timestamptz, timestamptz) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.owner_delete_broadcast(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.my_broadcasts() TO authenticated;
