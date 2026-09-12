@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { toast } from "sonner";
 import { Building2, Search, Users, ShieldAlert, LayoutGrid, LogOut, Eye, Trash2, Download } from "lucide-react";
 import { Link } from "react-router-dom";
-import { FEATURES, PLANS } from "@/lib/features";
+import { FEATURES } from "@/lib/features";
 import RevenueTab from "@/components/owner/RevenueTab";
 import PlansTab from "@/components/owner/PlansTab";
 import BroadcastsTab from "@/components/owner/BroadcastsTab";
