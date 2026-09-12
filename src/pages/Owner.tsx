@@ -338,7 +338,7 @@ export default function Owner() {
                     <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All plans</SelectItem>
-                      {PLANS.map((p) => <SelectItem key={p} value={p} className="capitalize">{p}</SelectItem>)}
+                      {(planOptions ?? []).map((p) => <SelectItem key={p.key} value={p.key}>{p.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   <div className="relative w-52">
