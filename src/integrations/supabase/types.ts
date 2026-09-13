@@ -1785,7 +1785,14 @@ export type Database = {
       day_portion: "full_day" | "first_half" | "second_half"
       flag_status: "open" | "resolved"
       leave_status: "pending" | "approved" | "rejected" | "cancelled"
-      leave_type: "sick" | "casual" | "paid" | "compensatory" | "bereavement"
+      leave_type:
+        | "sick"
+        | "casual"
+        | "paid"
+        | "compensatory"
+        | "bereavement"
+        | "maternity"
+        | "paternity"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1920,7 +1927,15 @@ export const Constants = {
       day_portion: ["full_day", "first_half", "second_half"],
       flag_status: ["open", "resolved"],
       leave_status: ["pending", "approved", "rejected", "cancelled"],
-      leave_type: ["sick", "casual", "paid", "compensatory", "bereavement"],
+      leave_type: [
+        "sick",
+        "casual",
+        "paid",
+        "compensatory",
+        "bereavement",
+        "maternity",
+        "paternity",
+      ],
     },
   },
 } as const
