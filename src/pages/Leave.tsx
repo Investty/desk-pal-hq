@@ -279,6 +279,8 @@ export default function Leave() {
           </Table>
         </CardContent>
       </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
