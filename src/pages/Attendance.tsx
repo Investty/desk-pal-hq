@@ -1,4 +1,8 @@
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ListPager } from "@/components/ui/list-pager";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,11 +27,19 @@ export default function Attendance() {
     },
   });
 
+  const PAGE_SIZE = 25;
+  const [page, setPage] = useState(0);
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+
   const { data: history } = useQuery({
-    queryKey: ["attendance-history"],
+    queryKey: ["attendance-history", page, from, to],
     queryFn: async () => {
-      const { data } = await supabase.from("attendance").select("*").order("date", { ascending: false }).limit(30);
-      return data || [];
+      let q = supabase.from("attendance").select("*", { count: "exact" }).order("date", { ascending: false });
+      if (from) q = q.gte("date", from);
+      if (to) q = q.lte("date", to);
+      const { data, count } = await q.range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+      return { rows: data || [], count: count || 0 };
     },
   });
 
@@ -114,6 +126,19 @@ export default function Attendance() {
       <Card>
         <CardHeader><CardTitle>History</CardTitle></CardHeader>
         <CardContent>
+          <div className="flex flex-wrap items-end gap-3 mb-4">
+            <div className="space-y-1">
+              <Label className="text-xs">From</Label>
+              <Input type="date" value={from} onChange={(e) => { setPage(0); setFrom(e.target.value); }} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">To</Label>
+              <Input type="date" value={to} onChange={(e) => { setPage(0); setTo(e.target.value); }} />
+            </div>
+            {(from || to) && (
+              <Button variant="ghost" size="sm" onClick={() => { setFrom(""); setTo(""); setPage(0); }}>Clear</Button>
+            )}
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
@@ -125,7 +150,7 @@ export default function Attendance() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {history?.map((rec) => (
+              {history?.rows.map((rec) => (
                 <TableRow key={rec.id}>
                   <TableCell>{format(new Date(rec.date), "MMM d, yyyy")}</TableCell>
                   <TableCell>{rec.check_in ? format(new Date(rec.check_in), "hh:mm a") : "—"}</TableCell>
@@ -134,11 +159,12 @@ export default function Attendance() {
                   <TableCell><Badge variant={statusColor(rec.status)}>{rec.status}</Badge></TableCell>
                 </TableRow>
               ))}
-              {history?.length === 0 && (
+              {history?.rows.length === 0 && (
                 <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No attendance records yet</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
+          <ListPager page={page} pageSize={PAGE_SIZE} total={history?.count ?? 0} onPage={setPage} />
         </CardContent>
       </Card>
     </div>

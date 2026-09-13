@@ -1,4 +1,7 @@
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Input } from "@/components/ui/input";
+import { ListPager } from "@/components/ui/list-pager";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +17,8 @@ const today = () => format(new Date(), "yyyy-MM-dd");
 
 export default function Team() {
   const { profile } = useAuth();
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(0);
 
   const { data: team } = useQuery({
     queryKey: ["team-members", profile?.id],
@@ -69,6 +74,14 @@ export default function Team() {
 
   const presentCount = (team || []).filter((m) => byUser.get(m.user_id)?.check_in).length;
 
+  const TEAM_PAGE_SIZE = 15;
+  const filteredTeam = (team || []).filter(
+    (m) =>
+      m.full_name.toLowerCase().includes(search.toLowerCase()) ||
+      (m.employee_id || "").toLowerCase().includes(search.toLowerCase())
+  );
+  const pagedTeam = filteredTeam.slice(page * TEAM_PAGE_SIZE, page * TEAM_PAGE_SIZE + TEAM_PAGE_SIZE);
+
   const stat = (label: string, value: string | number, Icon: typeof Users) => (
     <Card>
       <CardHeader className="pb-2">
@@ -100,6 +113,12 @@ export default function Team() {
       <Card>
         <CardHeader><CardTitle>Today at a glance</CardTitle></CardHeader>
         <CardContent>
+          <Input
+            className="max-w-sm mb-4"
+            placeholder="Search your team..."
+            value={search}
+            onChange={(e) => { setPage(0); setSearch(e.target.value); }}
+          />
           <Table>
             <TableHeader>
               <TableRow>
@@ -112,7 +131,7 @@ export default function Team() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(team || []).map((m) => {
+              {pagedTeam.map((m) => {
                 const a = byUser.get(m.user_id);
                 const leave = onLeaveToday.get(m.user_id);
                 return (
@@ -139,11 +158,12 @@ export default function Team() {
                   </TableRow>
                 );
               })}
-              {(team || []).length === 0 && (
+              {filteredTeam.length === 0 && (
                 <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Nobody reports to you yet</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
+          <ListPager page={page} pageSize={TEAM_PAGE_SIZE} total={filteredTeam.length} onPage={setPage} />
         </CardContent>
       </Card>
 

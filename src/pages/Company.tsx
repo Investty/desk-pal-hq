@@ -11,9 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { Building2, Copy, Trash2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 
 type Role = "admin" | "hr" | "manager" | "employee";
+
+const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 export default function Company() {
   const queryClient = useQueryClient();
@@ -21,12 +24,16 @@ export default function Company() {
   const [name, setName] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<Role>("employee");
+  const [weeklyOffs, setWeeklyOffs] = useState<number[] | null>(null);
 
   const { data: companyRow } = useQuery({
     queryKey: ["company"],
     queryFn: async () => {
       const { data } = await supabase.from("companies").select("*").maybeSingle();
-      if (data) setName((prev) => prev || data.name);
+      if (data) {
+        setName((prev) => prev || data.name);
+        setWeeklyOffs((prev) => prev ?? (data.weekly_offs ?? [0, 6]));
+      }
       return data;
     },
   });
@@ -46,6 +53,18 @@ export default function Company() {
     },
     onSuccess: () => {
       toast.success("Company name updated");
+      queryClient.invalidateQueries({ queryKey: ["company"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const saveWeeklyOffs = useMutation({
+    mutationFn: async (days: number[]) => {
+      const { error } = await supabase.from("companies").update({ weekly_offs: days }).eq("id", companyRow!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Work week updated");
       queryClient.invalidateQueries({ queryKey: ["company"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -92,6 +111,37 @@ export default function Company() {
             <Input value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <Button onClick={() => rename.mutate()} disabled={!name.trim() || rename.isPending}>Save</Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">Work week</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Tick the days your company does not work. These days are skipped when leave days are counted and nobody is marked absent on them.
+          </p>
+          <div className="flex flex-wrap gap-4">
+            {dayNames.map((label, idx) => (
+              <label key={label} className="flex items-center gap-2 text-sm">
+                <Checkbox
+                  checked={(weeklyOffs ?? []).includes(idx)}
+                  onCheckedChange={(v) =>
+                    setWeeklyOffs((prev) => {
+                      const cur = prev ?? [];
+                      return v ? [...cur, idx].sort() : cur.filter((d) => d !== idx);
+                    })
+                  }
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+          <Button
+            onClick={() => weeklyOffs && saveWeeklyOffs.mutate(weeklyOffs)}
+            disabled={!weeklyOffs || saveWeeklyOffs.isPending}
+          >
+            Save work week
+          </Button>
         </CardContent>
       </Card>
 

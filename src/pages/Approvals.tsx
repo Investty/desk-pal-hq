@@ -14,6 +14,12 @@ import { format } from "date-fns";
 import { CheckSquare, Check, X } from "lucide-react";
 import AttendanceApprovals from "@/components/attendance/AttendanceApprovals";
 import AttendanceFlags from "@/components/attendance/AttendanceFlags";
+import { Input } from "@/components/ui/input";
+import { ListPager } from "@/components/ui/list-pager";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const PAGE_SIZE = 20;
+const LEAVE_TYPES = ["sick", "casual", "paid", "compensatory", "bereavement", "maternity", "paternity"];
 
 type Stage = "manager" | "hr";
 type RevokeAction = "cancelled" | "rejected";
@@ -23,6 +29,10 @@ export default function Approvals() {
   const queryClient = useQueryClient();
   const [noteTarget, setNoteTarget] = useState<{ id: string; action: RevokeAction } | null>(null);
   const [note, setNote] = useState("");
+  const [apType, setApType] = useState("all");
+  const [apFrom, setApFrom] = useState("");
+  const [apTo, setApTo] = useState("");
+  const [apPage, setApPage] = useState(0);
 
 
   const { data: requests } = useQuery({
@@ -67,18 +77,22 @@ export default function Approvals() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const { data: approved } = useQuery({
-    queryKey: ["approved-leaves"],
+  const { data: approvedPage } = useQuery({
+    queryKey: ["approved-leaves", apType, apFrom, apTo, apPage],
     queryFn: async () => {
-      const { data } = await supabase
+      let q = supabase
         .from("leave_requests")
-        .select("*, profiles!leave_requests_user_id_fkey(full_name, employee_id)")
+        .select("*, profiles!leave_requests_user_id_fkey(full_name, employee_id)", { count: "exact" })
         .eq("status", "approved")
-        .order("start_date", { ascending: false })
-        .limit(50);
-      return data || [];
+        .order("start_date", { ascending: false });
+      if (apType !== "all") q = q.eq("leave_type", apType as "sick");
+      if (apFrom) q = q.gte("start_date", apFrom);
+      if (apTo) q = q.lte("end_date", apTo);
+      const { data, count } = await q.range(apPage * PAGE_SIZE, apPage * PAGE_SIZE + PAGE_SIZE - 1);
+      return { rows: data || [], count: count || 0 };
     },
   });
+  const approved = approvedPage?.rows;
 
   const revoke = useMutation({
     mutationFn: async ({ id, action, comment }: { id: string; action: RevokeAction; comment: string }) => {
@@ -216,6 +230,26 @@ export default function Approvals() {
           <CardHeader><CardTitle>Approved leaves — cancel or reject</CardTitle></CardHeader>
 
           <CardContent>
+            <div className="flex flex-wrap items-end gap-3 mb-4">
+              <Select value={apType} onValueChange={(v) => { setApPage(0); setApType(v); }}>
+                <SelectTrigger className="w-44"><SelectValue placeholder="All leave types" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All leave types</SelectItem>
+                  {LEAVE_TYPES.map((t) => (<SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>))}
+                </SelectContent>
+              </Select>
+              <div>
+                <Label className="text-xs">From</Label>
+                <Input type="date" value={apFrom} onChange={(e) => { setApPage(0); setApFrom(e.target.value); }} />
+              </div>
+              <div>
+                <Label className="text-xs">To</Label>
+                <Input type="date" value={apTo} onChange={(e) => { setApPage(0); setApTo(e.target.value); }} />
+              </div>
+              {(apType !== "all" || apFrom || apTo) && (
+                <Button variant="ghost" size="sm" onClick={() => { setApType("all"); setApFrom(""); setApTo(""); setApPage(0); }}>Clear</Button>
+              )}
+            </div>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -272,6 +306,7 @@ export default function Approvals() {
                 )}
               </TableBody>
             </Table>
+            <ListPager page={apPage} pageSize={PAGE_SIZE} total={approvedPage?.count ?? 0} onPage={setApPage} />
           </CardContent>
         </Card>
       )}

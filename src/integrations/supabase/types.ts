@@ -346,6 +346,7 @@ export type Database = {
           timezone: string
           trial_ends_at: string | null
           updated_at: string
+          weekly_offs: number[]
         }
         Insert: {
           billing_interval?: string
@@ -362,6 +363,7 @@ export type Database = {
           timezone?: string
           trial_ends_at?: string | null
           updated_at?: string
+          weekly_offs?: number[]
         }
         Update: {
           billing_interval?: string
@@ -378,6 +380,7 @@ export type Database = {
           timezone?: string
           trial_ends_at?: string | null
           updated_at?: string
+          weekly_offs?: number[]
         }
         Relationships: []
       }
@@ -1517,6 +1520,17 @@ export type Database = {
           joining_date: string
         }[]
       }
+      get_leave_calendar: {
+        Args: { _from: string; _to: string }
+        Returns: {
+          day_portion: Database["public"]["Enums"]["day_portion"]
+          end_date: string
+          is_self: boolean
+          kind: string
+          label: string
+          start_date: string
+        }[]
+      }
       get_manager_user_id: { Args: { _user_id: string }; Returns: string }
       get_my_memberships: {
         Args: never
@@ -1561,6 +1575,10 @@ export type Database = {
         Returns: boolean
       }
       is_platform_admin: { Args: { _user_id?: string }; Returns: boolean }
+      is_working_day: {
+        Args: { _company: string; _date: string }
+        Returns: boolean
+      }
       leave_days: { Args: { _end: string; _start: string }; Returns: number }
       my_broadcasts: {
         Args: never
@@ -1776,6 +1794,10 @@ export type Database = {
         Returns: undefined
       }
       set_active_company: { Args: { _company_id: string }; Returns: undefined }
+      working_days_between: {
+        Args: { _company: string; _end: string; _start: string }
+        Returns: number
+      }
     }
     Enums: {
       app_role: "admin" | "manager" | "employee" | "hr"
@@ -1785,7 +1807,14 @@ export type Database = {
       day_portion: "full_day" | "first_half" | "second_half"
       flag_status: "open" | "resolved"
       leave_status: "pending" | "approved" | "rejected" | "cancelled"
-      leave_type: "sick" | "casual" | "paid" | "compensatory" | "bereavement"
+      leave_type:
+        | "sick"
+        | "casual"
+        | "paid"
+        | "compensatory"
+        | "bereavement"
+        | "maternity"
+        | "paternity"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1920,7 +1949,15 @@ export const Constants = {
       day_portion: ["full_day", "first_half", "second_half"],
       flag_status: ["open", "resolved"],
       leave_status: ["pending", "approved", "rejected", "cancelled"],
-      leave_type: ["sick", "casual", "paid", "compensatory", "bereavement"],
+      leave_type: [
+        "sick",
+        "casual",
+        "paid",
+        "compensatory",
+        "bereavement",
+        "maternity",
+        "paternity",
+      ],
     },
   },
 } as const
