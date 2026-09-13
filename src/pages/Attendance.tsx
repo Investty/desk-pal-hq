@@ -47,15 +47,7 @@ export default function Attendance() {
 
   const checkOut = useMutation({
     mutationFn: async () => {
-      if (!todayRecord) throw new Error("No check-in found");
-      const now = new Date();
-      const checkInTime = new Date(todayRecord.check_in!);
-      const mins = differenceInMinutes(now, checkInTime);
-      const hours = Math.round((mins / 60) * 100) / 100;
-      const { error } = await supabase.from("attendance").update({
-        check_out: now.toISOString(),
-        working_hours: hours,
-      }).eq("id", todayRecord.id);
+      const { error } = await supabase.rpc("clock_out");
       if (error) throw error;
     },
     onSuccess: () => {
