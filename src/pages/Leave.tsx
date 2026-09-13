@@ -15,6 +15,8 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { CalendarDays, Plus, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import LeaveCalendar from "@/components/leave/LeaveCalendar";
 import type { Database } from "@/integrations/supabase/types";
 
 type LeaveType = Database["public"]["Enums"]["leave_type"];
