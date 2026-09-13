@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { format, differenceInMinutes } from "date-fns";
+import { format } from "date-fns";
 import { Clock, LogIn, LogOut } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import AttendanceRequests from "@/components/attendance/AttendanceRequests";
@@ -33,14 +33,7 @@ export default function Attendance() {
 
   const checkIn = useMutation({
     mutationFn: async () => {
-      const now = new Date();
-      const isLate = now.getHours() >= 10;
-      const { error } = await supabase.from("attendance").insert({
-        user_id: user!.id,
-        date: today,
-        check_in: now.toISOString(),
-        status: isLate ? "late" : "present",
-      });
+      const { error } = await supabase.rpc("clock_in");
       if (error) throw error;
     },
     onSuccess: () => {
@@ -54,15 +47,7 @@ export default function Attendance() {
 
   const checkOut = useMutation({
     mutationFn: async () => {
-      if (!todayRecord) throw new Error("No check-in found");
-      const now = new Date();
-      const checkInTime = new Date(todayRecord.check_in!);
-      const mins = differenceInMinutes(now, checkInTime);
-      const hours = Math.round((mins / 60) * 100) / 100;
-      const { error } = await supabase.from("attendance").update({
-        check_out: now.toISOString(),
-        working_hours: hours,
-      }).eq("id", todayRecord.id);
+      const { error } = await supabase.rpc("clock_out");
       if (error) throw error;
     },
     onSuccess: () => {
@@ -90,7 +75,7 @@ export default function Attendance() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4 flex-wrap">
-            {!todayRecord ? (
+            {!todayRecord?.check_in ? (
               <Button onClick={() => checkIn.mutate()} disabled={checkIn.isPending}>
                 <LogIn className="h-4 w-4 mr-2" /> Check In
               </Button>

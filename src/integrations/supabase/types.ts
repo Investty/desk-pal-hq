@@ -343,6 +343,7 @@ export type Database = {
           plan_started_at: string
           seat_limit: number
           status: string
+          timezone: string
           trial_ends_at: string | null
           updated_at: string
         }
@@ -358,6 +359,7 @@ export type Database = {
           plan_started_at?: string
           seat_limit?: number
           status?: string
+          timezone?: string
           trial_ends_at?: string | null
           updated_at?: string
         }
@@ -373,6 +375,7 @@ export type Database = {
           plan_started_at?: string
           seat_limit?: number
           status?: string
+          timezone?: string
           trial_ends_at?: string | null
           updated_at?: string
         }
@@ -1453,6 +1456,49 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      clock_in: {
+        Args: never
+        Returns: {
+          check_in: string | null
+          check_out: string | null
+          company_id: string
+          created_at: string
+          date: string
+          id: string
+          status: Database["public"]["Enums"]["attendance_status"]
+          updated_at: string
+          user_id: string
+          working_hours: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "attendance"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      clock_out: {
+        Args: never
+        Returns: {
+          check_in: string | null
+          check_out: string | null
+          company_id: string
+          created_at: string
+          date: string
+          id: string
+          status: Database["public"]["Enums"]["attendance_status"]
+          updated_at: string
+          user_id: string
+          working_hours: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "attendance"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      close_attendance_day: { Args: never; Returns: Json }
       current_company_id: { Args: never; Returns: string }
       current_impersonation: { Args: never; Returns: string }
       current_support_session: {
