@@ -209,6 +209,17 @@ export default function Leave() {
         ))}
       </div>
 
+      <Tabs defaultValue="requests">
+        <TabsList>
+          <TabsTrigger value="requests">My Requests</TabsTrigger>
+          <TabsTrigger value="calendar">Calendar</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="calendar" className="mt-4">
+          <LeaveCalendar />
+        </TabsContent>
+
+        <TabsContent value="requests" className="mt-4">
       <Card>
         <CardHeader><CardTitle>My Requests</CardTitle></CardHeader>
         <CardContent>
