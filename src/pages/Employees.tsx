@@ -13,7 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ListPager } from "@/components/ui/list-pager";
-import { Search, Users, UserMinus, UserPlus } from "lucide-react";
+import { Search, Users, UserMinus, UserPlus, Download } from "lucide-react";
+import { downloadCsv } from "@/lib/csv";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
