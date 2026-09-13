@@ -17,6 +17,8 @@ const today = () => format(new Date(), "yyyy-MM-dd");
 
 export default function Team() {
   const { profile } = useAuth();
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(0);
 
   const { data: team } = useQuery({
     queryKey: ["team-members", profile?.id],
@@ -71,6 +73,14 @@ export default function Team() {
   const upcoming = (leaves || []).filter((l) => l.status === "approved" && l.end_date >= t);
 
   const presentCount = (team || []).filter((m) => byUser.get(m.user_id)?.check_in).length;
+
+  const TEAM_PAGE_SIZE = 15;
+  const filteredTeam = (team || []).filter(
+    (m) =>
+      m.full_name.toLowerCase().includes(search.toLowerCase()) ||
+      (m.employee_id || "").toLowerCase().includes(search.toLowerCase())
+  );
+  const pagedTeam = filteredTeam.slice(page * TEAM_PAGE_SIZE, page * TEAM_PAGE_SIZE + TEAM_PAGE_SIZE);
 
   const stat = (label: string, value: string | number, Icon: typeof Users) => (
     <Card>
