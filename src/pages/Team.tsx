@@ -113,6 +113,12 @@ export default function Team() {
       <Card>
         <CardHeader><CardTitle>Today at a glance</CardTitle></CardHeader>
         <CardContent>
+          <Input
+            className="max-w-sm mb-4"
+            placeholder="Search your team..."
+            value={search}
+            onChange={(e) => { setPage(0); setSearch(e.target.value); }}
+          />
           <Table>
             <TableHeader>
               <TableRow>
@@ -125,7 +131,7 @@ export default function Team() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(team || []).map((m) => {
+              {pagedTeam.map((m) => {
                 const a = byUser.get(m.user_id);
                 const leave = onLeaveToday.get(m.user_id);
                 return (
@@ -152,11 +158,12 @@ export default function Team() {
                   </TableRow>
                 );
               })}
-              {(team || []).length === 0 && (
+              {filteredTeam.length === 0 && (
                 <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Nobody reports to you yet</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
+          <ListPager page={page} pageSize={TEAM_PAGE_SIZE} total={filteredTeam.length} onPage={setPage} />
         </CardContent>
       </Card>
 
