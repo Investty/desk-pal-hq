@@ -238,8 +238,25 @@ export default function Payroll() {
         </Card>
       )}
 
+      {ytdSlips.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">Year to date — {ytdYear}</CardTitle></CardHeader>
+          <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+            <div><p className="text-xs text-muted-foreground">Payslips</p><p className="font-medium">{ytdSlips.length}</p></div>
+            <div><p className="text-xs text-muted-foreground">Gross</p><p className="font-medium">{fmt(ytd.gross)}</p></div>
+            <div><p className="text-xs text-muted-foreground">Deductions</p><p className="font-medium">{fmt(ytd.deductions)}</p></div>
+            <div><p className="text-xs text-muted-foreground">Net paid</p><p className="font-semibold">{fmt(ytd.net)}</p></div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
-        <CardHeader><CardTitle className="text-base">Payslips</CardTitle></CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0">
+          <CardTitle className="text-base">Payslips</CardTitle>
+          <Button variant="outline" size="sm" onClick={exportPayslips} disabled={!payslips?.length}>
+            <Download className="h-4 w-4 mr-2" /> Download CSV
+          </Button>
+        </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
