@@ -155,6 +155,7 @@ export default function Employees() {
         {(search || department !== "all") && (
           <Button variant="ghost" size="sm" onClick={() => { setSearch(""); setDepartment("all"); setPage(0); }}>Clear</Button>
         )}
+        <Button variant="outline" size="sm" onClick={exportList}><Download className="h-4 w-4 mr-2" /> Export CSV</Button>
       </div>
 
       <Tabs value={tab} onValueChange={switchTab}>

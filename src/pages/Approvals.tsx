@@ -352,6 +352,7 @@ export default function Approvals() {
               )}
             </TableBody>
           </Table>
+          <ListPager page={canPage} pageSize={PAGE_SIZE} total={cancelledPage?.count ?? 0} onPage={setCanPage} />
         </CardContent>
       </Card>
 
