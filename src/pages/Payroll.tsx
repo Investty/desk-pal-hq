@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Wallet, Play, Printer, IndianRupee } from "lucide-react";
+import { Wallet, Play, Printer, IndianRupee, Download } from "lucide-react";
+import { downloadCsv } from "@/lib/csv";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { computeSalary, formatINR as fmt } from "@/lib/salary";
@@ -158,6 +159,25 @@ export default function Payroll() {
 
   const mySalary = employees?.[0] ? salaries?.find((s) => s.user_id === employees[0].user_id) : undefined;
   const myCalc = mySalary ? computeSalary(mySalary) : null;
+
+  const ytdYear = now.getFullYear();
+  const ytdSlips = (payslips || []).filter((p) => p.year === ytdYear);
+  const ytd = ytdSlips.reduce(
+    (a, p) => ({ gross: a.gross + Number(p.gross), deductions: a.deductions + Number(p.deductions), net: a.net + Number(p.net) }),
+    { gross: 0, deductions: 0, net: 0 },
+  );
+
+  const exportPayslips = () => {
+    if (!payslips?.length) return toast.error("No payslips to download");
+    downloadCsv(
+      `payslips-${format(new Date(), "yyyy-MM-dd")}.csv`,
+      ["Employee", "Employee ID", "Month", "Year", "Basic", "DA", "HRA", "Other allowances", "Gross", "PF", "Professional tax", "TDS", "Deductions", "Net pay"],
+      payslips.map((p) => {
+        const e = emp(p.user_id);
+        return [e?.full_name ?? "", e?.employee_id ?? "", MONTHS[p.month - 1], p.year, p.basic, p.da, p.hra, p.special_allowance, p.gross, p.pf, p.professional_tax, p.tds, p.deductions, p.net];
+      }),
+    );
+  };
 
   return (
     <div className="space-y-6">
