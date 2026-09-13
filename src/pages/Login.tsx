@@ -19,6 +19,20 @@ export default function Login() {
   const [inviteCode, setInviteCode] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      toast.error("Enter your email address first");
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) toast.error(error.message);
+    else toast.success("If that email exists, a reset link is on its way.");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
