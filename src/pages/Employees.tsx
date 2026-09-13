@@ -9,8 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ListPager } from "@/components/ui/list-pager";
 import { Search, Users, UserMinus, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -29,22 +31,40 @@ interface EmployeeRow {
   departments?: { name: string } | null;
 }
 
+const PAGE_SIZE = 12;
+
 export default function Employees() {
+  const [tab, setTab] = useState<"active" | "former">("active");
   const [search, setSearch] = useState("");
+  const [department, setDepartment] = useState("all");
+  const [page, setPage] = useState(0);
   const [removing, setRemoving] = useState<EmployeeRow | null>(null);
   const [reason, setReason] = useState("");
   const [lastDay, setLastDay] = useState(format(new Date(), "yyyy-MM-dd"));
   const { isHR, company } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: employees, isLoading } = useQuery({
-    queryKey: ["employees"],
+  const { data: departments } = useQuery({
+    queryKey: ["departments-list"],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await supabase.from("departments").select("id, name").order("name");
+      return data || [];
+    },
+  });
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["employees", tab, search, department, page],
+    queryFn: async () => {
+      let q = supabase
         .from("profiles")
-        .select("*, departments:department_id(name)")
+        .select("*, departments:department_id(name)", { count: "exact" })
         .order("full_name");
-      return (data || []) as unknown as EmployeeRow[];
+      q = tab === "former" ? q.eq("status", "removed") : q.neq("status", "removed");
+      if (department !== "all") q = q.eq("department_id", department);
+      const term = search.trim();
+      if (term) q = q.or(`full_name.ilike.%${term}%,email.ilike.%${term}%,employee_id.ilike.%${term}%`);
+      const { data: rows, count } = await q.range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+      return { rows: (rows || []) as unknown as EmployeeRow[], count: count || 0 };
     },
   });
 
@@ -75,34 +95,50 @@ export default function Employees() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const match = (e: EmployeeRow) =>
-    e.full_name.toLowerCase().includes(search.toLowerCase()) ||
-    e.email.toLowerCase().includes(search.toLowerCase()) ||
-    e.employee_id.toLowerCase().includes(search.toLowerCase());
-
-  const active = (employees ?? []).filter((e) => e.status !== "removed" && match(e));
-  const former = (employees ?? []).filter((e) => e.status === "removed" && match(e));
+  const rows = data?.rows ?? [];
+  const total = data?.count ?? 0;
 
   const initialsOf = (name: string) => name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+
+  const switchTab = (v: string) => { setTab(v as "active" | "former"); setPage(0); };
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Employees</h1>
         <p className="text-muted-foreground">
-          Manage your team members{company ? ` · ${active.length} of ${company.seat_limit} seats used` : ""}
+          Manage your team members{company ? ` · ${company.seat_limit} seats in your plan` : ""}
         </p>
       </div>
 
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder="Search employees..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="relative flex-1 min-w-[220px] max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search name, email or ID..."
+            className="pl-9"
+            value={search}
+            onChange={(e) => { setPage(0); setSearch(e.target.value); }}
+          />
+        </div>
+        <Select value={department} onValueChange={(v) => { setPage(0); setDepartment(v); }}>
+          <SelectTrigger className="w-52"><SelectValue placeholder="All departments" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All departments</SelectItem>
+            {(departments || []).map((d) => (
+              <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {(search || department !== "all") && (
+          <Button variant="ghost" size="sm" onClick={() => { setSearch(""); setDepartment("all"); setPage(0); }}>Clear</Button>
+        )}
       </div>
 
-      <Tabs defaultValue="active">
+      <Tabs value={tab} onValueChange={switchTab}>
         <TabsList>
-          <TabsTrigger value="active">Current ({active.length})</TabsTrigger>
-          <TabsTrigger value="former">Former ({former.length})</TabsTrigger>
+          <TabsTrigger value="active">Current</TabsTrigger>
+          <TabsTrigger value="former">Former</TabsTrigger>
         </TabsList>
 
         <TabsContent value="active" className="mt-4">
@@ -112,7 +148,7 @@ export default function Employees() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {active.map((emp) => (
+              {rows.map((emp) => (
                 <Card key={emp.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="pt-6">
                     <div className="flex items-start gap-4">
@@ -136,7 +172,7 @@ export default function Employees() {
                   </CardContent>
                 </Card>
               ))}
-              {active.length === 0 && (
+              {rows.length === 0 && (
                 <div className="col-span-full text-center py-12 text-muted-foreground">
                   <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
                   <p>No employees found</p>
@@ -144,11 +180,12 @@ export default function Employees() {
               )}
             </div>
           )}
+          <ListPager page={page} pageSize={PAGE_SIZE} total={total} onPage={setPage} />
         </TabsContent>
 
         <TabsContent value="former" className="mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {former.map((emp) => (
+            {rows.map((emp) => (
               <Card key={emp.id}>
                 <CardContent className="pt-6">
                   <div className="flex items-start gap-4">
@@ -172,12 +209,13 @@ export default function Employees() {
                 </CardContent>
               </Card>
             ))}
-            {former.length === 0 && (
+            {rows.length === 0 && (
               <div className="col-span-full text-center py-12 text-muted-foreground">
                 <p>No former employees</p>
               </div>
             )}
           </div>
+          <ListPager page={page} pageSize={PAGE_SIZE} total={total} onPage={setPage} />
         </TabsContent>
       </Tabs>
 
