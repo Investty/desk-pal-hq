@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { format, differenceInMinutes } from "date-fns";
+import { format } from "date-fns";
 import { Clock, LogIn, LogOut } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import AttendanceRequests from "@/components/attendance/AttendanceRequests";
@@ -75,7 +75,7 @@ export default function Attendance() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4 flex-wrap">
-            {!todayRecord ? (
+            {!todayRecord?.check_in ? (
               <Button onClick={() => checkIn.mutate()} disabled={checkIn.isPending}>
                 <LogIn className="h-4 w-4 mr-2" /> Check In
               </Button>
