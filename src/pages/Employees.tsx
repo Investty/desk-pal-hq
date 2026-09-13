@@ -103,6 +103,27 @@ export default function Employees() {
 
   const switchTab = (v: string) => { setTab(v as "active" | "former"); setPage(0); };
 
+  const exportList = async () => {
+    let q = supabase
+      .from("profiles")
+      .select("employee_id, full_name, email, joining_date, designation, status, last_working_day, departments:department_id(name)")
+      .order("full_name");
+    q = tab === "former" ? q.eq("status", "removed") : q.neq("status", "removed");
+    if (department !== "all") q = q.eq("department_id", department);
+    const term = search.trim();
+    if (term) q = q.or(`full_name.ilike.%${term}%,email.ilike.%${term}%,employee_id.ilike.%${term}%`);
+    const { data: all, error } = await q.limit(2000);
+    if (error || !all?.length) return toast.error(error ? error.message : "Nothing to export");
+    downloadCsv(
+      `employees-${tab}-${format(new Date(), "yyyy-MM-dd")}.csv`,
+      ["Employee ID", "Name", "Email", "Department", "Designation", "Joining date", "Status", "Last working day"],
+      all.map((e) => {
+        const row = e as unknown as { employee_id: string; full_name: string; email: string; designation: string | null; joining_date: string; status: string; last_working_day: string | null; departments?: { name: string } | null };
+        return [row.employee_id, row.full_name, row.email, row.departments?.name ?? "", row.designation ?? "", row.joining_date, row.status, row.last_working_day ?? ""];
+      }),
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div>
