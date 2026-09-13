@@ -33,14 +33,7 @@ export default function Attendance() {
 
   const checkIn = useMutation({
     mutationFn: async () => {
-      const now = new Date();
-      const isLate = now.getHours() >= 10;
-      const { error } = await supabase.from("attendance").insert({
-        user_id: user!.id,
-        date: today,
-        check_in: now.toISOString(),
-        status: isLate ? "late" : "present",
-      });
+      const { error } = await supabase.rpc("clock_in");
       if (error) throw error;
     },
     onSuccess: () => {
