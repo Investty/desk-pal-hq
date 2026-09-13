@@ -27,11 +27,19 @@ export default function Attendance() {
     },
   });
 
+  const PAGE_SIZE = 25;
+  const [page, setPage] = useState(0);
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+
   const { data: history } = useQuery({
-    queryKey: ["attendance-history"],
+    queryKey: ["attendance-history", page, from, to],
     queryFn: async () => {
-      const { data } = await supabase.from("attendance").select("*").order("date", { ascending: false }).limit(30);
-      return data || [];
+      let q = supabase.from("attendance").select("*", { count: "exact" }).order("date", { ascending: false });
+      if (from) q = q.gte("date", from);
+      if (to) q = q.lte("date", to);
+      const { data, count } = await q.range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+      return { rows: data || [], count: count || 0 };
     },
   });
 
