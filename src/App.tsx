@@ -32,6 +32,7 @@ import Company from "@/pages/Company";
 import Owner from "@/pages/Owner";
 import JoinCompany from "@/pages/JoinCompany";
 import Suspended from "@/pages/Suspended";
+import ResetPassword from "@/pages/ResetPassword";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -84,6 +85,7 @@ function AuthRoute({ children }: { children: React.ReactNode }) {
 const AppRoutes = () => (
   <Routes>
     <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
+    <Route path="/reset-password" element={<ResetPassword />} />
     <Route path="/join" element={<JoinRoute />} />
     <Route path="/owner" element={<OwnerRoute />} />
     <Route element={<WorkspaceRoute />}>
