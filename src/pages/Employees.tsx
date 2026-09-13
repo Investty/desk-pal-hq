@@ -13,7 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ListPager } from "@/components/ui/list-pager";
-import { Search, Users, UserMinus, UserPlus } from "lucide-react";
+import { Search, Users, UserMinus, UserPlus, Download } from "lucide-react";
+import { downloadCsv } from "@/lib/csv";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -102,6 +103,27 @@ export default function Employees() {
 
   const switchTab = (v: string) => { setTab(v as "active" | "former"); setPage(0); };
 
+  const exportList = async () => {
+    let q = supabase
+      .from("profiles")
+      .select("employee_id, full_name, email, joining_date, designation, status, last_working_day, departments:department_id(name)")
+      .order("full_name");
+    q = tab === "former" ? q.eq("status", "removed") : q.neq("status", "removed");
+    if (department !== "all") q = q.eq("department_id", department);
+    const term = search.trim();
+    if (term) q = q.or(`full_name.ilike.%${term}%,email.ilike.%${term}%,employee_id.ilike.%${term}%`);
+    const { data: all, error } = await q.limit(2000);
+    if (error || !all?.length) return toast.error(error ? error.message : "Nothing to export");
+    downloadCsv(
+      `employees-${tab}-${format(new Date(), "yyyy-MM-dd")}.csv`,
+      ["Employee ID", "Name", "Email", "Department", "Designation", "Joining date", "Status", "Last working day"],
+      all.map((e) => {
+        const row = e as unknown as { employee_id: string; full_name: string; email: string; designation: string | null; joining_date: string; status: string; last_working_day: string | null; departments?: { name: string } | null };
+        return [row.employee_id, row.full_name, row.email, row.departments?.name ?? "", row.designation ?? "", row.joining_date, row.status, row.last_working_day ?? ""];
+      }),
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -133,6 +155,7 @@ export default function Employees() {
         {(search || department !== "all") && (
           <Button variant="ghost" size="sm" onClick={() => { setSearch(""); setDepartment("all"); setPage(0); }}>Clear</Button>
         )}
+        <Button variant="outline" size="sm" onClick={exportList}><Download className="h-4 w-4 mr-2" /> Export CSV</Button>
       </div>
 
       <Tabs value={tab} onValueChange={switchTab}>

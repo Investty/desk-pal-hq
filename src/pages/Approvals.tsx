@@ -133,18 +133,20 @@ export default function Approvals() {
   });
 
 
-  const { data: cancelled } = useQuery({
-    queryKey: ["cancelled-leaves"],
+  const [canPage, setCanPage] = useState(0);
+  const { data: cancelledPage } = useQuery({
+    queryKey: ["cancelled-leaves", canPage],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, count } = await supabase
         .from("leave_requests")
-        .select("*, profiles!leave_requests_user_id_fkey(full_name, employee_id)")
+        .select("*, profiles!leave_requests_user_id_fkey(full_name, employee_id)", { count: "exact" })
         .eq("status", "cancelled")
         .order("updated_at", { ascending: false })
-        .limit(20);
-      return data || [];
+        .range(canPage * PAGE_SIZE, canPage * PAGE_SIZE + PAGE_SIZE - 1);
+      return { rows: data || [], count: count || 0 };
     },
   });
+  const cancelled = cancelledPage?.rows;
 
   const managerQueue = (requests || []).filter((r) => r.manager_status === "pending");
   const hrQueue = (requests || []).filter((r) => r.manager_status === "approved" && r.hr_status === "pending");
@@ -350,6 +352,7 @@ export default function Approvals() {
               )}
             </TableBody>
           </Table>
+          <ListPager page={canPage} pageSize={PAGE_SIZE} total={cancelledPage?.count ?? 0} onPage={setCanPage} />
         </CardContent>
       </Card>
 
