@@ -103,6 +103,13 @@ export default function Login() {
               {loading ? "Please wait..." : isSignUp ? "Create Account" : "Sign In"}
             </Button>
           </form>
+          {!isSignUp && (
+            <div className="mt-3 text-center text-sm">
+              <button type="button" onClick={handleForgotPassword} disabled={loading} className="text-muted-foreground hover:text-primary hover:underline">
+                Forgot password?
+              </button>
+            </div>
+          )}
           <div className="mt-4 text-center text-sm text-muted-foreground">
             {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
             <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary hover:underline font-medium">
