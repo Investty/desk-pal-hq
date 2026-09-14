@@ -24,6 +24,18 @@ const LEAVE_TYPES = ["sick", "casual", "paid", "compensatory", "bereavement", "m
 type Stage = "manager" | "hr";
 type RevokeAction = "cancelled" | "rejected";
 
+type WithProfile<T> = T & { profiles?: { full_name: string; employee_id: string } };
+
+async function attachProfiles<T extends { user_id: string }>(rows: T[]): Promise<WithProfile<T>[]> {
+  if (!rows.length) return rows as WithProfile<T>[];
+  const { data } = await supabase
+    .from("profiles")
+    .select("user_id, full_name, employee_id")
+    .in("user_id", [...new Set(rows.map((r) => r.user_id))]);
+  const byUser = new Map((data || []).map((p) => [p.user_id, p]));
+  return rows.map((r) => ({ ...r, profiles: byUser.get(r.user_id) })) as WithProfile<T>[];
+}
+
 export default function Approvals() {
   const { user, isAdmin, isManager, hasFeature } = useAuth();
   const queryClient = useQueryClient();
@@ -40,12 +52,13 @@ export default function Approvals() {
     queryFn: async () => {
       const { data } = await supabase
         .from("leave_requests")
-        .select("*, profiles!leave_requests_user_id_fkey(full_name, employee_id)")
+        .select("*")
         .eq("status", "pending")
         .order("created_at", { ascending: false });
-      return data || [];
+      return await attachProfiles(data || []);
     },
   });
+
 
   const decide = useMutation({
     mutationFn: async ({ id, stage, decision }: { id: string; stage: Stage; decision: "approved" | "rejected" }) => {
@@ -82,17 +95,17 @@ export default function Approvals() {
     queryFn: async () => {
       let q = supabase
         .from("leave_requests")
-        .select("*, profiles!leave_requests_user_id_fkey(full_name, employee_id)", { count: "exact" })
+        .select("*", { count: "exact" })
         .eq("status", "approved")
         .order("start_date", { ascending: false });
       if (apType !== "all") q = q.eq("leave_type", apType as "sick");
       if (apFrom) q = q.gte("start_date", apFrom);
       if (apTo) q = q.lte("end_date", apTo);
       const { data, count } = await q.range(apPage * PAGE_SIZE, apPage * PAGE_SIZE + PAGE_SIZE - 1);
-      return { rows: data || [], count: count || 0 };
+      return { rows: await attachProfiles(data || []), count: count || 0 };
     },
   });
-  const approved = approvedPage?.rows;
+  const approved = (approvedPage?.rows || []).filter((r) => r.user_id !== user?.id);
 
   const revoke = useMutation({
     mutationFn: async ({ id, action, comment }: { id: string; action: RevokeAction; comment: string }) => {
@@ -139,17 +152,18 @@ export default function Approvals() {
     queryFn: async () => {
       const { data, count } = await supabase
         .from("leave_requests")
-        .select("*, profiles!leave_requests_user_id_fkey(full_name, employee_id)", { count: "exact" })
+        .select("*", { count: "exact" })
         .eq("status", "cancelled")
         .order("updated_at", { ascending: false })
         .range(canPage * PAGE_SIZE, canPage * PAGE_SIZE + PAGE_SIZE - 1);
-      return { rows: data || [], count: count || 0 };
+      return { rows: await attachProfiles(data || []), count: count || 0 };
     },
   });
   const cancelled = cancelledPage?.rows;
 
-  const managerQueue = (requests || []).filter((r) => r.manager_status === "pending");
-  const hrQueue = (requests || []).filter((r) => r.manager_status === "approved" && r.hr_status === "pending");
+  const reviewable = (requests || []).filter((r) => r.user_id !== user?.id);
+  const managerQueue = reviewable.filter((r) => r.manager_status === "pending");
+  const hrQueue = reviewable.filter((r) => r.manager_status === "approved" && r.hr_status === "pending");
 
   const renderTable = (rows: typeof managerQueue, stage: Stage, emptyText: string) => (
     <Table>
