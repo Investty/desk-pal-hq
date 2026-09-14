@@ -161,8 +161,9 @@ export default function Approvals() {
   });
   const cancelled = cancelledPage?.rows;
 
-  const managerQueue = (requests || []).filter((r) => r.manager_status === "pending");
-  const hrQueue = (requests || []).filter((r) => r.manager_status === "approved" && r.hr_status === "pending");
+  const reviewable = (requests || []).filter((r) => r.user_id !== user?.id);
+  const managerQueue = reviewable.filter((r) => r.manager_status === "pending");
+  const hrQueue = reviewable.filter((r) => r.manager_status === "approved" && r.hr_status === "pending");
 
   const renderTable = (rows: typeof managerQueue, stage: Stage, emptyText: string) => (
     <Table>
