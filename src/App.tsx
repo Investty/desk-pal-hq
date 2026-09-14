@@ -100,6 +100,7 @@ const AppRoutes = () => (
     <Route path="/reset-password" element={<ResetPassword />} />
     <Route path="/join" element={<JoinRoute />} />
     <Route path="/owner" element={<OwnerRoute />} />
+    <Route path="/setup" element={<SetupRoute />} />
     <Route element={<WorkspaceRoute />}>
       <Route path="/" element={<Dashboard />} />
       <Route path="/employees" element={<ProtectedRoute roles={["admin", "hr", "manager"]}><Employees /></ProtectedRoute>} />
