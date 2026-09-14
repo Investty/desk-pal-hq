@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -52,12 +52,23 @@ function ProtectedRoute({ children, roles, feature }: { children: React.ReactNod
 }
 
 function WorkspaceRoute() {
-  const { user, loading, memberships, companySuspended, isPlatformAdmin, supportSession } = useAuth();
+  const { user, loading, memberships, companySuspended, isPlatformAdmin, supportSession, role, company } = useAuth();
+  const { pathname } = useLocation();
   if (loading) return <Loading />;
   if (!user) return <Navigate to="/login" replace />;
   if (!supportSession && memberships.length === 0) return <Navigate to={isPlatformAdmin ? "/owner" : "/join"} replace />;
   if (companySuspended) return <Suspended />;
+  if (pathname === "/" && role === "admin" && company && !company.setup_completed_at && !supportSession)
+    return <Navigate to="/setup" replace />;
   return <AppLayout />;
+}
+
+function SetupRoute() {
+  const { user, loading, role, company } = useAuth();
+  if (loading) return <Loading />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (role !== "admin" || !company) return <Navigate to="/" replace />;
+  return <Setup />;
 }
 
 
