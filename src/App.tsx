@@ -32,6 +32,7 @@ import Company from "@/pages/Company";
 import Owner from "@/pages/Owner";
 import JoinCompany from "@/pages/JoinCompany";
 import Suspended from "@/pages/Suspended";
+import Setup from "@/pages/Setup";
 import ResetPassword from "@/pages/ResetPassword";
 import NotFound from "@/pages/NotFound";
 

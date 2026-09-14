@@ -36,6 +36,7 @@ export interface CompanyInfo {
   plan: string;
   seat_limit: number;
   trial_ends_at: string | null;
+  setup_completed_at: string | null;
 }
 
 export interface SupportSession {
@@ -91,7 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loadCompanyContext = async (companyId: string, userId: string) => {
     const [profileRes, companyRes, featureRes] = await Promise.all([
       supabase.from("profiles").select("*").eq("user_id", userId).eq("company_id", companyId).maybeSingle(),
-      supabase.from("companies").select("id, name, status, plan, seat_limit, trial_ends_at").eq("id", companyId).maybeSingle(),
+      supabase.from("companies").select("id, name, status, plan, seat_limit, trial_ends_at, setup_completed_at").eq("id", companyId).maybeSingle(),
       supabase.from("company_features").select("feature_key, is_enabled").eq("company_id", companyId),
     ]);
     setProfile((profileRes.data as Profile) ?? null);
