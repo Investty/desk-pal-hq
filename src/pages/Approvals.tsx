@@ -24,6 +24,18 @@ const LEAVE_TYPES = ["sick", "casual", "paid", "compensatory", "bereavement", "m
 type Stage = "manager" | "hr";
 type RevokeAction = "cancelled" | "rejected";
 
+type WithProfile<T> = T & { profiles?: { full_name: string; employee_id: string } };
+
+async function attachProfiles<T extends { user_id: string }>(rows: T[]): Promise<WithProfile<T>[]> {
+  if (!rows.length) return rows as WithProfile<T>[];
+  const { data } = await supabase
+    .from("profiles")
+    .select("user_id, full_name, employee_id")
+    .in("user_id", [...new Set(rows.map((r) => r.user_id))]);
+  const byUser = new Map((data || []).map((p) => [p.user_id, p]));
+  return rows.map((r) => ({ ...r, profiles: byUser.get(r.user_id) })) as WithProfile<T>[];
+}
+
 export default function Approvals() {
   const { user, isAdmin, isManager, hasFeature } = useAuth();
   const queryClient = useQueryClient();
