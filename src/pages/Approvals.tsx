@@ -105,7 +105,7 @@ export default function Approvals() {
       return { rows: await attachProfiles(data || []), count: count || 0 };
     },
   });
-  const approved = approvedPage?.rows;
+  const approved = (approvedPage?.rows || []).filter((r) => r.user_id !== user?.id);
 
   const revoke = useMutation({
     mutationFn: async ({ id, action, comment }: { id: string; action: RevokeAction; comment: string }) => {
