@@ -342,6 +342,7 @@ export type Database = {
           plan: string
           plan_started_at: string
           seat_limit: number
+          setup_completed_at: string | null
           status: string
           timezone: string
           trial_ends_at: string | null
@@ -359,6 +360,7 @@ export type Database = {
           plan?: string
           plan_started_at?: string
           seat_limit?: number
+          setup_completed_at?: string | null
           status?: string
           timezone?: string
           trial_ends_at?: string | null
@@ -376,6 +378,7 @@ export type Database = {
           plan?: string
           plan_started_at?: string
           seat_limit?: number
+          setup_completed_at?: string | null
           status?: string
           timezone?: string
           trial_ends_at?: string | null
