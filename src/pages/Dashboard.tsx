@@ -128,7 +128,7 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <OnLeaveToday />
-        <YesterdayAttendance />
+        {(isAdmin || isManager) && <YesterdayAttendance />}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
