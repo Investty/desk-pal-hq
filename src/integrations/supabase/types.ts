@@ -330,6 +330,53 @@ export type Database = {
         }
         Relationships: []
       }
+      celebration_wishes: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          message: string | null
+          occasion_date: string
+          occasion_type: string
+          recipient_user_id: string
+          sender_user_id: string
+          thanked_at: string | null
+          thanks_message: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          occasion_date: string
+          occasion_type: string
+          recipient_user_id: string
+          sender_user_id: string
+          thanked_at?: string | null
+          thanks_message?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          occasion_date?: string
+          occasion_type?: string
+          recipient_user_id?: string
+          sender_user_id?: string
+          thanked_at?: string | null
+          thanks_message?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "celebration_wishes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comp_off_grants: {
         Row: {
           company_id: string
@@ -1565,6 +1612,7 @@ export type Database = {
           date_of_birth: string
           full_name: string
           joining_date: string
+          user_id: string
         }[]
       }
       get_leave_calendar: {

@@ -5,48 +5,56 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Cake, PartyPopper, Sparkles, Gift, Pencil } from "lucide-react";
+import { Cake, PartyPopper, Gift, Pencil, Heart } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 interface Celebration {
+  user_id: string;
   full_name: string;
   date_of_birth: string | null;
   joining_date: string;
 }
 
-interface HighlightItem {
+type Occasion = "birthday" | "anniversary";
+
+interface TodayItem {
+  userId: string;
   name: string;
-  kind: "birthday" | "anniversary";
-  date: Date;
+  kind: Occasion;
   label: string;
-  isToday: boolean;
   years?: number;
 }
 
-function nextOccurrence(monthDay: string, today: Date): Date {
-  const [, m, d] = monthDay.split("-").map(Number);
-  const year = today.getFullYear();
-  let occ = new Date(year, m - 1, d);
-  // handle Feb 29 birthdays on non-leap years → celebrate Feb 28
-  if (m === 2 && d === 29 && occ.getMonth() !== 1) occ = new Date(year, 1, 28);
-  if (occ < new Date(year, today.getMonth(), today.getDate())) {
-    occ = new Date(year + 1, m - 1, d);
-    if (m === 2 && d === 29 && occ.getMonth() !== 1) occ = new Date(year + 1, 1, 28);
-  }
-  return occ;
-}
+const iso = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
-function yearsBetween(from: string, to: Date): number {
-  return to.getFullYear() - new Date(from).getFullYear();
+// true when monthDay (yyyy-mm-dd) falls on today (Feb 29 celebrated Feb 28 on non-leap years)
+function isTodayOccurrence(dateStr: string, today: Date): boolean {
+  const [, m, d] = dateStr.split("-").map(Number);
+  if (m === today.getMonth() + 1 && d === today.getDate()) return true;
+  if (m === 2 && d === 29) {
+    const leap = new Date(today.getFullYear(), 1, 29).getMonth() === 1;
+    if (!leap && today.getMonth() === 1 && today.getDate() === 28) return true;
+  }
+  return false;
 }
 
 export default function Highlights() {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const queryClient = useQueryClient();
   const [dobOpen, setDobOpen] = useState(false);
   const [dob, setDob] = useState("");
+  const [wishFor, setWishFor] = useState<TodayItem | null>(null);
+  const [wishText, setWishText] = useState("");
+  const [thanksOpen, setThanksOpen] = useState(false);
+  const [thanksText, setThanksText] = useState("Thank you so much for your wishes!");
+
+  const today = new Date();
+  const todayIso = iso(today);
 
   const { data: celebrations } = useQuery({
     queryKey: ["celebrations"],
@@ -54,6 +62,17 @@ export default function Highlights() {
       const { data, error } = await supabase.rpc("get_celebrations");
       if (error) throw error;
       return (data || []) as Celebration[];
+    },
+  });
+
+  const { data: wishes } = useQuery({
+    queryKey: ["celebration-wishes", todayIso],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("celebration_wishes")
+        .select("*")
+        .eq("occasion_date", todayIso);
+      return data || [];
     },
   });
 
@@ -73,48 +92,82 @@ export default function Highlights() {
     onError: () => toast.error("Could not save birthday"),
   });
 
-  const today = new Date();
-  const items: HighlightItem[] = [];
+  const sendWish = useMutation({
+    mutationFn: async () => {
+      const item = wishFor!;
+      const { error } = await supabase.from("celebration_wishes").insert({
+        company_id: profile!.company_id,
+        recipient_user_id: item.userId,
+        sender_user_id: user!.id,
+        occasion_type: item.kind,
+        occasion_date: todayIso,
+        message: wishText.trim() || null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Wish sent!");
+      setWishFor(null);
+      setWishText("");
+      queryClient.invalidateQueries({ queryKey: ["celebration-wishes"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
+  const sendThanks = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("celebration_wishes")
+        .update({ thanks_message: thanksText.trim() || null, thanked_at: new Date().toISOString() })
+        .eq("recipient_user_id", user!.id)
+        .eq("occasion_date", todayIso)
+        .is("thanked_at", null);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Thank you sent to everyone who wished you");
+      setThanksOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["celebration-wishes"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const items: TodayItem[] = [];
   celebrations?.forEach((c) => {
-    if (c.date_of_birth) {
-      const occ = nextOccurrence(c.date_of_birth, today);
-      const daysAway = Math.round((occ.getTime() - today.getTime()) / 86400000);
-      items.push({
-        name: c.full_name,
-        kind: "birthday",
-        date: occ,
-        isToday: daysAway === 0,
-        label: daysAway === 0 ? "Birthday today!" : `Birthday ${occ.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`,
-      });
+    if (c.date_of_birth && isTodayOccurrence(c.date_of_birth, today)) {
+      items.push({ userId: c.user_id, name: c.full_name, kind: "birthday", label: "Birthday today!" });
     }
-    const ann = nextOccurrence(c.joining_date, today);
-    const daysAway = Math.round((ann.getTime() - today.getTime()) / 86400000);
-    const yrs = yearsBetween(c.joining_date, ann);
-    if (yrs >= 1) {
-      items.push({
-        name: c.full_name,
-        kind: "anniversary",
-        date: ann,
-        isToday: daysAway === 0,
-        years: yrs,
-        label: daysAway === 0
-          ? `${yrs} year${yrs > 1 ? "s" : ""} at the company today!`
-          : `${yrs} year${yrs > 1 ? "s" : ""} anniversary on ${ann.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`,
-      });
+    if (isTodayOccurrence(c.joining_date, today)) {
+      const yrs = today.getFullYear() - new Date(c.joining_date).getFullYear();
+      if (yrs >= 1) {
+        items.push({
+          userId: c.user_id,
+          name: c.full_name,
+          kind: "anniversary",
+          years: yrs,
+          label: `${yrs} year${yrs > 1 ? "s" : ""} at the company today!`,
+        });
+      }
     }
   });
 
-  items.sort((a, b) => a.date.getTime() - b.date.getTime());
-  const upcoming = items.slice(0, 6);
-  const todaysItems = upcoming.filter((i) => i.isToday);
+  const myWishes = wishes?.filter((w) => w.recipient_user_id === user?.id) || [];
+  const unthanked = myWishes.filter((w) => !w.thanked_at);
+  const nameOf = (uid: string) => celebrations?.find((c) => c.user_id === uid)?.full_name || "A colleague";
+
+  const wishCount = (item: TodayItem) =>
+    wishes?.filter((w) => w.recipient_user_id === item.userId && w.occasion_type === item.kind).length || 0;
+  const alreadyWished = (item: TodayItem) =>
+    !!wishes?.some(
+      (w) => w.recipient_user_id === item.userId && w.occasion_type === item.kind && w.sender_user_id === user?.id,
+    );
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2 text-lg">
           <PartyPopper className="h-5 w-5 text-primary" />
-          Highlights & Celebrations
+          Today's Celebrations
         </CardTitle>
         <Dialog open={dobOpen} onOpenChange={setDobOpen}>
           <DialogTrigger asChild>
@@ -127,7 +180,7 @@ export default function Highlights() {
               <DialogTitle>Set your birthday</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-2">
-              <Input type="date" value={dob} onChange={(e) => setDob(e.target.value)} max={today.toISOString().slice(0, 10)} />
+              <Input type="date" value={dob} onChange={(e) => setDob(e.target.value)} max={todayIso} />
               <Button className="w-full" onClick={() => saveDob.mutate()} disabled={!dob || saveDob.isPending}>
                 Save
               </Button>
@@ -136,37 +189,94 @@ export default function Highlights() {
         </Dialog>
       </CardHeader>
       <CardContent className="space-y-4">
-        {todaysItems.length > 0 && (
+        {myWishes.length > 0 && (
           <div className="rounded-lg bg-primary/10 border border-primary/20 p-4 space-y-2">
-            {todaysItems.map((i, idx) => (
-              <p key={idx} className="flex items-center gap-2 text-sm font-medium text-primary">
-                <Sparkles className="h-4 w-4" /> {i.name} — {i.label}
-              </p>
-            ))}
+            <p className="text-sm font-medium text-primary">
+              {myWishes.length} {myWishes.length === 1 ? "colleague has" : "colleagues have"} wished you today
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {myWishes.map((w) => nameOf(w.sender_user_id)).join(", ")}
+            </p>
+            {unthanked.length > 0 && (
+              <Dialog open={thanksOpen} onOpenChange={setThanksOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline" className="gap-1.5">
+                    <Heart className="h-3.5 w-3.5" /> Say thanks
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-sm">
+                  <DialogHeader>
+                    <DialogTitle>Thank everyone who wished you</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-2">
+                    <Textarea value={thanksText} onChange={(e) => setThanksText(e.target.value)} rows={3} />
+                    <Button className="w-full" onClick={() => sendThanks.mutate()} disabled={sendThanks.isPending}>
+                      Send thank you
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
           </div>
         )}
-        {upcoming.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-4 text-center">No upcoming celebrations yet. Set your birthday to get started!</p>
+
+        {items.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-4 text-center">No celebrations today.</p>
         ) : (
           <ul className="divide-y divide-border">
-            {upcoming.map((i, idx) => {
+            {items.map((i, idx) => {
               const initials = i.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
               const Icon = i.kind === "birthday" ? Cake : Gift;
+              const isSelf = i.userId === user?.id;
+              const count = wishCount(i);
               return (
                 <li key={idx} className="flex items-center gap-3 py-2.5">
                   <Avatar className="h-9 w-9">
                     <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">{initials}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{i.name}</p>
+                    <p className="text-sm font-medium truncate">{isSelf ? "You" : i.name}</p>
                     <p className="text-xs text-muted-foreground">{i.label}</p>
                   </div>
-                  <Icon className={`h-4 w-4 shrink-0 ${i.isToday ? "text-primary" : "text-muted-foreground"}`} />
+                  {count > 0 && <Badge variant="secondary">{count} wish{count > 1 ? "es" : ""}</Badge>}
+                  {!isSelf &&
+                    (alreadyWished(i) ? (
+                      <Badge variant="outline" className="gap-1"><Heart className="h-3 w-3" /> Wished</Badge>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5"
+                        onClick={() => {
+                          setWishFor(i);
+                          setWishText(
+                            i.kind === "birthday" ? "Happy birthday! 🎉" : "Congratulations on your work anniversary! 🎊",
+                          );
+                        }}
+                      >
+                        <Heart className="h-3.5 w-3.5" /> Wish
+                      </Button>
+                    ))}
+                  <Icon className="h-4 w-4 shrink-0 text-primary" />
                 </li>
               );
             })}
           </ul>
         )}
+
+        <Dialog open={!!wishFor} onOpenChange={(o) => !o && setWishFor(null)}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Wish {wishFor?.name}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              <Textarea value={wishText} onChange={(e) => setWishText(e.target.value)} rows={3} />
+              <Button className="w-full" onClick={() => sendWish.mutate()} disabled={sendWish.isPending}>
+                Send wish
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
