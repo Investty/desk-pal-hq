@@ -53,17 +53,23 @@ export default function Leave() {
   });
 
   const { data: balances } = useQuery({
-    queryKey: ["leave-balances"],
+    queryKey: ["leave-balances", user?.id],
+    enabled: !!user?.id,
     queryFn: async () => {
-      const { data } = await supabase.from("leave_balances").select("*");
+      const { data } = await supabase.from("leave_balances").select("*").eq("user_id", user!.id).order("leave_type");
       return data || [];
     },
   });
 
   const { data: requests } = useQuery({
-    queryKey: ["leave-requests"],
+    queryKey: ["leave-requests", user?.id],
+    enabled: !!user?.id,
     queryFn: async () => {
-      const { data } = await supabase.from("leave_requests").select("*").order("created_at", { ascending: false });
+      const { data } = await supabase
+        .from("leave_requests")
+        .select("*")
+        .eq("user_id", user!.id)
+        .order("created_at", { ascending: false });
       return data || [];
     },
   });

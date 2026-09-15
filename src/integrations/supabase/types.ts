@@ -330,6 +330,50 @@ export type Database = {
         }
         Relationships: []
       }
+      comp_off_grants: {
+        Row: {
+          company_id: string
+          created_at: string
+          days: number
+          granted_by: string | null
+          id: string
+          reason: string
+          updated_at: string
+          user_id: string
+          worked_on: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          days: number
+          granted_by?: string | null
+          id?: string
+          reason: string
+          updated_at?: string
+          user_id: string
+          worked_on: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          days?: number
+          granted_by?: string | null
+          id?: string
+          reason?: string
+          updated_at?: string
+          user_id?: string
+          worked_on?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comp_off_grants_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           billing_interval: string

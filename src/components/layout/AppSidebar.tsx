@@ -108,16 +108,6 @@ export default function AppSidebar() {
             </Link>
           );
         })}
-        {isPlatformAdmin && (
-          <Link
-            to="/owner"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent"
-            title={collapsed ? "Owner console" : undefined}
-          >
-            <ShieldAlert className="h-5 w-5 shrink-0" />
-            {!collapsed && <span>Owner Console</span>}
-          </Link>
-        )}
       </nav>
 
       <div className="border-t border-sidebar-border p-3">
