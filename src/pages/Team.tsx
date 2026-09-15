@@ -63,6 +63,23 @@ export default function Team() {
     },
   });
 
+  const { data: allPeople } = useQuery({
+    queryKey: ["comp-off-people"],
+    enabled: isHR,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, employee_id")
+        .eq("is_active", true)
+        .order("full_name");
+      return data || [];
+    },
+  });
+
+  const compOffPeople = isHR
+    ? allPeople || []
+    : (team || []).map((m) => ({ user_id: m.user_id, full_name: m.full_name, employee_id: m.employee_id }));
+
   const byUser = new Map((attendance || []).map((a) => [a.user_id, a]));
   const t = today();
   const onLeaveToday = new Map(
