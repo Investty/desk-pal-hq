@@ -12,11 +12,12 @@ import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { Users, Clock, CalendarDays, CheckSquare } from "lucide-react";
 import AttendanceApprovals from "@/components/attendance/AttendanceApprovals";
+import CompOffGrants from "@/components/leave/CompOffGrants";
 
 const today = () => format(new Date(), "yyyy-MM-dd");
 
 export default function Team() {
-  const { profile } = useAuth();
+  const { profile, isHR } = useAuth();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
 
@@ -238,6 +239,8 @@ export default function Team() {
           </Table>
         </CardContent>
       </Card>
+
+      <CompOffGrants people={compOffPeople} />
 
       <AttendanceApprovals />
     </div>
