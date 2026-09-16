@@ -28,8 +28,11 @@ export default function Departments() {
 
   const create = useMutation({
     mutationFn: async () => {
-      if (!name.trim()) throw new Error("Name is required");
-      const { error } = await supabase.from("departments").insert({ name: name.trim(), description: description.trim() || null });
+      const clean = name.trim();
+      if (clean.length < 2) throw new Error("Name must be at least 2 characters");
+      if (clean.length > 50) throw new Error("Name must be 50 characters or less");
+      if (description.trim().length > 200) throw new Error("Description must be 200 characters or less");
+      const { error } = await supabase.from("departments").insert({ name: clean, description: description.trim() || null });
       if (error) throw error;
     },
     onSuccess: () => {
