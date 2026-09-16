@@ -345,7 +345,7 @@ export default function Setup() {
                 {(invites ?? []).map((i) => (
                   <div key={i.id} className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
                     <span className="font-mono font-semibold">{i.code}</span>
-                    <Badge variant="secondary" className="capitalize">{i.role === "hr" ? "HR" : i.role}</Badge>
+                    <Badge variant="role" className="capitalize">{i.role === "hr" ? "HR" : i.role}</Badge>
                     <span className="text-muted-foreground truncate">{i.email || "Anyone"}</span>
                     <div className="ml-auto flex items-center gap-1">
                       <Button variant="ghost" size="icon" onClick={() => { navigator.clipboard.writeText(i.code); toast.success("Code copied"); }}>

@@ -86,7 +86,7 @@ export default function RevenueTab() {
                   <TableCell className="capitalize">{r.plan}</TableCell>
                   <TableCell className="capitalize">{r.billing_interval}</TableCell>
                   <TableCell>
-                    <Badge variant={r.status === "active" ? "default" : r.status === "trial" ? "secondary" : "destructive"}>
+                    <Badge variant={r.status === "active" ? "success" : r.status === "trial" ? "warning" : "danger"}>
                       {r.status.replace("_", " ")}
                     </Badge>
                   </TableCell>

@@ -25,7 +25,7 @@ export default function OnLeaveToday() {
         <CardTitle className="text-base flex items-center gap-2">
           <Plane className="h-4 w-4" /> On Leave Today
           {people && people.length > 0 && (
-            <Badge variant="secondary" className="ml-1">{people.length}</Badge>
+            <Badge variant="info" className="ml-1">{people.length}</Badge>
           )}
         </CardTitle>
       </CardHeader>
@@ -41,7 +41,7 @@ export default function OnLeaveToday() {
                 {format(new Date(p.start_date), "MMM d")} – {format(new Date(p.end_date), "MMM d")}
               </p>
             </div>
-            <Badge variant="outline" className="capitalize shrink-0">{p.leave_type}</Badge>
+            <Badge variant="info" className="capitalize shrink-0">{p.leave_type}</Badge>
           </div>
         ))}
         {people?.length === 0 && (

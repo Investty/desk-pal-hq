@@ -157,7 +157,7 @@ export default function AttendanceFlags() {
                 </TableCell>
                 <TableCell className="max-w-[240px] truncate">{f.reason}</TableCell>
                 <TableCell>
-                  <Badge variant={f.status === "resolved" ? "default" : "secondary"}>{f.status}</Badge>
+                  <Badge variant={f.status === "resolved" ? "success" : "warning"}>{f.status}</Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   {f.status === "open" ? (

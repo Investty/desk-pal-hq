@@ -379,7 +379,7 @@ export default function Owner() {
                             <TableCell>{Number(c.storage_used_mb).toFixed(1)} / {c.storage_mb_limit} MB</TableCell>
                             <TableCell>{c.notifications_this_month} / {c.monthly_notification_limit}</TableCell>
                             <TableCell>
-                              <Badge variant={c.status === "active" ? "default" : c.status === "trial" ? "secondary" : "destructive"}>
+                              <Badge variant={c.status === "active" ? "success" : c.status === "trial" ? "warning" : "danger"}>
                                 {STATUS_LABEL[c.status] ?? c.status}
                               </Badge>
                               {trial && <p className="text-xs text-muted-foreground mt-1">{trial}</p>}

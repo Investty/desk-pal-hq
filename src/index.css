@@ -84,7 +84,7 @@
     --font-weight-semibold: 600;
     --font-weight-bold: 700;
     --font-weight-extrabold: 800;
-    --letter-spacing-tight: -0.025em;
+    --letter-spacing-tight: 0em;
     --letter-spacing-normal: 0em;
 
     /* Radius, spacing, and motion */
