@@ -116,7 +116,8 @@ export default function Company() {
         <CardContent className="flex flex-wrap items-end gap-3">
           <div className="space-y-1 flex-1 min-w-[220px]">
             <Label>Company name</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} />
+            <Input value={name} maxLength={60} onChange={(e) => setName(e.target.value)} />
+            <p className="text-xs text-muted-foreground">{name.trim().length}/60 characters</p>
           </div>
           <Button onClick={() => rename.mutate()} disabled={!name.trim() || rename.isPending}>Save</Button>
         </CardContent>
@@ -144,9 +145,14 @@ export default function Company() {
               </label>
             ))}
           </div>
+          {(weeklyOffs?.length ?? 0) >= 7 && (
+            <p className="text-sm text-destructive">
+              You must keep at least one working day — every day cannot be an off day.
+            </p>
+          )}
           <Button
             onClick={() => weeklyOffs && saveWeeklyOffs.mutate(weeklyOffs)}
-            disabled={!weeklyOffs || saveWeeklyOffs.isPending}
+            disabled={!weeklyOffs || weeklyOffs.length >= 7 || saveWeeklyOffs.isPending}
           >
             Save work week
           </Button>
@@ -158,8 +164,15 @@ export default function Company() {
         <CardContent className="space-y-4">
           <div className="flex flex-wrap items-end gap-3">
             <div className="space-y-1 flex-1 min-w-[220px]">
-              <Label>Email (optional, for your reference)</Label>
-              <Input value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="person@company.com" />
+              <Label>Email <span className="text-destructive">*</span></Label>
+              <Input
+                type="email"
+                required
+                maxLength={255}
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="person@company.com"
+              />
             </div>
             <div className="space-y-1">
               <Label>Role</Label>
