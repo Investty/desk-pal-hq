@@ -182,8 +182,8 @@ export default function Employees() {
                         <h3 className="font-semibold truncate">{emp.full_name}</h3>
                         <p className="text-sm text-muted-foreground truncate">{emp.email}</p>
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
-                          <Badge variant="secondary" className="text-xs">{emp.employee_id}</Badge>
-                          {emp.departments?.name && <Badge variant="outline" className="text-xs">{emp.departments.name}</Badge>}
+                          <Badge className="text-xs">{emp.employee_id}</Badge>
+                          {emp.departments?.name && <Badge variant="department" className="text-xs">{emp.departments.name}</Badge>}
                         </div>
                         {isHR && (
                           <Button size="sm" variant="outline" className="mt-3" onClick={() => { setRemoving(emp); setReason(""); }}>

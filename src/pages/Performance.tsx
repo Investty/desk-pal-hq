@@ -14,8 +14,8 @@ import { format } from "date-fns";
 import { Target, Plus, Star } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-const statusColor: Record<string, "outline" | "secondary" | "default"> = {
-  pending: "outline", self_review: "secondary", manager_review: "secondary", complete: "default",
+const statusColor: Record<string, "warning" | "info" | "success"> = {
+  pending: "warning", self_review: "info", manager_review: "info", complete: "success",
 };
 
 function Stars({ value, onChange, readOnly }: { value: number; onChange?: (v: number) => void; readOnly?: boolean }) {

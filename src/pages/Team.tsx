@@ -164,11 +164,11 @@ export default function Team() {
                     <TableCell>{a?.working_hours ?? "—"}</TableCell>
                     <TableCell>
                       {leave ? (
-                        <Badge variant="secondary" className="capitalize">
+                        <Badge variant="info" className="capitalize">
                           On {leave.leave_type} leave{leave.day_portion !== "full_day" ? " (half day)" : ""}
                         </Badge>
                       ) : a ? (
-                        <Badge variant={a.status === "late" ? "secondary" : "default"}>{a.status}</Badge>
+                        <Badge variant={a.status === "late" ? "warning" : "success"}>{a.status}</Badge>
                       ) : (
                         <Badge variant="outline">Not marked</Badge>
                       )}

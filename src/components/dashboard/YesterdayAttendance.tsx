@@ -17,7 +17,7 @@ export default function YesterdayAttendance() {
   });
 
   const statusVariant = (s: string) =>
-    s === "present" ? ("default" as const) : s === "late" ? ("secondary" as const) : ("destructive" as const);
+    s === "present" ? ("success" as const) : s === "late" ? ("warning" as const) : s === "on_leave" ? ("info" as const) : ("danger" as const);
 
   return (
     <Card>

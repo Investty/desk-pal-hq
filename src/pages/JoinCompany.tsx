@@ -62,7 +62,7 @@ export default function JoinCompany() {
                   className="w-full flex items-center justify-between rounded-md border px-3 py-2 text-sm hover:bg-accent"
                 >
                   <span>{m.company_name}</span>
-                  <Badge variant="secondary" className="uppercase text-xs">{m.role === "hr" ? "HR" : m.role}</Badge>
+                  <Badge variant="role" className="uppercase text-xs">{m.role === "hr" ? "HR" : m.role}</Badge>
                 </button>
               ))}
             </div>

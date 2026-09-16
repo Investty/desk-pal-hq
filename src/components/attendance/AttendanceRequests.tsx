@@ -106,7 +106,7 @@ export default function AttendanceRequests() {
   });
 
   const statusVariant = (s: string) =>
-    s === "approved" ? ("default" as const) : s === "rejected" ? ("destructive" as const) : s === "cancelled" ? ("outline" as const) : ("secondary" as const);
+    s === "approved" ? ("success" as const) : s === "rejected" ? ("danger" as const) : s === "cancelled" ? ("outline" as const) : ("warning" as const);
 
   return (
     <Card>
