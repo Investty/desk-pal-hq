@@ -106,15 +106,15 @@
     --transition-normal: 200ms ease;
 
     /* Semantic aliases used throughout the application */
-    --background: 226 100% 97%;
-    --foreground: 215 25% 27%;
+    --background: 224 100% 97.06%;
+    --foreground: 217.24 32.58% 17.45%;
     --card: 0 0% 100%;
-    --card-foreground: 217 33% 17%;
+    --card-foreground: 222.22 47.37% 11.18%;
     --popover: 0 0% 100%;
-    --popover-foreground: 217 33% 17%;
-    --primary: 221 83% 53%;
+    --popover-foreground: 222.22 47.37% 11.18%;
+    --primary: 221.21 83.19% 53.33%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 263 70% 50%;
+    --secondary: 262.12 83.26% 57.84%;
     --secondary-foreground: 0 0% 100%;
     --muted: 210 40% 96%;
     --muted-foreground: 215 16% 47%;
@@ -130,7 +130,7 @@
     --info-foreground: 201 96% 32%;
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 221 83% 53%;
+    --ring: 221.21 83.19% 53.33%;
     --radius: var(--radius-lg);
     --sidebar-background: 221 39% 11%;
     --sidebar-foreground: 220 14% 96%;
