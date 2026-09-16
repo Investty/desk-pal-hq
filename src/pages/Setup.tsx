@@ -338,7 +338,7 @@ export default function Setup() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button onClick={createInvite}>Create code</Button>
+                <Button onClick={createInvite} disabled={!inviteEmail.trim()}>Create code</Button>
               </div>
 
               <div className="space-y-2">
