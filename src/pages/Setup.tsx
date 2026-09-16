@@ -76,7 +76,8 @@ export default function Setup() {
   const hasHrInvite = useMemo(() => (invites ?? []).some((i) => i.role === "hr"), [invites]);
 
   const saveCompany = async () => {
-    if (!name.trim()) return toast.error("Please enter a company name");
+    if (name.trim().length < 2) return toast.error("Company name must be at least 2 characters");
+    if (name.trim().length > 60) return toast.error("Company name must be 60 characters or less");
     setSaving(true);
     const { error } = await supabase
       .from("companies")

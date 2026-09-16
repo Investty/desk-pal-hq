@@ -61,11 +61,13 @@ export default function Departments() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Name</Label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Engineering" />
+                <Input value={name} maxLength={50} onChange={(e) => setName(e.target.value)} placeholder="e.g., Engineering" />
+                <p className="text-xs text-muted-foreground">{name.trim().length}/50 characters</p>
               </div>
               <div className="space-y-2">
                 <Label>Description</Label>
-                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Optional description..." />
+                <Textarea value={description} maxLength={200} onChange={(e) => setDescription(e.target.value)} placeholder="Optional description..." />
+                <p className="text-xs text-muted-foreground">{description.trim().length}/200 characters</p>
               </div>
               <Button onClick={() => create.mutate()} disabled={create.isPending} className="w-full">Create</Button>
             </div>
