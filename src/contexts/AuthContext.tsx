@@ -138,13 +138,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 
   useEffect(() => {
+    let loadedForUser: string | null = null;
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
+        // Token refreshes / tab focus events must not re-trigger a full reload.
+        if (loadedForUser === session.user.id) return;
+        loadedForUser = session.user.id;
         setLoading(true);
         setTimeout(() => { fetchUserData(session.user.id).finally(() => setLoading(false)); }, 0);
       } else {
+        loadedForUser = null;
         setProfile(null);
         setRole(null);
         setCompany(null);
@@ -159,6 +164,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
+        if (loadedForUser === session.user.id) { setLoading(false); return; }
+        loadedForUser = session.user.id;
         fetchUserData(session.user.id).finally(() => setLoading(false));
       } else {
         setLoading(false);

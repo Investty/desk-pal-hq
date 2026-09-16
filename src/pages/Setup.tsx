@@ -76,7 +76,8 @@ export default function Setup() {
   const hasHrInvite = useMemo(() => (invites ?? []).some((i) => i.role === "hr"), [invites]);
 
   const saveCompany = async () => {
-    if (!name.trim()) return toast.error("Please enter a company name");
+    if (name.trim().length < 2) return toast.error("Company name must be at least 2 characters");
+    if (name.trim().length > 60) return toast.error("Company name must be 60 characters or less");
     setSaving(true);
     const { error } = await supabase
       .from("companies")
@@ -89,6 +90,8 @@ export default function Setup() {
   };
 
   const saveWeek = async () => {
+    if (weeklyOffs.length >= 7)
+      return toast.error("You must keep at least one working day — every day cannot be an off day");
     setSaving(true);
     const { error } = await supabase
       .from("companies")
@@ -101,7 +104,8 @@ export default function Setup() {
 
   const addDepartment = async (value: string) => {
     const clean = value.trim();
-    if (!clean) return;
+    if (clean.length < 2) return toast.error("Department name must be at least 2 characters");
+    if (clean.length > 50) return toast.error("Department name must be 50 characters or less");
     const { error } = await supabase.from("departments").insert({ name: clean });
     if (error) return toast.error(error.message);
     setDeptName("");
@@ -115,8 +119,12 @@ export default function Setup() {
   };
 
   const createInvite = async () => {
+    const email = inviteEmail.trim();
+    if (!email) return toast.error("Email is required");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || email.length > 255)
+      return toast.error("Please enter a valid email address");
     const { error } = await supabase.from("company_invites").insert({
-      email: inviteEmail.trim() || null,
+      email,
       role: inviteRole,
       created_by: user?.id ?? null,
     });
@@ -185,7 +193,8 @@ export default function Setup() {
             <CardContent className="space-y-4">
               <div className="space-y-1">
                 <Label>Company name</Label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Acme Pvt Ltd" />
+                <Input value={name} maxLength={60} onChange={(e) => setName(e.target.value)} placeholder="Acme Pvt Ltd" />
+                <p className="text-xs text-muted-foreground">{name.trim().length}/60 characters</p>
               </div>
               <div className="space-y-1">
                 <Label>Time zone</Label>
@@ -227,9 +236,14 @@ export default function Setup() {
                   </label>
                 ))}
               </div>
+              {weeklyOffs.length >= 7 && (
+                <p className="text-sm text-destructive">
+                  You must keep at least one working day — every day cannot be an off day.
+                </p>
+              )}
               <div className="flex justify-between">
                 <Button variant="ghost" onClick={() => setStep(0)}><ArrowLeft className="h-4 w-4 mr-2" /> Back</Button>
-                <Button onClick={saveWeek} disabled={saving}>Continue <ArrowRight className="h-4 w-4 ml-2" /></Button>
+                <Button onClick={saveWeek} disabled={saving || weeklyOffs.length >= 7}>Continue <ArrowRight className="h-4 w-4 ml-2" /></Button>
               </div>
             </CardContent>
           </Card>
@@ -245,6 +259,7 @@ export default function Setup() {
               <div className="flex gap-2">
                 <Input
                   value={deptName}
+                  maxLength={50}
                   onChange={(e) => setDeptName(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") addDepartment(deptName); }}
                   placeholder="e.g. Engineering"
@@ -301,8 +316,15 @@ export default function Setup() {
             <CardContent className="space-y-4">
               <div className="flex flex-wrap items-end gap-3">
                 <div className="space-y-1 flex-1 min-w-[200px]">
-                  <Label>Email (optional, for your reference)</Label>
-                  <Input value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="hr@company.com" />
+                  <Label>Email <span className="text-destructive">*</span></Label>
+                  <Input
+                    type="email"
+                    required
+                    maxLength={255}
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="hr@company.com"
+                  />
                 </div>
                 <div className="space-y-1">
                   <Label>Joins as</Label>
@@ -316,7 +338,7 @@ export default function Setup() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button onClick={createInvite}>Create code</Button>
+                <Button onClick={createInvite} disabled={!inviteEmail.trim()}>Create code</Button>
               </div>
 
               <div className="space-y-2">

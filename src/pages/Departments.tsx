@@ -28,8 +28,11 @@ export default function Departments() {
 
   const create = useMutation({
     mutationFn: async () => {
-      if (!name.trim()) throw new Error("Name is required");
-      const { error } = await supabase.from("departments").insert({ name: name.trim(), description: description.trim() || null });
+      const clean = name.trim();
+      if (clean.length < 2) throw new Error("Name must be at least 2 characters");
+      if (clean.length > 50) throw new Error("Name must be 50 characters or less");
+      if (description.trim().length > 200) throw new Error("Description must be 200 characters or less");
+      const { error } = await supabase.from("departments").insert({ name: clean, description: description.trim() || null });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -58,11 +61,13 @@ export default function Departments() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Name</Label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Engineering" />
+                <Input value={name} maxLength={50} onChange={(e) => setName(e.target.value)} placeholder="e.g., Engineering" />
+                <p className="text-xs text-muted-foreground">{name.trim().length}/50 characters</p>
               </div>
               <div className="space-y-2">
                 <Label>Description</Label>
-                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Optional description..." />
+                <Textarea value={description} maxLength={200} onChange={(e) => setDescription(e.target.value)} placeholder="Optional description..." />
+                <p className="text-xs text-muted-foreground">{description.trim().length}/200 characters</p>
               </div>
               <Button onClick={() => create.mutate()} disabled={create.isPending} className="w-full">Create</Button>
             </div>

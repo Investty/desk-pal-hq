@@ -48,7 +48,10 @@ export default function Company() {
 
   const rename = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("companies").update({ name: name.trim() }).eq("id", companyRow!.id);
+      const trimmed = name.trim();
+      if (trimmed.length < 2) throw new Error("Company name must be at least 2 characters");
+      if (trimmed.length > 60) throw new Error("Company name must be 60 characters or less");
+      const { error } = await supabase.from("companies").update({ name: trimmed }).eq("id", companyRow!.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -60,6 +63,7 @@ export default function Company() {
 
   const saveWeeklyOffs = useMutation({
     mutationFn: async (days: number[]) => {
+      if (days.length >= 7) throw new Error("At least one working day is required — you cannot mark every day as an off day");
       const { error } = await supabase.from("companies").update({ weekly_offs: days }).eq("id", companyRow!.id);
       if (error) throw error;
     },
@@ -72,8 +76,12 @@ export default function Company() {
 
   const createInvite = useMutation({
     mutationFn: async () => {
+      const email = inviteEmail.trim();
+      if (!email) throw new Error("Email is required");
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || email.length > 255)
+        throw new Error("Please enter a valid email address");
       const { error } = await supabase.from("company_invites").insert({
-        email: inviteEmail.trim() || null,
+        email,
         role: inviteRole,
         created_by: user?.id ?? null,
       });
@@ -108,7 +116,8 @@ export default function Company() {
         <CardContent className="flex flex-wrap items-end gap-3">
           <div className="space-y-1 flex-1 min-w-[220px]">
             <Label>Company name</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} />
+            <Input value={name} maxLength={60} onChange={(e) => setName(e.target.value)} />
+            <p className="text-xs text-muted-foreground">{name.trim().length}/60 characters</p>
           </div>
           <Button onClick={() => rename.mutate()} disabled={!name.trim() || rename.isPending}>Save</Button>
         </CardContent>
@@ -136,9 +145,14 @@ export default function Company() {
               </label>
             ))}
           </div>
+          {(weeklyOffs?.length ?? 0) >= 7 && (
+            <p className="text-sm text-destructive">
+              You must keep at least one working day — every day cannot be an off day.
+            </p>
+          )}
           <Button
             onClick={() => weeklyOffs && saveWeeklyOffs.mutate(weeklyOffs)}
-            disabled={!weeklyOffs || saveWeeklyOffs.isPending}
+            disabled={!weeklyOffs || weeklyOffs.length >= 7 || saveWeeklyOffs.isPending}
           >
             Save work week
           </Button>
@@ -150,8 +164,15 @@ export default function Company() {
         <CardContent className="space-y-4">
           <div className="flex flex-wrap items-end gap-3">
             <div className="space-y-1 flex-1 min-w-[220px]">
-              <Label>Email (optional, for your reference)</Label>
-              <Input value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="person@company.com" />
+              <Label>Email <span className="text-destructive">*</span></Label>
+              <Input
+                type="email"
+                required
+                maxLength={255}
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="person@company.com"
+              />
             </div>
             <div className="space-y-1">
               <Label>Role</Label>
@@ -165,7 +186,7 @@ export default function Company() {
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={() => createInvite.mutate()} disabled={createInvite.isPending}>Generate code</Button>
+            <Button onClick={() => createInvite.mutate()} disabled={!inviteEmail.trim() || createInvite.isPending}>Generate code</Button>
           </div>
 
           <Table>
