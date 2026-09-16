@@ -164,6 +164,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
+        if (loadedForUser === session.user.id) { setLoading(false); return; }
+        loadedForUser = session.user.id;
         fetchUserData(session.user.id).finally(() => setLoading(false));
       } else {
         setLoading(false);
