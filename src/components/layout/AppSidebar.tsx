@@ -35,9 +35,13 @@ const navItems: NavItem[] = [
   { label: "Announcements", icon: Megaphone, path: "/announcements", roles: ALL, feature: "announcements" },
   { label: "Reports", icon: PieChart, path: "/reports", roles: ["admin", "hr"], feature: "reports" },
   { label: "Salary Entry", icon: IndianRupee, path: "/salary", roles: ["admin", "hr"], feature: "payroll" },
-  { label: "Departments", icon: Building2, path: "/departments", roles: ["admin", "hr"] },
-  { label: "Company", icon: Building2, path: "/company", roles: ["admin", "hr"] },
-  { label: "User Roles", icon: ShieldCheck, path: "/user-roles", roles: ["admin"] },
+  {
+    label: "Company", icon: Building2, path: "/company", roles: ["admin", "hr"],
+    children: [
+      { label: "Departments", icon: Building2, path: "/departments", roles: ["admin", "hr"] },
+      { label: "User Roles", icon: ShieldCheck, path: "/user-roles", roles: ["admin"] },
+    ],
+  },
   { label: "Notifications", icon: Bell, path: "/notifications", roles: ALL },
   { label: "Audit Logs", icon: FileText, path: "/audit-logs", roles: ["admin", "hr"], feature: "audit_logs" },
 ];
