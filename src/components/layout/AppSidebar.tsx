@@ -16,7 +16,11 @@ import {
 
 const ALL = ["admin", "hr", "manager", "employee"];
 
-const navItems: { label: string; icon: typeof Users; path: string; roles: string[]; feature?: string }[] = [
+type NavItem = {
+  label: string; icon: typeof Users; path: string; roles: string[]; feature?: string; children?: NavItem[];
+};
+
+const navItems: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/", roles: ALL },
   { label: "My Profile", icon: UserCircle, path: "/profile", roles: ALL },
   { label: "My Team", icon: Users, path: "/team", roles: ["admin", "hr", "manager"] },
