@@ -63,6 +63,7 @@ export default function Company() {
 
   const saveWeeklyOffs = useMutation({
     mutationFn: async (days: number[]) => {
+      if (days.length >= 7) throw new Error("At least one working day is required — you cannot mark every day as an off day");
       const { error } = await supabase.from("companies").update({ weekly_offs: days }).eq("id", companyRow!.id);
       if (error) throw error;
     },
@@ -75,8 +76,12 @@ export default function Company() {
 
   const createInvite = useMutation({
     mutationFn: async () => {
+      const email = inviteEmail.trim();
+      if (!email) throw new Error("Email is required");
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || email.length > 255)
+        throw new Error("Please enter a valid email address");
       const { error } = await supabase.from("company_invites").insert({
-        email: inviteEmail.trim() || null,
+        email,
         role: inviteRole,
         created_by: user?.id ?? null,
       });
