@@ -90,6 +90,8 @@ export default function Setup() {
   };
 
   const saveWeek = async () => {
+    if (weeklyOffs.length >= 7)
+      return toast.error("You must keep at least one working day — every day cannot be an off day");
     setSaving(true);
     const { error } = await supabase
       .from("companies")
@@ -102,7 +104,8 @@ export default function Setup() {
 
   const addDepartment = async (value: string) => {
     const clean = value.trim();
-    if (!clean) return;
+    if (clean.length < 2) return toast.error("Department name must be at least 2 characters");
+    if (clean.length > 50) return toast.error("Department name must be 50 characters or less");
     const { error } = await supabase.from("departments").insert({ name: clean });
     if (error) return toast.error(error.message);
     setDeptName("");
@@ -116,8 +119,12 @@ export default function Setup() {
   };
 
   const createInvite = async () => {
+    const email = inviteEmail.trim();
+    if (!email) return toast.error("Email is required");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || email.length > 255)
+      return toast.error("Please enter a valid email address");
     const { error } = await supabase.from("company_invites").insert({
-      email: inviteEmail.trim() || null,
+      email,
       role: inviteRole,
       created_by: user?.id ?? null,
     });
