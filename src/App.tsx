@@ -36,7 +36,15 @@ import Setup from "@/pages/Setup";
 import ResetPassword from "@/pages/ResetPassword";
 import NotFound from "@/pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      staleTime: 60_000,
+    },
+  },
+});
 
 const Loading = () => (
   <div className="flex items-center justify-center min-h-screen text-muted-foreground">Loading...</div>
