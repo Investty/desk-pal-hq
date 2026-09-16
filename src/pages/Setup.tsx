@@ -193,7 +193,8 @@ export default function Setup() {
             <CardContent className="space-y-4">
               <div className="space-y-1">
                 <Label>Company name</Label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Acme Pvt Ltd" />
+                <Input value={name} maxLength={60} onChange={(e) => setName(e.target.value)} placeholder="Acme Pvt Ltd" />
+                <p className="text-xs text-muted-foreground">{name.trim().length}/60 characters</p>
               </div>
               <div className="space-y-1">
                 <Label>Time zone</Label>
@@ -235,9 +236,14 @@ export default function Setup() {
                   </label>
                 ))}
               </div>
+              {weeklyOffs.length >= 7 && (
+                <p className="text-sm text-destructive">
+                  You must keep at least one working day — every day cannot be an off day.
+                </p>
+              )}
               <div className="flex justify-between">
                 <Button variant="ghost" onClick={() => setStep(0)}><ArrowLeft className="h-4 w-4 mr-2" /> Back</Button>
-                <Button onClick={saveWeek} disabled={saving}>Continue <ArrowRight className="h-4 w-4 ml-2" /></Button>
+                <Button onClick={saveWeek} disabled={saving || weeklyOffs.length >= 7}>Continue <ArrowRight className="h-4 w-4 ml-2" /></Button>
               </div>
             </CardContent>
           </Card>
@@ -253,6 +259,7 @@ export default function Setup() {
               <div className="flex gap-2">
                 <Input
                   value={deptName}
+                  maxLength={50}
                   onChange={(e) => setDeptName(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") addDepartment(deptName); }}
                   placeholder="e.g. Engineering"
@@ -309,8 +316,15 @@ export default function Setup() {
             <CardContent className="space-y-4">
               <div className="flex flex-wrap items-end gap-3">
                 <div className="space-y-1 flex-1 min-w-[200px]">
-                  <Label>Email (optional, for your reference)</Label>
-                  <Input value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="hr@company.com" />
+                  <Label>Email <span className="text-destructive">*</span></Label>
+                  <Input
+                    type="email"
+                    required
+                    maxLength={255}
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="hr@company.com"
+                  />
                 </div>
                 <div className="space-y-1">
                   <Label>Joins as</Label>
