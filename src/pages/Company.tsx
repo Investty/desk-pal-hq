@@ -186,7 +186,7 @@ export default function Company() {
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={() => createInvite.mutate()} disabled={createInvite.isPending}>Generate code</Button>
+            <Button onClick={() => createInvite.mutate()} disabled={!inviteEmail.trim() || createInvite.isPending}>Generate code</Button>
           </div>
 
           <Table>
