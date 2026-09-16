@@ -126,16 +126,16 @@ export default function Leave() {
   });
 
   const statusVariant = (s: string) => {
-    if (s === "approved") return "default" as const;
-    if (s === "rejected") return "destructive" as const;
+    if (s === "approved") return "success" as const;
+    if (s === "rejected") return "danger" as const;
     if (s === "cancelled") return "outline" as const;
-    return "secondary" as const;
+    return "warning" as const;
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Leave Management</h1>
+        <h1>Leave Management</h1>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button><Plus className="h-4 w-4 mr-2" /> Apply Leave</Button>

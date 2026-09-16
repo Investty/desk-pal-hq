@@ -72,14 +72,15 @@ export default function Attendance() {
   });
 
   const statusColor = (s: string) => {
-    if (s === "present") return "default";
-    if (s === "late") return "secondary";
-    return "destructive";
+    if (s === "present") return "success" as const;
+    if (s === "late") return "warning" as const;
+    if (s === "on_leave") return "info" as const;
+    return "danger" as const;
   };
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Attendance</h1>
+      <h1>Attendance</h1>
 
       <Card>
         <CardHeader>

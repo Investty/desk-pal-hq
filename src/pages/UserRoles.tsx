@@ -70,7 +70,7 @@ export default function UserRoles() {
                 <TableRow key={u.user_id}>
                   <TableCell className="font-medium">{u.full_name} <span className="text-muted-foreground text-xs">({u.employee_id})</span></TableCell>
                   <TableCell className="text-muted-foreground">{u.email}</TableCell>
-                  <TableCell><Badge variant={u.role === "admin" ? "default" : u.role === "manager" ? "secondary" : "outline"} className="capitalize">{u.role}</Badge></TableCell>
+                  <TableCell><Badge variant="role" className="capitalize">{u.role}</Badge></TableCell>
                   <TableCell>
                     <Select
                       value={u.role}

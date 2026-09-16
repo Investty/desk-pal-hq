@@ -20,14 +20,20 @@ function StatCard({ title, value, icon: Icon, description, variant = "default" }
     warning: "text-warning",
     info: "text-info",
   };
+  const accents = {
+    default: "border-l-[3px] border-l-primary",
+    success: "border-l-[3px] border-l-success",
+    warning: "border-l-[3px] border-l-warning",
+    info: "border-l-[3px] border-l-info",
+  };
   return (
-    <Card>
+    <Card className={accents[variant]}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         <Icon className={`h-5 w-5 ${colors[variant]}`} />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-3xl font-extrabold tracking-tight text-neutral-900">{value}</div>
         {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
       </CardContent>
     </Card>
