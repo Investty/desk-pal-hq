@@ -98,22 +98,42 @@ export default function AppSidebar() {
 
       <nav className="flex-1 py-4 space-y-1 px-2 overflow-y-auto">
         {filteredItems.map((item) => {
-          const active = pathname === item.path;
+          const children = (item.children ?? []).filter(
+            (c) => role && c.roles.includes(role) && (!c.feature || hasFeature(c.feature)),
+          );
           return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium sidebar-transition",
-                active
-                  ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              )}
-              title={collapsed ? item.label : undefined}
-            >
-              <item.icon className="h-5 w-5 shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
+            <div key={item.path} className="space-y-1">
+              <Link
+                to={item.path}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium sidebar-transition",
+                  pathname === item.path
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                )}
+                title={collapsed ? item.label : undefined}
+              >
+                <item.icon className="h-5 w-5 shrink-0" />
+                {!collapsed && <span>{item.label}</span>}
+              </Link>
+              {children.map((child) => (
+                <Link
+                  key={child.path}
+                  to={child.path}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg text-sm sidebar-transition py-2",
+                    collapsed ? "px-3" : "pl-9 pr-3 border-l border-sidebar-border ml-4",
+                    pathname === child.path
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  )}
+                  title={collapsed ? child.label : undefined}
+                >
+                  <child.icon className="h-4 w-4 shrink-0" />
+                  {!collapsed && <span>{child.label}</span>}
+                </Link>
+              ))}
+            </div>
           );
         })}
       </nav>
