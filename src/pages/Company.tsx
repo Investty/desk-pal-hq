@@ -48,7 +48,10 @@ export default function Company() {
 
   const rename = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("companies").update({ name: name.trim() }).eq("id", companyRow!.id);
+      const trimmed = name.trim();
+      if (trimmed.length < 2) throw new Error("Company name must be at least 2 characters");
+      if (trimmed.length > 60) throw new Error("Company name must be 60 characters or less");
+      const { error } = await supabase.from("companies").update({ name: trimmed }).eq("id", companyRow!.id);
       if (error) throw error;
     },
     onSuccess: () => {
