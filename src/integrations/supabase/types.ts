@@ -221,6 +221,50 @@ export type Database = {
           },
         ]
       }
+      attendance_rules: {
+        Row: {
+          company_id: string
+          created_at: string
+          early_leave_enabled: boolean
+          early_leave_max_hours: number
+          early_leave_max_per_month: number
+          regularization_backdate_days: number
+          regularization_enabled: boolean
+          regularization_max_per_month: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          early_leave_enabled?: boolean
+          early_leave_max_hours?: number
+          early_leave_max_per_month?: number
+          regularization_backdate_days?: number
+          regularization_enabled?: boolean
+          regularization_max_per_month?: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          early_leave_enabled?: boolean
+          early_leave_max_hours?: number
+          early_leave_max_per_month?: number
+          regularization_backdate_days?: number
+          regularization_enabled?: boolean
+          regularization_max_per_month?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_rules_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -699,6 +743,51 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_shifts: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          period_month: string
+          shift_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          period_month: string
+          shift_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          period_month?: string
+          shift_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_shifts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_shifts_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "shifts"
             referencedColumns: ["id"]
           },
         ]
@@ -1502,6 +1591,56 @@ export type Database = {
           },
         ]
       }
+      shifts: {
+        Row: {
+          break_minutes: number
+          company_id: string
+          created_at: string
+          end_time: string
+          grace_minutes: number
+          id: string
+          is_active: boolean
+          is_default: boolean
+          name: string
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          break_minutes?: number
+          company_id: string
+          created_at?: string
+          end_time?: string
+          grace_minutes?: number
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name: string
+          start_time?: string
+          updated_at?: string
+        }
+        Update: {
+          break_minutes?: number
+          company_id?: string
+          created_at?: string
+          end_time?: string
+          grace_minutes?: number
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name?: string
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shifts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_active_company: {
         Row: {
           company_id: string
@@ -1899,6 +2038,28 @@ export type Database = {
       }
       run_leave_carry_forward: { Args: never; Returns: number }
       set_active_company: { Args: { _company_id: string }; Returns: undefined }
+      shift_for: {
+        Args: { _date: string; _user: string }
+        Returns: {
+          break_minutes: number
+          company_id: string
+          created_at: string
+          end_time: string
+          grace_minutes: number
+          id: string
+          is_active: boolean
+          is_default: boolean
+          name: string
+          start_time: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "shifts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       working_days_between: {
         Args: { _company: string; _end: string; _start: string }
         Returns: number

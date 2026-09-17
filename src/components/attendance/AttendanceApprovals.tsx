@@ -123,17 +123,24 @@ export default function AttendanceApprovals() {
             <DialogTitle>{target?.decision === "approved" ? "Approve this request" : "Reject this request"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
-            <Label>Note for the employee (optional)</Label>
-            <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Add a short note" />
+            <Label>
+              Note for the employee {target?.decision === "rejected" ? <span className="text-destructive">*</span> : "(optional)"}
+            </Label>
+            <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Add a short note" maxLength={500} />
             <p className="text-xs text-muted-foreground">
               {target?.decision === "approved"
                 ? "Approving updates their attendance for that day and notifies them."
-                : "The employee gets a notification with this note."}
+                : "Required — tell the employee why this was rejected."}
             </p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setTarget(null)}>Back</Button>
-            <Button disabled={decide.isPending} onClick={() => target && decide.mutate({ ...target, comment: note })}>Confirm</Button>
+            <Button
+              disabled={decide.isPending || (target?.decision === "rejected" && note.trim().length < 5)}
+              onClick={() => target && decide.mutate({ ...target, comment: note })}
+            >
+              Confirm
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

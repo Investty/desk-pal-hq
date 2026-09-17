@@ -40,6 +40,8 @@ const navItems: NavItem[] = [
     children: [
       { label: "Departments", icon: Building2, path: "/departments", roles: ["admin", "hr"] },
       { label: "User Roles", icon: ShieldCheck, path: "/user-roles", roles: ["admin"] },
+      { label: "Shifts", icon: Clock, path: "/shifts", roles: ["admin", "hr"] },
+      { label: "Attendance Rules", icon: Settings2, path: "/attendance-rules", roles: ["admin", "hr"] },
     ],
   },
   { label: "Notifications", icon: Bell, path: "/notifications", roles: ALL },
