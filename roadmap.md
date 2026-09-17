@@ -5,3 +5,10 @@
 - [x] Restyle shared buttons, badges, cards, tables, fields, dialogs, and tabs
 - [x] Apply sidebar, dashboard, role, department, and status rules
 - [x] Verify type safety, tests, and rendered desktop/mobile screens
+
+# Reports & Analytics dashboard
+
+- [ ] Add responsive workforce, attendance, leave, and payroll KPIs
+- [ ] Add date and department filters with readable chart states
+- [ ] Add chart drill-down links, tooltips, legends, and empty states
+- [ ] Verify desktop/mobile presentation and reporting calculations
