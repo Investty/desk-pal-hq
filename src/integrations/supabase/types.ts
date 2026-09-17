@@ -1641,6 +1641,24 @@ export type Database = {
           },
         ]
       }
+      tmp_att_results: {
+        Row: {
+          detail: string | null
+          result: string | null
+          tc: string | null
+        }
+        Insert: {
+          detail?: string | null
+          result?: string | null
+          tc?: string | null
+        }
+        Update: {
+          detail?: string | null
+          result?: string | null
+          tc?: string | null
+        }
+        Relationships: []
+      }
       user_active_company: {
         Row: {
           company_id: string
