@@ -25,6 +25,15 @@ interface PayslipRow {
   pf: number; professional_tax: number; tds: number;
 }
 
+interface PeriodRow {
+  id: string;
+  month: number;
+  year: number;
+  status: string;
+  paid_at: string | null;
+  processed_at: string | null;
+}
+
 interface EmpRow {
   user_id: string;
   full_name: string;
