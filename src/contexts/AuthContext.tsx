@@ -139,6 +139,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     let loadedForUser: string | null = null;
+    let inFlight: Promise<void> | null = null;
+
+    const startLoad = (userId: string) => {
+      setLoading(true);
+      inFlight = fetchUserData(userId).finally(() => { setLoading(false); });
+      return inFlight;
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -146,10 +154,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Token refreshes / tab focus events must not re-trigger a full reload.
         if (loadedForUser === session.user.id) return;
         loadedForUser = session.user.id;
+        const uid = session.user.id;
         setLoading(true);
-        setTimeout(() => { fetchUserData(session.user.id).finally(() => setLoading(false)); }, 0);
+        setTimeout(() => { startLoad(uid); }, 0);
       } else {
         loadedForUser = null;
+        inFlight = null;
         setProfile(null);
         setRole(null);
         setCompany(null);
@@ -164,9 +174,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        if (loadedForUser === session.user.id) { setLoading(false); return; }
+        if (loadedForUser === session.user.id) {
+          // A load is already running (or queued) for this user — never drop the
+          // loading flag before it settles, or routes see empty memberships.
+          if (inFlight) inFlight.finally(() => setLoading(false));
+          return;
+        }
         loadedForUser = session.user.id;
-        fetchUserData(session.user.id).finally(() => setLoading(false));
+        startLoad(session.user.id);
       } else {
         setLoading(false);
       }
