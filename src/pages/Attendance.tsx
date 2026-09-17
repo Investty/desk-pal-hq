@@ -77,6 +77,7 @@ export default function Attendance() {
       toast.success("Checked out successfully!");
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
       queryClient.invalidateQueries({ queryKey: ["attendance-today"] });
+      queryClient.invalidateQueries({ queryKey: ["attendance-calendar"] });
       queryClient.invalidateQueries({ queryKey: ["my-today-attendance"] });
     },
     onError: (e: Error) => toast.error(e.message),
