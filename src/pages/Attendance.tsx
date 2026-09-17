@@ -137,6 +137,8 @@ export default function Attendance() {
         </CardContent>
       </Card>
 
+      <AttendanceCalendar />
+
       {hasFeature("attendance_regularization") && <AttendanceRequests />}
 
       <Card>
