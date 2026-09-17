@@ -37,7 +37,7 @@ export default function Leave() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [leaveType, setLeaveType] = useState<LeaveType>("casual");
+  const [policyId, setPolicyId] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [reason, setReason] = useState("");
@@ -45,9 +45,11 @@ export default function Leave() {
   const [dayPortion, setDayPortion] = useState<DayPortion>("full_day");
 
   const { data: policies } = useQuery({
-    queryKey: ["leave-policies-enabled"],
+    queryKey: ["my-leave-types", user?.id],
+    enabled: !!user?.id,
     queryFn: async () => {
-      const { data } = await supabase.from("leave_policies").select("*").eq("is_enabled", true).order("label");
+      const { data, error } = await supabase.rpc("applicable_leave_types", { _user_id: user!.id });
+      if (error) throw error;
       return data || [];
     },
   });
@@ -56,7 +58,10 @@ export default function Leave() {
     queryKey: ["leave-balances", user?.id],
     enabled: !!user?.id,
     queryFn: async () => {
-      const { data } = await supabase.from("leave_balances").select("*").eq("user_id", user!.id).order("leave_type");
+      const { data } = await supabase
+        .from("leave_balances")
+        .select("*, leave_policies:policy_id(label, is_enabled)")
+        .eq("user_id", user!.id);
       return data || [];
     },
   });
@@ -67,7 +72,7 @@ export default function Leave() {
     queryFn: async () => {
       const { data } = await supabase
         .from("leave_requests")
-        .select("*")
+        .select("*, leave_policies:policy_id(label)")
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
       return data || [];
@@ -78,13 +83,14 @@ export default function Leave() {
     mutationFn: async () => {
       const half = dayPortion !== "full_day";
       const finalEnd = half ? startDate : endDate;
+      if (!policyId) throw new Error("Please choose a leave type");
       if (!startDate || !finalEnd) throw new Error("Please select dates");
       if (new Date(startDate) > new Date(finalEnd)) throw new Error("End date must be after start date");
       if (new Date(startDate) < new Date(format(new Date(), "yyyy-MM-dd"))) throw new Error("Cannot apply for past dates");
 
       const { error } = await supabase.from("leave_requests").insert({
         user_id: user!.id,
-        leave_type: leaveType,
+        policy_id: policyId,
         start_date: startDate,
         end_date: finalEnd,
         day_portion: dayPortion,

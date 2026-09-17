@@ -55,7 +55,7 @@ export default function Team() {
     queryFn: async () => {
       const { data } = await supabase
         .from("leave_requests")
-        .select("*")
+        .select("*, leave_policies:policy_id(label)")
         .in("user_id", userIds)
         .order("start_date", { ascending: false })
         .limit(100);

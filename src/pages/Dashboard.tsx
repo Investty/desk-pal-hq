@@ -67,7 +67,10 @@ export default function Dashboard() {
   const { data: myLeaveBalances } = useQuery({
     queryKey: ["my-leave-balances", user?.id],
     queryFn: async () => {
-      const { data } = await supabase.from("leave_balances").select("*").eq("user_id", user!.id);
+      const { data } = await supabase
+        .from("leave_balances")
+        .select("*, leave_policies:policy_id(label, is_enabled)")
+        .eq("user_id", user!.id);
       return data || [];
     },
     enabled: !!user?.id,
