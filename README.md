@@ -15,7 +15,8 @@ A scalable, multi-company, role-based HRMS for employee management, attendance a
 - Daily check-in / check-out with late marking based on the employee's **shift** (shift start + grace), not a fixed rule.
 - **Shifts per employee, per month** — HR defines company shifts (e.g. General, Evening, Night crossing midnight) and sets a monthly roster per employee, with bulk-apply and copy-last-month.
 - **Attendance requests** — early leave and missed check-in/out regularization, governed by per-company HR rules (toggle, max hours, monthly caps, backdate window). Reason is compulsory (min 10 chars).
-- Night shifts crossing midnight record against the day the shift starts.
+- Night shifts crossing midnight record against the day the shift starts; check-in/out is stamped server-side so it cannot be faked from the browser.
+- **Attendance flags** — HR flags a period for an employee; the employee sees a banner and submits corrections, which HR approves or rejects with a note.
 
 ### Leave
 - **Company-owned leave types** — HR creates, renames, edits and deactivates types, including custom ones (e.g. "Study Leave"). Compensatory and Bereavement are disabled by default. At least one type must stay enabled.
