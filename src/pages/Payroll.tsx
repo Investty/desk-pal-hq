@@ -308,6 +308,44 @@ export default function Payroll() {
         </Card>
       )}
 
+      {isAdmin && !!periods?.length && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">Pay periods</CardTitle></CardHeader>
+          <CardContent className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Period</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Payslips</TableHead>
+                  <TableHead>Net paid</TableHead>
+                  <TableHead>Paid on</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {periods.map((p) => {
+                  const slips = (payslips || []).filter((s) => s.month === p.month && s.year === p.year);
+                  const net = slips.reduce((a, s) => a + Number(s.net), 0);
+                  return (
+                    <TableRow key={p.id}>
+                      <TableCell className="font-medium">{MONTHS[p.month - 1]} {p.year}</TableCell>
+                      <TableCell>
+                        <Badge variant={p.status === "paid" ? "secondary" : "outline"}>
+                          {p.status === "paid" ? "Paid · locked" : p.status === "processing" ? "In progress" : "Draft"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{slips.length}</TableCell>
+                      <TableCell>{fmt(net)}</TableCell>
+                      <TableCell>{p.paid_at ? format(new Date(p.paid_at), "dd MMM yyyy") : "—"}</TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
       {ytdSlips.length > 0 && (
         <Card>
           <CardHeader><CardTitle className="text-base">Year to date — {ytdYear}</CardTitle></CardHeader>
