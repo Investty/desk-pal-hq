@@ -112,6 +112,25 @@ Leave is configured at two levels:
 
 **Defaults seeded for a new company:** Casual 12, Sick 8, Paid 15 (enabled); Compensatory 0, Bereavement 3 (disabled).
 
+## Data import (`/import`, HR & admin)
+
+Bring existing records in from Excel, CSV or a Tally export instead of typing them. Every importer follows the same flow: **upload → pick sheet → check the column matching → preview with per-row problems → confirm → import**. Columns are matched automatically from a list of common header names, and skipped rows can be downloaded as a CSV with the reason for each.
+
+**People** — name, email, employee code, phone, designation, department, joining date, date of birth, manager email, shift. Imported people go to a "waiting to join" list; missing departments are created. When someone signs up with the company invite code and the same email, their details, manager and shift are applied to their profile automatically.
+
+**Shifts** — name, start time, end time, break minutes, grace minutes. A shift with the same name is updated, not duplicated.
+
+**Attendance history** — email, date, check in, check out, working hours, status.
+- Each row is matched to an employee by email within the current company.
+- A day already recorded for that person is updated, never duplicated.
+- Working hours are calculated from the times when the column is empty; a check-out earlier than the check-in is treated as a night shift ending the next morning.
+- When status is blank it is decided from the employee's shift for that date: no check-in → absent, check-in after shift start plus grace → late, otherwise present.
+- Rows are skipped with a reason when the email is unknown, the date is missing/invalid/in the future, a check-out has no check-in, the status is not present/absent/late, or hours fall outside 0–24.
+
+**Import history** — each run records the file, what was imported, and how many rows were added and skipped. Every import is written to the audit log.
+
+Leave history and payroll history importers are planned next and are not built yet.
+
 ## Tech stack
 
 - **Frontend:** React 18, TypeScript 5, Vite 5, Tailwind CSS v3, shadcn/ui, Recharts, TanStack Query
