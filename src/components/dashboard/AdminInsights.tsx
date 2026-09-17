@@ -33,7 +33,7 @@ export default function AdminInsights() {
         supabase.from("profiles").select("id, department_id, is_active"),
         supabase.from("departments").select("id, name"),
         supabase.from("attendance").select("date, status").gte("date", since),
-        supabase.from("leave_requests").select("leave_type, status, start_date, end_date"),
+        supabase.from("leave_requests").select("leave_type, status, start_date, end_date, leave_policies:policy_id(label)"),
         supabase.from("salary_structures").select("basic, da, hra, special_allowance, pf_rate, professional_tax, tds"),
       ]);
 
@@ -59,7 +59,8 @@ export default function AdminInsights() {
       const leaveByType = Object.entries(
         (leaves.data || []).filter((l) => l.status === "approved").reduce<Record<string, number>>((acc, l) => {
           const days = Math.max(1, (new Date(l.end_date).getTime() - new Date(l.start_date).getTime()) / 86400000 + 1);
-          acc[l.leave_type] = (acc[l.leave_type] || 0) + days;
+          const key = leaveLabel(l);
+          acc[key] = (acc[key] || 0) + days;
           return acc;
         }, {})
       ).map(([name, value]) => ({ name, value }));
