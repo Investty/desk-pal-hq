@@ -211,7 +211,7 @@ src/
   pages/           # One file per screen (Dashboard, Employees, Leave, Attendance, Owner, ...)
   contexts/        # AuthContext — session, memberships, active company, feature flags
   integrations/    # Generated Supabase client (do not edit) + types
-  lib/             # Salary math, leave helpers, CSV export, feature flags
+  lib/             # Salary math, leave helpers, spreadsheet import/mapping, CSV export, feature flags
 supabase/          # Database schema (config is auto-generated — don't edit)
 ```
 
