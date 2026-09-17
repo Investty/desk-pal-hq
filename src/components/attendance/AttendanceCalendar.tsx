@@ -70,12 +70,11 @@ export default function AttendanceCalendar() {
     const isFuture = key > todayKey;
 
     if (rec && rec.check_in && rec.check_out) {
-      const complete = rec.status !== "absent";
       return {
         cls: rec.status === "late"
           ? "bg-warning/20 text-warning-foreground font-semibold"
           : "bg-success/20 text-success-foreground font-semibold",
-        note: `${rec.status === "late" ? "Late" : "Present"} · ${rec.working_hours ?? 0}h${complete ? "" : ""}`,
+        note: `${rec.status === "late" ? "Late" : "Present"} · ${rec.working_hours ?? 0}h`,
       };
     }
     if (rec && rec.check_in && !rec.check_out) {

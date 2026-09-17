@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { Clock, LogIn, LogOut } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import AttendanceRequests from "@/components/attendance/AttendanceRequests";
+import AttendanceCalendar from "@/components/attendance/AttendanceCalendar";
 
 export default function Attendance() {
   const { user, hasFeature } = useAuth();
