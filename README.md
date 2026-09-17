@@ -18,9 +18,10 @@ A scalable, multi-company, role-based HRMS for employee management, attendance a
 - Night shifts crossing midnight record against the day the shift starts.
 
 ### Leave
-- Leave types: Casual, Sick, Paid, Compensatory, Bereavement, Maternity, Paternity. Compensatory and Bereavement are disabled by default; HR enables them per company. At least one type must stay enabled.
+- **Company-owned leave types** — HR creates, renames, edits and deactivates types, including custom ones (e.g. "Study Leave"). Compensatory and Bereavement are disabled by default. At least one type must stay enabled.
+- **Per-employee leave configuration** — HR can turn each leave type on/off per person and give a custom entitlement that overrides the company default; every change is written to the audit log with an optional note.
 - **Two-stage approvals** (manager → HR), half-day leave, overlap prevention, admin/HR cancellation with balance reallocation.
-- **Comp-off credits** — managers/HR grant overtime-based compensatory days per employee.
+- **Comp-off credits** — managers/HR grant overtime-based compensatory days per employee; amounts vary person to person.
 - **Yearly leave calendar** — full-year grid per company: holidays, weekly offs, approved leave ("My leave" / "Company" modes), year picker for planning.
 - **Carry forward** — HR decides per leave type whether unused balance carries forward at year end (and a max), with a one-click year-end run.
 
@@ -37,6 +38,7 @@ A scalable, multi-company, role-based HRMS for employee management, attendance a
 - Cross-company overview, company list with plan (Free/Starter/Pro/Enterprise), status (Trial/Active/Past Due/Suspended), seat limits, trial dates, feature switches per company.
 - Revenue dashboard (MRR/ARR/ARPU/churn from plan data), editable plans, broadcasts, usage/storage per company, support (read-only impersonation) sessions, global audit log.
 - Resource limits: seats, document storage, monthly notifications — soft warnings at 90%, hard stops enforced in the database.
+- Visible only to the platform owner — never shown to regular company users.
 
 ### Setup wizard
 - New-company onboarding at `/setup`: company details + timezone, weekly offs, departments, HR invite codes, finish.
@@ -46,12 +48,69 @@ A scalable, multi-company, role-based HRMS for employee management, attendance a
 | Role | Scope |
 |---|---|
 | **Employee** | Own attendance, leave, payslips, profile; dashboard; wishing celebrations |
-| **Manager** | Employee + team view, team leave/attendance approvals and cancellation |
-| **HR** | Manager + employee records, departments, holidays, shifts, attendance rules, flags, reports, payroll, leave policies, onboarding, performance, announcements |
+| **Manager** | Employee + team view, team leave/attendance approvals and cancellation, comp-off grants |
+| **HR** | Manager + employee records, departments, holidays, shifts, attendance rules, flags, reports, payroll, leave policies & per-employee leave setup, onboarding, performance, announcements |
 | **Admin** | HR + User Roles management, company settings |
 | **Platform owner** | `/owner` console only — invisible to regular users |
 
 A user can belong to multiple companies; roles are **per company**, and all data follows the active company (switcher in the sidebar).
+
+### Role permissions in detail
+
+- **Employee**
+  - Check in / check out; see own attendance history and today's shift.
+  - Submit early-leave and missed-punch regularization requests (only if HR has enabled them for the company).
+  - Apply for leave (types enabled for them), see own balances, cancel own pending requests.
+  - View own payslips and download them.
+  - Edit own profile (name, contact, avatar — sensitive employment fields are locked).
+  - Wish colleagues on today's birthdays/anniversaries; thank well-wishers.
+  - **Cannot:** see other employees' attendance/leave/payslips, approve anything, access reports, user roles, audit logs, or HR tools.
+
+- **Manager** — everything an Employee can do, plus:
+  - My Team page: team members' attendance and leave.
+  - First-stage approval of team leave; cancel approved team leave (balance reallocated).
+  - Approve/reject team attendance requests.
+  - Grant comp-off days to team members.
+  - **Cannot:** approve their own requests (self-approval blocked in the database), approve people outside their team, manage employees/payroll/policies, or access User Roles.
+
+- **HR** — everything a Manager can do, plus:
+  - Employee directory: invite, edit, remove/restore employees; per-employee leave configuration.
+  - Departments, holidays, announcements, documents, onboarding checklists, performance cycles.
+  - Shifts and monthly rosters; attendance rules; attendance period flags; attendance reports & export.
+  - Leave types (create/edit/deactivate, carry-forward settings, year-end run).
+  - Second-stage (final) leave approval; reject/cancel with notes.
+  - Salary structures, monthly payroll run, payslip generation.
+  - **Cannot:** manage User Roles or promote anyone to Admin, change company settings, or access the owner console.
+
+- **Admin** — everything HR can do, plus:
+  - User Roles management (promote/demote within the company).
+  - Company settings (name, timezone, weekly offs, invite codes).
+
+- **Platform owner**
+  - `/owner` console only: companies, plans, lifecycle status, seat/storage/notification limits, feature switches, revenue metrics, broadcasts, read-only support sessions, global audit log.
+  - Has no presence inside any company's day-to-day UI.
+
+## Leave configuration
+
+Leave is configured at two levels:
+
+**1. Company leave types (HR → Leave Types)**
+- Add, rename, edit, deactivate types — including fully custom ones.
+- Each type: name, default days, enabled/disabled, applicability (all employees or selected), carry-forward on/off + cap.
+- Compensatory and Bereavement ship **disabled** by default; HR enables them per company.
+- At least one type must stay enabled — the database refuses to disable the last one.
+- Deactivating a type hides it from new requests but keeps all history and reports intact.
+
+**2. Per-employee setup (HR → Employees → employee → Leave)**
+- One row per company leave type: on/off for this person, entitlement ("company default" or a custom number), used/pending/available, and a reset-to-default action.
+- Changing the company default later only updates people still on the default; custom entitlements are kept.
+- Every change is audit-logged (old value → new value, who, when, optional note).
+
+**Year-end carry forward**
+- Per leave type, HR chooses whether unused days carry forward and the maximum.
+- HR runs the year-end carry forward manually (button on Leave Types); the run is audit-logged.
+
+**Defaults seeded for a new company:** Casual 12, Sick 8, Paid 15 (enabled); Compensatory 0, Bereavement 3 (disabled).
 
 ## Tech stack
 
@@ -59,12 +118,45 @@ A user can belong to multiple companies; roles are **per company**, and all data
 - **Backend:** Lovable Cloud (Supabase) — Postgres with row-level security scoped per company, Auth (email; roles in a separate `user_roles` table), Edge Functions, Storage (avatars, employee documents, payslip files)
 - **Design system:** Inter typography, primary blue `#2563EB`, secondary violet `#7C3AED`, page background `#F0F4FF`, dark sidebar `#111827`, tokenized statuses (Active green, Pending amber, Terminated red, On Leave info blue)
 
+## Getting started
+
+### Prerequisites
+- Node.js 18+ (or Bun)
+- A Lovable Cloud backend is already provisioned for this project — no external services or API keys are needed.
+
+### Run locally
+
+```bash
+npm install        # or: bun install
+npm run dev        # start the dev server (http://localhost:8080)
+npm run build      # production build
+npm run test       # unit tests
+```
+
+The frontend reads its backend URL and publishable key from `.env` (already committed per-project values — no secrets involved).
+
+### First-run checklist
+1. **Sign up** at `/signup` — choose "New company" to create a tenant, or "I have an invite code" to join one.
+2. **Complete the setup wizard** (`/setup`): company details + timezone → weekly offs → departments → invite codes → finish.
+3. **Invite HR first**, then have HR configure: leave types & carry-forward, shifts + monthly rosters, attendance rules (early leave / regularization toggles and caps), holidays, salary structures.
+4. **Invite employees** from the Employees page (email + invite code required).
+5. **Run payroll** monthly from the Payroll page after attendance is settled.
+
+### Environment
+| Variable | Purpose |
+|---|---|
+| `VITE_SUPABASE_URL` | Backend URL (auto-configured) |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Publishable anon key (safe for the browser) |
+
+The service-role key is **not available** on Lovable Cloud by design — all privileged operations run through security-definer database functions.
+
 ## Security model
 
 - Row-level security on every table, scoped by active company membership; roles checked server-side via a security-definer helper.
 - Self-approval/self-edit guards on attendance, leave, performance reviews and profiles (enforced in the database, not just the UI).
 - Tamper-proof audit logs; platform-owner actions logged server-side.
 - Attendance-request and leave rules (caps, backdate windows, disabled types) validated by database triggers.
+- Password breach (HIBP) check enabled; sessions managed by the auth service.
 
 ## Project structure
 
@@ -78,13 +170,15 @@ src/
 supabase/          # Database schema (config is auto-generated — don't edit)
 ```
 
-## Development
+## The brutal truth: real-world fit
 
-```bash
-npm install
-npm run dev      # local dev server
-npm run build    # production build
-npm run test     # unit tests
-```
+This section exists so nobody — including future maintainers — mistakes "feature-rich demo" for "sellable product". What is built here is the easy 40% dressed up to look like 90%. Multi-tenancy, RLS, shifts, approvals and payroll math are real work and done well — but none of that is why HRMS startups die. The honest gap list:
 
-The database schema lives in Lovable Cloud; migrations are applied from this project. The publishable key and URL are the only env values used by the frontend.
+1. **Statutory compliance is the actual product.** The payroll here computes gross/deductions/net. Real payroll is PF, ESI, professional tax, TDS, LWF, gratuity, bonus-act rules, leave encashment, Form 16, challan files — per country, per state, changing every budget. Without this, no company can legally run payroll on this app. This alone is years of work and the reason incumbents exist.
+2. **No integrations.** Real HRMS lives inside an ecosystem: biometric devices, biometric/GeoTagged attendance, bank files for salary disbursement, accounting (Tally/Zoho/QuickBooks), Slack/Teams, Google/Outlook calendars, SSO (SAML/OIDC). Zero of these exist here.
+3. **No mobile app.** Field staff and frontline workers — the majority of attendance users — need a phone app with GPS/selfie punch. A responsive web app is not enough for this market.
+4. **Data migration & onboarding.** Every real customer arrives with years of data in Excel or a competitor. Bulk import, mapping tools, and white-glove onboarding decide sales; none of that exists.
+5. **Scale, reliability & trust.** Uptime SLAs, backups/DR, penetration tests, SOC 2 / ISO 27001, data-residency — enterprise buyers demand certifications before a pilot. A hosted MVP has none.
+6. **The market is a red ocean.** greytHR, Keka, Zoho People, Darwinbox, BambooHR, HROne and dozens more — with compliance, mobile, integrations and certified security already built. "Me too but simpler" loses; you win only with a sharp wedge.
+
+**The realistic path:** the foundations here (multi-tenancy, per-company roles, audit trail, tested RBAC) are genuinely better than most day-1 SaaS. But the moat in this market is boring enterprise work: compliance, migration, mobile, uptime, certifications. To sell this, pick **one** wedge — e.g. shift-based attendance + payroll for 20–100 employee companies — make that bulletproof, and ignore everything else until paying customers force it. Trying to build all of greytHR before the first paying customer is how this dies.
