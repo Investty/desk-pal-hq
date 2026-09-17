@@ -41,6 +41,16 @@ export const attendanceFields: FieldDef[] = [
   { key: "status", label: "Status", hint: "present, absent or late", aliases: ["status", "attendance status", "present", "remark", "remarks"] },
 ];
 
+export const leaveFields: FieldDef[] = [
+  { key: "email", label: "Employee email", required: true, kind: "email", aliases: ["email", "email id", "e-mail", "employee email", "official email"] },
+  { key: "leave_type", label: "Leave type", required: true, hint: "Must match one of your leave types", aliases: ["leave type", "type", "leave", "category", "leave category"] },
+  { key: "start_date", label: "Start date", required: true, kind: "date", aliases: ["start date", "from", "from date", "leave from", "date"] },
+  { key: "end_date", label: "End date", kind: "date", hint: "Same as start date when empty", aliases: ["end date", "to", "to date", "leave to"] },
+  { key: "day_portion", label: "Day portion", hint: "full day, first half or second half", aliases: ["day portion", "portion", "half day", "duration type", "session"] },
+  { key: "status", label: "Status", hint: "approved, rejected, cancelled or pending", aliases: ["status", "leave status", "approval status", "remark", "remarks"] },
+  { key: "reason", label: "Reason", aliases: ["reason", "remarks", "note", "notes", "purpose", "description"] },
+];
+
 const pad = (n: number) => String(n).padStart(2, "0");
 
 function fromDate(d: Date, kind: "date" | "time") {
