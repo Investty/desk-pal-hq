@@ -1248,6 +1248,56 @@ export type Database = {
           },
         ]
       }
+      pay_periods: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          month: number
+          notes: string | null
+          paid_at: string | null
+          processed_at: string | null
+          status: string
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          month: number
+          notes?: string | null
+          paid_at?: string | null
+          processed_at?: string | null
+          status?: string
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          month?: number
+          notes?: string | null
+          paid_at?: string | null
+          processed_at?: string | null
+          status?: string
+          updated_at?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pay_periods_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payslips: {
         Row: {
           basic: number
@@ -2062,6 +2112,10 @@ export type Database = {
         Returns: Json
       }
       import_leave: { Args: { _filename: string; _rows: Json }; Returns: Json }
+      import_payroll: {
+        Args: { _filename: string; _rows: Json }
+        Returns: Json
+      }
       import_shifts: {
         Args: { _filename?: string; _rows: Json }
         Returns: Json
