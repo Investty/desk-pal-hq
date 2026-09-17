@@ -825,32 +825,41 @@ export type Database = {
       }
       leave_policies: {
         Row: {
+          carry_forward_enabled: boolean
+          carry_forward_max: number
           company_id: string
           created_at: string
           default_days: number
           id: string
           is_enabled: boolean
           label: string
+          last_carry_forward_at: string | null
           leave_type: Database["public"]["Enums"]["leave_type"]
           updated_at: string
         }
         Insert: {
+          carry_forward_enabled?: boolean
+          carry_forward_max?: number
           company_id?: string
           created_at?: string
           default_days?: number
           id?: string
           is_enabled?: boolean
           label: string
+          last_carry_forward_at?: string | null
           leave_type: Database["public"]["Enums"]["leave_type"]
           updated_at?: string
         }
         Update: {
+          carry_forward_enabled?: boolean
+          carry_forward_max?: number
           company_id?: string
           created_at?: string
           default_days?: number
           id?: string
           is_enabled?: boolean
           label?: string
+          last_carry_forward_at?: string | null
           leave_type?: Database["public"]["Enums"]["leave_type"]
           updated_at?: string
         }
@@ -1888,6 +1897,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      run_leave_carry_forward: { Args: never; Returns: number }
       set_active_company: { Args: { _company_id: string }; Returns: undefined }
       working_days_between: {
         Args: { _company: string; _end: string; _start: string }
