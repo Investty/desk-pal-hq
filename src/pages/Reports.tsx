@@ -1,3 +1,4 @@
+import { leaveLabel } from "@/lib/leave";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
