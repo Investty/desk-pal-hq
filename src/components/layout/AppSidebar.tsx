@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, Clock, CalendarDays, CheckSquare,
   Building2, Bell, FileText, LogOut, ChevronLeft, ChevronRight,
   ShieldCheck, CalendarOff, Megaphone, BarChart3, UserCircle,
-  Network, PieChart, Settings2, IndianRupee, ShieldAlert, Check, PlusCircle,
+  Network, PieChart, Settings2, IndianRupee, ShieldAlert, Check, PlusCircle, Upload,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -42,6 +42,7 @@ const navItems: NavItem[] = [
       { label: "User Roles", icon: ShieldCheck, path: "/user-roles", roles: ["admin"] },
       { label: "Shifts", icon: Clock, path: "/shifts", roles: ["admin", "hr"] },
       { label: "Attendance Rules", icon: Settings2, path: "/attendance-rules", roles: ["admin", "hr"] },
+      { label: "Import Data", icon: Upload, path: "/import", roles: ["admin", "hr"] },
     ],
   },
   { label: "Notifications", icon: Bell, path: "/notifications", roles: ALL },
