@@ -201,7 +201,12 @@ The service-role key is **not available** on Lovable Cloud by design — all pri
 - Self-approval/self-edit guards on attendance, leave, performance reviews and profiles (enforced in the database, not just the UI).
 - Tamper-proof audit logs; platform-owner actions logged server-side.
 - Attendance-request and leave rules (caps, backdate windows, disabled types) validated by database triggers.
-- Password breach (HIBP) check enabled; sessions managed by the auth service.
+- Password breach (HIBP) check enabled; sessions managed by the auth service; password reset links never sign the user in.
+- Paid pay periods are locked in the database — payslips cannot be created, edited or imported for a locked month.
+- Imports run through security-definer functions restricted to HR/Admin of the active company, and every run is audit-logged.
+
+### Testing done
+69 scripted access-control scenarios have been run against the live app and all passed: 24 authentication/session tests, 12 employee, 15 manager and 18 HR permission tests, plus 14 attendance shift/rule scenarios (shift assignment, monthly changes, midnight crossing, early-leave and regularization limits).
 
 ## Project structure
 
