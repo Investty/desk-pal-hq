@@ -249,6 +249,8 @@ export default function Employees() {
         </TabsContent>
       </Tabs>
 
+      <EmployeeLeaveDialog employee={leaveFor} onOpenChange={(o) => !o && setLeaveFor(null)} />
+
       <Dialog open={!!removing} onOpenChange={(o) => !o && setRemoving(null)}>
         <DialogContent>
           <DialogHeader>
