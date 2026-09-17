@@ -13,7 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ListPager } from "@/components/ui/list-pager";
-import { Search, Users, UserMinus, UserPlus, Download } from "lucide-react";
+import { Search, Users, UserMinus, UserPlus, Download, CalendarDays } from "lucide-react";
+import EmployeeLeaveDialog from "@/components/employees/EmployeeLeaveDialog";
 import { downloadCsv } from "@/lib/csv";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -40,6 +41,7 @@ export default function Employees() {
   const [department, setDepartment] = useState("all");
   const [page, setPage] = useState(0);
   const [removing, setRemoving] = useState<EmployeeRow | null>(null);
+  const [leaveFor, setLeaveFor] = useState<{ user_id: string; full_name: string } | null>(null);
   const [reason, setReason] = useState("");
   const [lastDay, setLastDay] = useState(format(new Date(), "yyyy-MM-dd"));
   const { isHR, company } = useAuth();
@@ -186,9 +188,14 @@ export default function Employees() {
                           {emp.departments?.name && <Badge variant="department" className="text-xs">{emp.departments.name}</Badge>}
                         </div>
                         {isHR && (
-                          <Button size="sm" variant="outline" className="mt-3" onClick={() => { setRemoving(emp); setReason(""); }}>
-                            <UserMinus className="h-4 w-4 mr-1" /> Remove
-                          </Button>
+                          <div className="flex flex-wrap gap-2 mt-3">
+                            <Button size="sm" variant="outline" onClick={() => setLeaveFor({ user_id: emp.user_id, full_name: emp.full_name })}>
+                              <CalendarDays className="h-4 w-4 mr-1" /> Leave
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => { setRemoving(emp); setReason(""); }}>
+                              <UserMinus className="h-4 w-4 mr-1" /> Remove
+                            </Button>
+                          </div>
                         )}
                       </div>
                     </div>

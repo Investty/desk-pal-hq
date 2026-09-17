@@ -160,7 +160,7 @@ export default function Approvals() {
     queryFn: async () => {
       const { data, count } = await supabase
         .from("leave_requests")
-        .select("*", { count: "exact" })
+        .select("*, leave_policies:policy_id(label)", { count: "exact" })
         .eq("status", "cancelled")
         .order("updated_at", { ascending: false })
         .range(canPage * PAGE_SIZE, canPage * PAGE_SIZE + PAGE_SIZE - 1);
@@ -196,7 +196,7 @@ export default function Approvals() {
                 <p className="font-medium">{profile?.full_name || "Unknown"}</p>
                 <p className="text-xs text-muted-foreground">{profile?.employee_id}</p>
               </TableCell>
-              <TableCell className="capitalize">{req.leave_type}</TableCell>
+              <TableCell>{leaveLabel(req)}</TableCell>
               <TableCell>{format(new Date(req.start_date), "MMM d, yyyy")}</TableCell>
               <TableCell>{format(new Date(req.end_date), "MMM d, yyyy")}</TableCell>
               <TableCell className="whitespace-nowrap text-xs">
@@ -296,7 +296,7 @@ export default function Approvals() {
                         <p className="font-medium">{profile?.full_name || "Unknown"}</p>
                         <p className="text-xs text-muted-foreground">{profile?.employee_id}</p>
                       </TableCell>
-                      <TableCell className="capitalize">{req.leave_type}</TableCell>
+                      <TableCell>{leaveLabel(req)}</TableCell>
                       <TableCell>{format(new Date(req.start_date), "MMM d, yyyy")}</TableCell>
                       <TableCell>{format(new Date(req.end_date), "MMM d, yyyy")}</TableCell>
                       <TableCell>{days}</TableCell>
@@ -360,7 +360,7 @@ export default function Approvals() {
                       <p className="font-medium">{profile?.full_name || "Unknown"}</p>
                       <p className="text-xs text-muted-foreground">{profile?.employee_id}</p>
                     </TableCell>
-                    <TableCell className="capitalize">{req.leave_type}</TableCell>
+                    <TableCell>{leaveLabel(req)}</TableCell>
                     <TableCell>{format(new Date(req.start_date), "MMM d, yyyy")}</TableCell>
                     <TableCell>{format(new Date(req.end_date), "MMM d, yyyy")}</TableCell>
                     <TableCell><Badge variant="outline">{req.manager_status}</Badge></TableCell>
