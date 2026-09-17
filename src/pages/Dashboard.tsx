@@ -127,7 +127,7 @@ export default function Dashboard() {
         {myLeaveBalances?.map((bal) => (
           <StatCard
             key={bal.id}
-            title={`${bal.leave_type.charAt(0).toUpperCase() + bal.leave_type.slice(1)} Leave`}
+            title={leaveLabel(bal)}
             value={`${bal.remaining_days}/${bal.total_days}`}
             icon={CalendarDays}
             description="Days remaining"

@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { Users, Clock, CalendarDays, CheckSquare } from "lucide-react";
 import AttendanceApprovals from "@/components/attendance/AttendanceApprovals";
 import CompOffGrants from "@/components/leave/CompOffGrants";
+import { leaveLabel } from "@/lib/leave";
 
 const today = () => format(new Date(), "yyyy-MM-dd");
 
@@ -164,8 +165,8 @@ export default function Team() {
                     <TableCell>{a?.working_hours ?? "—"}</TableCell>
                     <TableCell>
                       {leave ? (
-                        <Badge variant="info" className="capitalize">
-                          On {leave.leave_type} leave{leave.day_portion !== "full_day" ? " (half day)" : ""}
+                        <Badge variant="info">
+                          On {leaveLabel(leave)}{leave.day_portion !== "full_day" ? " (half day)" : ""}
                         </Badge>
                       ) : a ? (
                         <Badge variant={a.status === "late" ? "warning" : "success"}>{a.status}</Badge>
