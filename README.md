@@ -112,6 +112,25 @@ Leave is configured at two levels:
 
 **Defaults seeded for a new company:** Casual 12, Sick 8, Paid 15 (enabled); Compensatory 0, Bereavement 3 (disabled).
 
+## Data import (`/import`, HR & admin)
+
+Bring existing records in from Excel, CSV or a Tally export instead of typing them. Every importer follows the same flow: **upload → pick sheet → check the column matching → preview with per-row problems → confirm → import**. Columns are matched automatically from a list of common header names, and skipped rows can be downloaded as a CSV with the reason for each.
+
+**People** — name, email, employee code, phone, designation, department, joining date, date of birth, manager email, shift. Imported people go to a "waiting to join" list; missing departments are created. When someone signs up with the company invite code and the same email, their details, manager and shift are applied to their profile automatically.
+
+**Shifts** — name, start time, end time, break minutes, grace minutes. A shift with the same name is updated, not duplicated.
+
+**Attendance history** — email, date, check in, check out, working hours, status.
+- Each row is matched to an employee by email within the current company.
+- A day already recorded for that person is updated, never duplicated.
+- Working hours are calculated from the times when the column is empty; a check-out earlier than the check-in is treated as a night shift ending the next morning.
+- When status is blank it is decided from the employee's shift for that date: no check-in → absent, check-in after shift start plus grace → late, otherwise present.
+- Rows are skipped with a reason when the email is unknown, the date is missing/invalid/in the future, a check-out has no check-in, the status is not present/absent/late, or hours fall outside 0–24.
+
+**Import history** — each run records the file, what was imported, and how many rows were added and skipped. Every import is written to the audit log.
+
+Leave history and payroll history importers are planned next and are not built yet.
+
 ## Tech stack
 
 - **Frontend:** React 18, TypeScript 5, Vite 5, Tailwind CSS v3, shadcn/ui, Recharts, TanStack Query
@@ -177,7 +196,7 @@ This section exists so nobody — including future maintainers — mistakes "fea
 1. **Statutory compliance is the actual product.** The payroll here computes gross/deductions/net. Real payroll is PF, ESI, professional tax, TDS, LWF, gratuity, bonus-act rules, leave encashment, Form 16, challan files — per country, per state, changing every budget. Without this, no company can legally run payroll on this app. This alone is years of work and the reason incumbents exist.
 2. **No integrations.** Real HRMS lives inside an ecosystem: biometric devices, biometric/GeoTagged attendance, bank files for salary disbursement, accounting (Tally/Zoho/QuickBooks), Slack/Teams, Google/Outlook calendars, SSO (SAML/OIDC). Zero of these exist here.
 3. **No mobile app.** Field staff and frontline workers — the majority of attendance users — need a phone app with GPS/selfie punch. A responsive web app is not enough for this market.
-4. **Data migration & onboarding.** Every real customer arrives with years of data in Excel or a competitor. Bulk import, mapping tools, and white-glove onboarding decide sales; none of that exists.
+4. **Data migration & onboarding.** Every real customer arrives with years of data in Excel or a competitor. Spreadsheet import with column mapping now exists for people, shifts and attendance history — leave and payroll history are still missing, and white-glove onboarding (the part that actually closes deals) is still manual.
 5. **Scale, reliability & trust.** Uptime SLAs, backups/DR, penetration tests, SOC 2 / ISO 27001, data-residency — enterprise buyers demand certifications before a pilot. A hosted MVP has none.
 6. **The market is a red ocean.** greytHR, Keka, Zoho People, Darwinbox, BambooHR, HROne and dozens more — with compliance, mobile, integrations and certified security already built. "Me too but simpler" loses; you win only with a sharp wedge.
 

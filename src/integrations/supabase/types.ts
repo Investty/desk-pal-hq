@@ -2053,6 +2053,10 @@ export type Database = {
         Args: { _policy_id: string }
         Returns: undefined
       }
+      import_attendance: {
+        Args: { _filename?: string; _rows: Json }
+        Returns: Json
+      }
       import_employees: {
         Args: { _filename?: string; _rows: Json }
         Returns: Json

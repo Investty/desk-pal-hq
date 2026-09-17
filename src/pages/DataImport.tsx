@@ -9,7 +9,7 @@ import { Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import SheetImporter from "@/components/import/SheetImporter";
-import { employeeFields, shiftFields } from "@/lib/importSheet";
+import { attendanceFields, employeeFields, shiftFields } from "@/lib/importSheet";
 
 interface PendingRow {
   id: string;
@@ -78,6 +78,7 @@ export default function DataImport() {
         <TabsList>
           <TabsTrigger value="people">People</TabsTrigger>
           <TabsTrigger value="shifts">Shifts</TabsTrigger>
+          <TabsTrigger value="attendance">Attendance</TabsTrigger>
           <TabsTrigger value="history">History</TabsTrigger>
         </TabsList>
 
@@ -152,6 +153,18 @@ export default function DataImport() {
             rpc="import_shifts"
             templateName="shift-import-template.csv"
             sampleRow={["General", "09:30", "18:30", "60", "15"]}
+          />
+        </TabsContent>
+
+        <TabsContent value="attendance" className="mt-4">
+          <SheetImporter
+            title="Import past attendance"
+            description="Load previous months' attendance. Each row is matched to an employee by email; a day already recorded is updated rather than duplicated. Hours are worked out from the times when not given, including night shifts that end the next morning."
+            fields={attendanceFields}
+            rpc="import_attendance"
+            templateName="attendance-import-template.csv"
+            sampleRow={["asha.nair@example.com", "2026-08-04", "09:28", "18:35", "", "present"]}
+            onDone={() => queryClient.invalidateQueries({ queryKey: ["import-batches"] })}
           />
         </TabsContent>
 

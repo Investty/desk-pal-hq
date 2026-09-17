@@ -32,6 +32,15 @@ export const shiftFields: FieldDef[] = [
   { key: "grace_minutes", label: "Grace (minutes)", kind: "number", aliases: ["grace", "grace minutes", "grace mins", "late allowance"] },
 ];
 
+export const attendanceFields: FieldDef[] = [
+  { key: "email", label: "Employee email", required: true, kind: "email", aliases: ["email", "email id", "e-mail", "employee email", "official email"] },
+  { key: "date", label: "Date", required: true, kind: "date", aliases: ["date", "attendance date", "day", "work date"] },
+  { key: "check_in", label: "Check in", kind: "time", aliases: ["check in", "checkin", "in time", "in", "punch in", "first in"] },
+  { key: "check_out", label: "Check out", kind: "time", aliases: ["check out", "checkout", "out time", "out", "punch out", "last out"] },
+  { key: "working_hours", label: "Working hours", hint: "Worked out from the times if left empty", aliases: ["working hours", "hours", "total hours", "worked hours", "duration"] },
+  { key: "status", label: "Status", hint: "present, absent or late", aliases: ["status", "attendance status", "present", "remark", "remarks"] },
+];
+
 const pad = (n: number) => String(n).padStart(2, "0");
 
 function fromDate(d: Date, kind: "date" | "time") {

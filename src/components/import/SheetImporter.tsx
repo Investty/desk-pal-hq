@@ -20,7 +20,7 @@ interface Props {
   title: string;
   description: string;
   fields: FieldDef[];
-  rpc: "import_employees" | "import_shifts";
+  rpc: "import_employees" | "import_shifts" | "import_attendance";
   templateName: string;
   sampleRow: string[];
   onDone?: () => void;
