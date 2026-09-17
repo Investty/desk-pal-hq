@@ -30,6 +30,8 @@ import Reports from "@/pages/Reports";
 import LeaveTypes from "@/pages/LeaveTypes";
 import Team from "@/pages/Team";
 import Company from "@/pages/Company";
+import Shifts from "@/pages/Shifts";
+import AttendanceRules from "@/pages/AttendanceRules";
 import Owner from "@/pages/Owner";
 import JoinCompany from "@/pages/JoinCompany";
 import Suspended from "@/pages/Suspended";
@@ -125,6 +127,8 @@ const AppRoutes = () => (
       <Route path="/audit-logs" element={<ProtectedRoute roles={["admin", "hr"]} feature="audit_logs"><AuditLogs /></ProtectedRoute>} />
       <Route path="/user-roles" element={<ProtectedRoute roles={["admin"]}><UserRoles /></ProtectedRoute>} />
       <Route path="/company" element={<ProtectedRoute roles={["admin", "hr"]}><Company /></ProtectedRoute>} />
+      <Route path="/shifts" element={<ProtectedRoute roles={["admin", "hr"]}><Shifts /></ProtectedRoute>} />
+      <Route path="/attendance-rules" element={<ProtectedRoute roles={["admin", "hr"]}><AttendanceRules /></ProtectedRoute>} />
       <Route path="/holidays" element={<Holidays />} />
       <Route path="/announcements" element={<ProtectedRoute feature="announcements"><Announcements /></ProtectedRoute>} />
       <Route path="/profile" element={<MyProfile />} />
