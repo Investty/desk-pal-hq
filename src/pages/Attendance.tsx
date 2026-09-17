@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { Clock, LogIn, LogOut } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import AttendanceRequests from "@/components/attendance/AttendanceRequests";
+import AttendanceCalendar from "@/components/attendance/AttendanceCalendar";
 
 export default function Attendance() {
   const { user, hasFeature } = useAuth();
@@ -61,6 +62,7 @@ export default function Attendance() {
       toast.success("Checked in successfully!");
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
       queryClient.invalidateQueries({ queryKey: ["attendance-today"] });
+      queryClient.invalidateQueries({ queryKey: ["attendance-calendar"] });
       queryClient.invalidateQueries({ queryKey: ["my-today-attendance"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -75,6 +77,7 @@ export default function Attendance() {
       toast.success("Checked out successfully!");
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
       queryClient.invalidateQueries({ queryKey: ["attendance-today"] });
+      queryClient.invalidateQueries({ queryKey: ["attendance-calendar"] });
       queryClient.invalidateQueries({ queryKey: ["my-today-attendance"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -135,6 +138,8 @@ export default function Attendance() {
           </div>
         </CardContent>
       </Card>
+
+      <AttendanceCalendar />
 
       {hasFeature("attendance_regularization") && <AttendanceRequests />}
 
