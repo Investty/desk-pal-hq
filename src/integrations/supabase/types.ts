@@ -919,6 +919,50 @@ export type Database = {
           },
         ]
       }
+      import_batches: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          filename: string | null
+          id: string
+          imported_rows: number
+          kind: string
+          skipped_rows: number
+          total_rows: number
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          filename?: string | null
+          id?: string
+          imported_rows?: number
+          kind: string
+          skipped_rows?: number
+          total_rows?: number
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          filename?: string | null
+          id?: string
+          imported_rows?: number
+          kind?: string
+          skipped_rows?: number
+          total_rows?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_batches_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leave_balances: {
         Row: {
           company_id: string
@@ -1271,6 +1315,94 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pending_employees: {
+        Row: {
+          batch_id: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          date_of_birth: string | null
+          department_id: string | null
+          designation: string | null
+          email: string
+          employee_code: string | null
+          full_name: string
+          id: string
+          joining_date: string | null
+          linked_at: string | null
+          linked_user_id: string | null
+          manager_email: string | null
+          phone: string | null
+          shift_name: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          batch_id?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          date_of_birth?: string | null
+          department_id?: string | null
+          designation?: string | null
+          email: string
+          employee_code?: string | null
+          full_name: string
+          id?: string
+          joining_date?: string | null
+          linked_at?: string | null
+          linked_user_id?: string | null
+          manager_email?: string | null
+          phone?: string | null
+          shift_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          batch_id?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          date_of_birth?: string | null
+          department_id?: string | null
+          designation?: string | null
+          email?: string
+          employee_code?: string | null
+          full_name?: string
+          id?: string
+          joining_date?: string | null
+          linked_at?: string | null
+          linked_user_id?: string | null
+          manager_email?: string | null
+          phone?: string | null
+          shift_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_employees_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "import_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_employees_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_employees_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
             referencedColumns: ["id"]
           },
         ]
@@ -1921,6 +2053,14 @@ export type Database = {
         Args: { _policy_id: string }
         Returns: undefined
       }
+      import_employees: {
+        Args: { _filename?: string; _rows: Json }
+        Returns: Json
+      }
+      import_shifts: {
+        Args: { _filename?: string; _rows: Json }
+        Returns: Json
+      }
       is_hr: { Args: { _user_id: string }; Returns: boolean }
       is_manager_of: {
         Args: { _employee_user_id: string; _manager_user_id: string }
@@ -1932,6 +2072,10 @@ export type Database = {
         Returns: boolean
       }
       leave_days: { Args: { _end: string; _start: string }; Returns: number }
+      link_pending_employee: {
+        Args: { _company_id: string; _email: string; _user_id: string }
+        Returns: undefined
+      }
       my_broadcasts: {
         Args: never
         Returns: {
