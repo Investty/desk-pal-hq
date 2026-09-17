@@ -17,9 +17,9 @@ import { CalendarDays, Plus, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LeaveCalendar from "@/components/leave/LeaveCalendar";
+import { leaveLabel } from "@/lib/leave";
 import type { Database } from "@/integrations/supabase/types";
 
-type LeaveType = Database["public"]["Enums"]["leave_type"];
 type DayPortion = Database["public"]["Enums"]["day_portion"];
 
 const portionLabel: Record<DayPortion, string> = {
@@ -102,6 +102,7 @@ export default function Leave() {
     onSuccess: () => {
       toast.success("Leave request submitted!");
       setOpen(false);
+      setPolicyId("");
       setStartDate("");
       setEndDate("");
       setReason("");
@@ -214,8 +215,8 @@ export default function Leave() {
         {balances?.map((b) => (
           <Card key={b.id}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground capitalize flex items-center gap-2">
-                <CalendarDays className="h-4 w-4" /> {b.leave_type} Leave
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <CalendarDays className="h-4 w-4" /> {leaveLabel(b)}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -259,7 +260,7 @@ export default function Leave() {
             <TableBody>
               {requests?.map((req) => (
                 <TableRow key={req.id}>
-                  <TableCell className="capitalize">{req.leave_type}</TableCell>
+                  <TableCell>{leaveLabel(req)}</TableCell>
                   <TableCell>{format(new Date(req.start_date), "MMM d, yyyy")}</TableCell>
                   <TableCell>{format(new Date(req.end_date), "MMM d, yyyy")}</TableCell>
                   <TableCell className="whitespace-nowrap text-xs">
