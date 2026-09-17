@@ -77,6 +77,46 @@ export default function Payroll() {
     },
   });
 
+  const { data: periods } = useQuery({
+    queryKey: ["pay-periods"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("pay_periods")
+        .select("id, month, year, status, paid_at, processed_at")
+        .order("year", { ascending: false })
+        .order("month", { ascending: false });
+      return (data || []) as PeriodRow[];
+    },
+  });
+
+  const currentPeriod = periods?.find((p) => p.month === Number(runMonth) && p.year === Number(runYear));
+  const isLocked = currentPeriod?.status === "paid";
+
+  const setPeriodStatus = useMutation({
+    mutationFn: async (status: "draft" | "processing" | "paid") => {
+      const m = Number(runMonth), y = Number(runYear);
+      const { error } = await supabase.from("pay_periods").upsert(
+        {
+          month: m,
+          year: y,
+          status,
+          processed_at: status === "draft" ? null : new Date().toISOString(),
+          paid_at: status === "paid" ? new Date().toISOString() : null,
+        },
+        { onConflict: "company_id,month,year" },
+      );
+      if (error) throw error;
+      return status;
+    },
+    onSuccess: (status) => {
+      toast.success(
+        status === "paid" ? "Pay period marked paid and locked" : status === "processing" ? "Pay period marked in progress" : "Pay period reopened",
+      );
+      queryClient.invalidateQueries({ queryKey: ["pay-periods"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const runPayroll = useMutation({
     mutationFn: async () => {
       const m = Number(runMonth), y = Number(runYear);
