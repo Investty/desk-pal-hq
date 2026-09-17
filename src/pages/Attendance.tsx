@@ -19,6 +19,15 @@ export default function Attendance() {
   const queryClient = useQueryClient();
   const today = format(new Date(), "yyyy-MM-dd");
 
+  const { data: myShift } = useQuery({
+    queryKey: ["shift-for-today", today],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("shift_for", { _user: user!.id, _date: today });
+      const row = Array.isArray(data) ? data[0] : data;
+      return row as { name: string; start_time: string; end_time: string; grace_minutes: number } | null;
+    },
+  });
+
   const { data: todayRecord } = useQuery({
     queryKey: ["attendance-today", today],
     queryFn: async () => {
@@ -85,6 +94,11 @@ export default function Attendance() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5" /> Today — {format(new Date(), "MMMM d, yyyy")}</CardTitle>
+          {myShift && (
+            <p className="text-sm text-muted-foreground">
+              Your shift: {myShift.name} ({myShift.start_time.slice(0, 5)} – {myShift.end_time.slice(0, 5)}) · marked late after {myShift.grace_minutes} min grace
+            </p>
+          )}
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4 flex-wrap">
