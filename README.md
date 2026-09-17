@@ -93,7 +93,9 @@ A user can belong to multiple companies; roles are **per company**, and all data
   - Shifts and monthly rosters; attendance rules; attendance period flags; attendance reports & export.
   - Leave types (create/edit/deactivate, carry-forward settings, year-end run).
   - Second-stage (final) leave approval; reject/cancel with notes.
-  - Salary structures, monthly payroll run, payslip generation.
+  - Salary structures, monthly payroll run, payslip generation, pay-period status (mark paid / lock / reopen).
+  - Data import: people, shifts, attendance, leave and payroll history.
+  - Reports & analytics with export.
   - **Cannot:** manage User Roles or promote anyone to Admin, change company settings, or access the owner console.
 
 - **Admin** — everything HR can do, plus:
