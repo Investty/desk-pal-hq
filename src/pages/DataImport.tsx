@@ -9,7 +9,7 @@ import { Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import SheetImporter from "@/components/import/SheetImporter";
-import { attendanceFields, employeeFields, shiftFields } from "@/lib/importSheet";
+import { attendanceFields, employeeFields, leaveFields, shiftFields } from "@/lib/importSheet";
 
 interface PendingRow {
   id: string;
