@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Wallet, Play, Printer, IndianRupee, Download } from "lucide-react";
+import { Wallet, Play, Printer, IndianRupee, Download, Lock, Unlock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { downloadCsv } from "@/lib/csv";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
