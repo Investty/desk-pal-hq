@@ -105,7 +105,7 @@ export default function Reports() {
         supabase.from("profiles").select("user_id, department_id, joining_date, is_active, status"),
         supabase.from("departments").select("id, name").order("name"),
         supabase.from("attendance").select("user_id, date, status, working_hours").gte("date", since),
-        supabase.from("leave_requests").select("user_id, leave_type, status, start_date, end_date, day_portion").gte("end_date", since),
+        supabase.from("leave_requests").select("user_id, leave_type, status, start_date, end_date, day_portion").gte("end_date", since).lte("start_date", format(today, "yyyy-MM-dd")),
         supabase.from("salary_structures").select("user_id, basic, da, hra, special_allowance, pf_rate, professional_tax, tds"),
       ]);
       const error = profiles.error || departments.error || attendance.error || leaves.error || salaries.error;
