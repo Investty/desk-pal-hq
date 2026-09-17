@@ -127,9 +127,18 @@ Bring existing records in from Excel, CSV or a Tally export instead of typing th
 - When status is blank it is decided from the employee's shift for that date: no check-in → absent, check-in after shift start plus grace → late, otherwise present.
 - Rows are skipped with a reason when the email is unknown, the date is missing/invalid/in the future, a check-out has no check-in, the status is not present/absent/late, or hours fall outside 0–24.
 
-**Import history** — each run records the file, what was imported, and how many rows were added and skipped. Every import is written to the audit log.
+**Leave history** — email, leave type, start date, end date, day portion, status, reason.
+- Each row is matched to an employee by email and to one of the company's configured leave types by code, label or type name.
+- Rows are skipped with a reason when the email is unknown, the leave type is not configured, dates are missing or the end is before the start, a half-day spans two dates, or the dates clash with leave already recorded.
+- Balances are not touched and no notifications are sent — this is history, not new requests.
 
-Leave history and payroll history importers are planned next and are not built yet.
+**Payroll history** — email, month, year, basic, DA, HRA, other allowances, PF, professional tax, TDS, gross, deductions, net.
+- Each row is matched to an employee by email and to a pay period by month and year.
+- Earnings and deductions are validated as numbers; gross, total deductions and net pay are calculated from the parts when those columns are left empty.
+- An existing payslip for that person and month is updated rather than duplicated, and each imported month is recorded as a **paid** pay period so it is locked against accidental re-runs (HR can reopen it from Payroll).
+- Rows are skipped with a reason when the email is unknown, the month is outside 1–12, the year is out of range, or any amount is not a valid number.
+
+**Import history** — each run records the file, what was imported, and how many rows were added and skipped. Every import is written to the audit log.
 
 ## Tech stack
 
@@ -196,7 +205,7 @@ This section exists so nobody — including future maintainers — mistakes "fea
 1. **Statutory compliance is the actual product.** The payroll here computes gross/deductions/net. Real payroll is PF, ESI, professional tax, TDS, LWF, gratuity, bonus-act rules, leave encashment, Form 16, challan files — per country, per state, changing every budget. Without this, no company can legally run payroll on this app. This alone is years of work and the reason incumbents exist.
 2. **No integrations.** Real HRMS lives inside an ecosystem: biometric devices, biometric/GeoTagged attendance, bank files for salary disbursement, accounting (Tally/Zoho/QuickBooks), Slack/Teams, Google/Outlook calendars, SSO (SAML/OIDC). Zero of these exist here.
 3. **No mobile app.** Field staff and frontline workers — the majority of attendance users — need a phone app with GPS/selfie punch. A responsive web app is not enough for this market.
-4. **Data migration & onboarding.** Every real customer arrives with years of data in Excel or a competitor. Spreadsheet import with column mapping now exists for people, shifts and attendance history — leave and payroll history are still missing, and white-glove onboarding (the part that actually closes deals) is still manual.
+4. **Data migration & onboarding.** Every real customer arrives with years of data in Excel or a competitor. Spreadsheet import with column mapping now covers people, shifts, attendance, leave and payroll history — but biometric-device exports and competitor-specific formats still need mapping by hand, and white-glove onboarding (the part that actually closes deals) is manual.
 5. **Scale, reliability & trust.** Uptime SLAs, backups/DR, penetration tests, SOC 2 / ISO 27001, data-residency — enterprise buyers demand certifications before a pilot. A hosted MVP has none.
 6. **The market is a red ocean.** greytHR, Keka, Zoho People, Darwinbox, BambooHR, HROne and dozens more — with compliance, mobile, integrations and certified security already built. "Me too but simpler" loses; you win only with a sharp wedge.
 
