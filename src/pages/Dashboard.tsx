@@ -9,6 +9,7 @@ import AdminInsights from "@/components/dashboard/AdminInsights";
 import OnLeaveToday from "@/components/dashboard/OnLeaveToday";
 import YesterdayAttendance from "@/components/dashboard/YesterdayAttendance";
 import { Link } from "react-router-dom";
+import { leaveLabel } from "@/lib/leave";
 
 function StatCard({ title, value, icon: Icon, description, variant = "default" }: {
   title: string; value: string | number; icon: React.ElementType; description?: string;
@@ -67,7 +68,10 @@ export default function Dashboard() {
   const { data: myLeaveBalances } = useQuery({
     queryKey: ["my-leave-balances", user?.id],
     queryFn: async () => {
-      const { data } = await supabase.from("leave_balances").select("*").eq("user_id", user!.id);
+      const { data } = await supabase
+        .from("leave_balances")
+        .select("*, leave_policies:policy_id(label, is_enabled)")
+        .eq("user_id", user!.id);
       return data || [];
     },
     enabled: !!user?.id,
@@ -124,7 +128,7 @@ export default function Dashboard() {
         {myLeaveBalances?.map((bal) => (
           <StatCard
             key={bal.id}
-            title={`${bal.leave_type.charAt(0).toUpperCase() + bal.leave_type.slice(1)} Leave`}
+            title={leaveLabel(bal)}
             value={`${bal.remaining_days}/${bal.total_days}`}
             icon={CalendarDays}
             description="Days remaining"

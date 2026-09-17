@@ -17,9 +17,9 @@ import AttendanceFlags from "@/components/attendance/AttendanceFlags";
 import { Input } from "@/components/ui/input";
 import { ListPager } from "@/components/ui/list-pager";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { leaveLabel } from "@/lib/leave";
 
 const PAGE_SIZE = 20;
-const LEAVE_TYPES = ["sick", "casual", "paid", "compensatory", "bereavement", "maternity", "paternity"];
 
 type Stage = "manager" | "hr";
 type RevokeAction = "cancelled" | "rejected";
@@ -47,12 +47,20 @@ export default function Approvals() {
   const [apPage, setApPage] = useState(0);
 
 
+  const { data: leaveTypes } = useQuery({
+    queryKey: ["company-leave-types"],
+    queryFn: async () => {
+      const { data } = await supabase.from("leave_policies").select("id, label").order("label");
+      return data || [];
+    },
+  });
+
   const { data: requests } = useQuery({
     queryKey: ["pending-approvals"],
     queryFn: async () => {
       const { data } = await supabase
         .from("leave_requests")
-        .select("*")
+        .select("*, leave_policies:policy_id(label)")
         .eq("status", "pending")
         .order("created_at", { ascending: false });
       return await attachProfiles(data || []);
@@ -95,10 +103,10 @@ export default function Approvals() {
     queryFn: async () => {
       let q = supabase
         .from("leave_requests")
-        .select("*", { count: "exact" })
+        .select("*, leave_policies:policy_id(label)", { count: "exact" })
         .eq("status", "approved")
         .order("start_date", { ascending: false });
-      if (apType !== "all") q = q.eq("leave_type", apType as "sick");
+      if (apType !== "all") q = q.eq("policy_id", apType);
       if (apFrom) q = q.gte("start_date", apFrom);
       if (apTo) q = q.lte("end_date", apTo);
       const { data, count } = await q.range(apPage * PAGE_SIZE, apPage * PAGE_SIZE + PAGE_SIZE - 1);
@@ -152,7 +160,7 @@ export default function Approvals() {
     queryFn: async () => {
       const { data, count } = await supabase
         .from("leave_requests")
-        .select("*", { count: "exact" })
+        .select("*, leave_policies:policy_id(label)", { count: "exact" })
         .eq("status", "cancelled")
         .order("updated_at", { ascending: false })
         .range(canPage * PAGE_SIZE, canPage * PAGE_SIZE + PAGE_SIZE - 1);
@@ -188,7 +196,7 @@ export default function Approvals() {
                 <p className="font-medium">{profile?.full_name || "Unknown"}</p>
                 <p className="text-xs text-muted-foreground">{profile?.employee_id}</p>
               </TableCell>
-              <TableCell className="capitalize">{req.leave_type}</TableCell>
+              <TableCell>{leaveLabel(req)}</TableCell>
               <TableCell>{format(new Date(req.start_date), "MMM d, yyyy")}</TableCell>
               <TableCell>{format(new Date(req.end_date), "MMM d, yyyy")}</TableCell>
               <TableCell className="whitespace-nowrap text-xs">
@@ -251,7 +259,7 @@ export default function Approvals() {
                 <SelectTrigger className="w-44"><SelectValue placeholder="All leave types" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All leave types</SelectItem>
-                  {LEAVE_TYPES.map((t) => (<SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>))}
+                  {(leaveTypes || []).map((t) => (<SelectItem key={t.id} value={t.id}>{t.label}</SelectItem>))}
                 </SelectContent>
               </Select>
               <div>
@@ -288,7 +296,7 @@ export default function Approvals() {
                         <p className="font-medium">{profile?.full_name || "Unknown"}</p>
                         <p className="text-xs text-muted-foreground">{profile?.employee_id}</p>
                       </TableCell>
-                      <TableCell className="capitalize">{req.leave_type}</TableCell>
+                      <TableCell>{leaveLabel(req)}</TableCell>
                       <TableCell>{format(new Date(req.start_date), "MMM d, yyyy")}</TableCell>
                       <TableCell>{format(new Date(req.end_date), "MMM d, yyyy")}</TableCell>
                       <TableCell>{days}</TableCell>
@@ -352,7 +360,7 @@ export default function Approvals() {
                       <p className="font-medium">{profile?.full_name || "Unknown"}</p>
                       <p className="text-xs text-muted-foreground">{profile?.employee_id}</p>
                     </TableCell>
-                    <TableCell className="capitalize">{req.leave_type}</TableCell>
+                    <TableCell>{leaveLabel(req)}</TableCell>
                     <TableCell>{format(new Date(req.start_date), "MMM d, yyyy")}</TableCell>
                     <TableCell>{format(new Date(req.end_date), "MMM d, yyyy")}</TableCell>
                     <TableCell><Badge variant="outline">{req.manager_status}</Badge></TableCell>

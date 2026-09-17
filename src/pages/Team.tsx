@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { Users, Clock, CalendarDays, CheckSquare } from "lucide-react";
 import AttendanceApprovals from "@/components/attendance/AttendanceApprovals";
 import CompOffGrants from "@/components/leave/CompOffGrants";
+import { leaveLabel } from "@/lib/leave";
 
 const today = () => format(new Date(), "yyyy-MM-dd");
 
@@ -55,7 +56,7 @@ export default function Team() {
     queryFn: async () => {
       const { data } = await supabase
         .from("leave_requests")
-        .select("*")
+        .select("*, leave_policies:policy_id(label)")
         .in("user_id", userIds)
         .order("start_date", { ascending: false })
         .limit(100);
@@ -164,8 +165,8 @@ export default function Team() {
                     <TableCell>{a?.working_hours ?? "—"}</TableCell>
                     <TableCell>
                       {leave ? (
-                        <Badge variant="info" className="capitalize">
-                          On {leave.leave_type} leave{leave.day_portion !== "full_day" ? " (half day)" : ""}
+                        <Badge variant="info">
+                          On {leaveLabel(leave)}{leave.day_portion !== "full_day" ? " (half day)" : ""}
                         </Badge>
                       ) : a ? (
                         <Badge variant={a.status === "late" ? "warning" : "success"}>{a.status}</Badge>
@@ -205,7 +206,7 @@ export default function Team() {
                 return (
                   <TableRow key={l.id}>
                     <TableCell>{person?.full_name || "—"}</TableCell>
-                    <TableCell className="capitalize">{l.leave_type}</TableCell>
+                    <TableCell>{leaveLabel(l)}</TableCell>
                     <TableCell>{format(new Date(l.start_date), "MMM d")}</TableCell>
                     <TableCell>{format(new Date(l.end_date), "MMM d")}</TableCell>
                     <TableCell>{l.day_portion === "full_day" ? "Full day" : "Half day"}</TableCell>
@@ -242,7 +243,7 @@ export default function Team() {
                 return (
                   <TableRow key={l.id}>
                     <TableCell>{person?.full_name || "—"}</TableCell>
-                    <TableCell className="capitalize">{l.leave_type}</TableCell>
+                    <TableCell>{leaveLabel(l)}</TableCell>
                     <TableCell>{format(new Date(l.start_date), "MMM d, yyyy")}</TableCell>
                     <TableCell>{format(new Date(l.end_date), "MMM d, yyyy")}</TableCell>
                     <TableCell>{l.day_portion === "full_day" ? "Full day" : "Half day"}</TableCell>

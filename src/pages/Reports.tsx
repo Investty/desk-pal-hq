@@ -1,3 +1,4 @@
+import { leaveLabel } from "@/lib/leave";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -105,7 +106,7 @@ export default function Reports() {
         supabase.from("profiles").select("user_id, department_id, joining_date, is_active, status"),
         supabase.from("departments").select("id, name").order("name"),
         supabase.from("attendance").select("user_id, date, status, working_hours").gte("date", since),
-        supabase.from("leave_requests").select("user_id, leave_type, status, start_date, end_date, day_portion").gte("end_date", since).lte("start_date", format(today, "yyyy-MM-dd")),
+        supabase.from("leave_requests").select("user_id, leave_type, status, start_date, end_date, day_portion, leave_policies:policy_id(label)").gte("end_date", since).lte("start_date", format(today, "yyyy-MM-dd")),
         supabase.from("salary_structures").select("user_id, basic, da, hra, special_allowance, pf_rate, professional_tax, tds"),
       ]);
       const error = profiles.error || departments.error || attendance.error || leaves.error || salaries.error;
@@ -151,13 +152,13 @@ export default function Reports() {
     const leaveMap = selectedLeaves.reduce<Record<string, number>>((acc, row) => {
       const calendarDays = Math.max(1, Math.round((new Date(row.end_date).getTime() - new Date(row.start_date).getTime()) / 86400000) + 1);
       const days = row.day_portion === "full_day" ? calendarDays : 0.5;
-      acc[row.leave_type] = (acc[row.leave_type] || 0) + days;
+      const key = leaveLabel(row);
+      acc[key] = (acc[key] || 0) + days;
       return acc;
     }, {});
-    const leaveDistribution = Object.entries(leaveMap).map(([name, value]) => ({
-      name: name.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()),
-      value,
-    })).sort((a, b) => b.value - a.value);
+    const leaveDistribution = Object.entries(leaveMap)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
     const approvedLeaveDays = leaveDistribution.reduce((sum, item) => sum + item.value, 0);
 
     const salaryRows = (data?.salaries || []).filter((row) => selectedUsers.has(row.user_id));

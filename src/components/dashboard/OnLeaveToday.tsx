@@ -41,7 +41,7 @@ export default function OnLeaveToday() {
                 {format(new Date(p.start_date), "MMM d")} – {format(new Date(p.end_date), "MMM d")}
               </p>
             </div>
-            <Badge variant="info" className="capitalize shrink-0">{p.leave_type}</Badge>
+            <Badge variant="info" className="shrink-0">{p.leave_type}</Badge>
           </div>
         ))}
         {people?.length === 0 && (

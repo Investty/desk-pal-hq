@@ -747,6 +747,57 @@ export type Database = {
           },
         ]
       }
+      employee_leave_settings: {
+        Row: {
+          company_id: string
+          created_at: string
+          entitlement_override: number | null
+          id: string
+          is_enabled: boolean
+          note: string | null
+          policy_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          entitlement_override?: number | null
+          id?: string
+          is_enabled?: boolean
+          note?: string | null
+          policy_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          entitlement_override?: number | null
+          id?: string
+          is_enabled?: boolean
+          note?: string | null
+          policy_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_leave_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_leave_settings_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "leave_policies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_shifts: {
         Row: {
           company_id: string
@@ -873,7 +924,8 @@ export type Database = {
           company_id: string
           created_at: string
           id: string
-          leave_type: Database["public"]["Enums"]["leave_type"]
+          leave_type: Database["public"]["Enums"]["leave_type"] | null
+          policy_id: string | null
           remaining_days: number
           total_days: number
           updated_at: string
@@ -884,7 +936,8 @@ export type Database = {
           company_id?: string
           created_at?: string
           id?: string
-          leave_type: Database["public"]["Enums"]["leave_type"]
+          leave_type?: Database["public"]["Enums"]["leave_type"] | null
+          policy_id?: string | null
           remaining_days?: number
           total_days?: number
           updated_at?: string
@@ -895,7 +948,8 @@ export type Database = {
           company_id?: string
           created_at?: string
           id?: string
-          leave_type?: Database["public"]["Enums"]["leave_type"]
+          leave_type?: Database["public"]["Enums"]["leave_type"] | null
+          policy_id?: string | null
           remaining_days?: number
           total_days?: number
           updated_at?: string
@@ -910,12 +964,21 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "leave_balances_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "leave_policies"
+            referencedColumns: ["id"]
+          },
         ]
       }
       leave_policies: {
         Row: {
+          applies_to: string
           carry_forward_enabled: boolean
           carry_forward_max: number
+          code: string
           company_id: string
           created_at: string
           default_days: number
@@ -923,12 +986,14 @@ export type Database = {
           is_enabled: boolean
           label: string
           last_carry_forward_at: string | null
-          leave_type: Database["public"]["Enums"]["leave_type"]
+          leave_type: Database["public"]["Enums"]["leave_type"] | null
           updated_at: string
         }
         Insert: {
+          applies_to?: string
           carry_forward_enabled?: boolean
           carry_forward_max?: number
+          code: string
           company_id?: string
           created_at?: string
           default_days?: number
@@ -936,12 +1001,14 @@ export type Database = {
           is_enabled?: boolean
           label: string
           last_carry_forward_at?: string | null
-          leave_type: Database["public"]["Enums"]["leave_type"]
+          leave_type?: Database["public"]["Enums"]["leave_type"] | null
           updated_at?: string
         }
         Update: {
+          applies_to?: string
           carry_forward_enabled?: boolean
           carry_forward_max?: number
+          code?: string
           company_id?: string
           created_at?: string
           default_days?: number
@@ -949,7 +1016,7 @@ export type Database = {
           is_enabled?: boolean
           label?: string
           last_carry_forward_at?: string | null
-          leave_type?: Database["public"]["Enums"]["leave_type"]
+          leave_type?: Database["public"]["Enums"]["leave_type"] | null
           updated_at?: string
         }
         Relationships: [
@@ -975,11 +1042,12 @@ export type Database = {
           hr_status: Database["public"]["Enums"]["approval_stage_status"]
           id: string
           is_public: boolean
-          leave_type: Database["public"]["Enums"]["leave_type"]
+          leave_type: Database["public"]["Enums"]["leave_type"] | null
           manager_comment: string | null
           manager_reviewed_at: string | null
           manager_reviewed_by: string | null
           manager_status: Database["public"]["Enums"]["approval_stage_status"]
+          policy_id: string | null
           reason: string | null
           reviewed_at: string | null
           start_date: string
@@ -999,11 +1067,12 @@ export type Database = {
           hr_status?: Database["public"]["Enums"]["approval_stage_status"]
           id?: string
           is_public?: boolean
-          leave_type: Database["public"]["Enums"]["leave_type"]
+          leave_type?: Database["public"]["Enums"]["leave_type"] | null
           manager_comment?: string | null
           manager_reviewed_at?: string | null
           manager_reviewed_by?: string | null
           manager_status?: Database["public"]["Enums"]["approval_stage_status"]
+          policy_id?: string | null
           reason?: string | null
           reviewed_at?: string | null
           start_date: string
@@ -1023,11 +1092,12 @@ export type Database = {
           hr_status?: Database["public"]["Enums"]["approval_stage_status"]
           id?: string
           is_public?: boolean
-          leave_type?: Database["public"]["Enums"]["leave_type"]
+          leave_type?: Database["public"]["Enums"]["leave_type"] | null
           manager_comment?: string | null
           manager_reviewed_at?: string | null
           manager_reviewed_by?: string | null
           manager_status?: Database["public"]["Enums"]["approval_stage_status"]
+          policy_id?: string | null
           reason?: string | null
           reviewed_at?: string | null
           start_date?: string
@@ -1041,6 +1111,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_requests_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "leave_policies"
             referencedColumns: ["id"]
           },
         ]
@@ -1701,6 +1778,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      applicable_leave_types: {
+        Args: { _user_id?: string }
+        Returns: {
+          carry_forward_enabled: boolean
+          carry_forward_max: number
+          code: string
+          default_days: number
+          entitlement: number
+          is_override: boolean
+          label: string
+          leave_type: Database["public"]["Enums"]["leave_type"]
+          policy_id: string
+        }[]
+      }
       clock_in: {
         Args: never
         Returns: {
@@ -1754,6 +1845,10 @@ export type Database = {
           expires_at: string
         }[]
       }
+      effective_leave_days: {
+        Args: { _policy_id: string; _user_id: string }
+        Returns: number
+      }
       get_celebrations: {
         Args: never
         Returns: {
@@ -1791,7 +1886,7 @@ export type Database = {
         Returns: {
           end_date: string
           full_name: string
-          leave_type: Database["public"]["Enums"]["leave_type"]
+          leave_type: string
           start_date: string
         }[]
       }
@@ -1811,6 +1906,20 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      hr_set_employee_leave: {
+        Args: {
+          _entitlement: number
+          _is_enabled: boolean
+          _note?: string
+          _policy_id: string
+          _user_id: string
+        }
+        Returns: undefined
+      }
+      hr_sync_policy_balances: {
+        Args: { _policy_id: string }
+        Returns: undefined
       }
       is_hr: { Args: { _user_id: string }; Returns: boolean }
       is_manager_of: {

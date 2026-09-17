@@ -17,9 +17,9 @@ import { CalendarDays, Plus, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LeaveCalendar from "@/components/leave/LeaveCalendar";
+import { leaveLabel } from "@/lib/leave";
 import type { Database } from "@/integrations/supabase/types";
 
-type LeaveType = Database["public"]["Enums"]["leave_type"];
 type DayPortion = Database["public"]["Enums"]["day_portion"];
 
 const portionLabel: Record<DayPortion, string> = {
@@ -37,7 +37,7 @@ export default function Leave() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [leaveType, setLeaveType] = useState<LeaveType>("casual");
+  const [policyId, setPolicyId] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [reason, setReason] = useState("");
@@ -45,9 +45,11 @@ export default function Leave() {
   const [dayPortion, setDayPortion] = useState<DayPortion>("full_day");
 
   const { data: policies } = useQuery({
-    queryKey: ["leave-policies-enabled"],
+    queryKey: ["my-leave-types", user?.id],
+    enabled: !!user?.id,
     queryFn: async () => {
-      const { data } = await supabase.from("leave_policies").select("*").eq("is_enabled", true).order("label");
+      const { data, error } = await supabase.rpc("applicable_leave_types", { _user_id: user!.id });
+      if (error) throw error;
       return data || [];
     },
   });
@@ -56,7 +58,10 @@ export default function Leave() {
     queryKey: ["leave-balances", user?.id],
     enabled: !!user?.id,
     queryFn: async () => {
-      const { data } = await supabase.from("leave_balances").select("*").eq("user_id", user!.id).order("leave_type");
+      const { data } = await supabase
+        .from("leave_balances")
+        .select("*, leave_policies:policy_id(label, is_enabled)")
+        .eq("user_id", user!.id);
       return data || [];
     },
   });
@@ -67,7 +72,7 @@ export default function Leave() {
     queryFn: async () => {
       const { data } = await supabase
         .from("leave_requests")
-        .select("*")
+        .select("*, leave_policies:policy_id(label)")
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
       return data || [];
@@ -78,13 +83,14 @@ export default function Leave() {
     mutationFn: async () => {
       const half = dayPortion !== "full_day";
       const finalEnd = half ? startDate : endDate;
+      if (!policyId) throw new Error("Please choose a leave type");
       if (!startDate || !finalEnd) throw new Error("Please select dates");
       if (new Date(startDate) > new Date(finalEnd)) throw new Error("End date must be after start date");
       if (new Date(startDate) < new Date(format(new Date(), "yyyy-MM-dd"))) throw new Error("Cannot apply for past dates");
 
       const { error } = await supabase.from("leave_requests").insert({
         user_id: user!.id,
-        leave_type: leaveType,
+        policy_id: policyId,
         start_date: startDate,
         end_date: finalEnd,
         day_portion: dayPortion,
@@ -96,6 +102,7 @@ export default function Leave() {
     onSuccess: () => {
       toast.success("Leave request submitted!");
       setOpen(false);
+      setPolicyId("");
       setStartDate("");
       setEndDate("");
       setReason("");
@@ -145,14 +152,19 @@ export default function Leave() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Leave Type</Label>
-                <Select value={leaveType} onValueChange={(v) => setLeaveType(v as LeaveType)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Select value={policyId} onValueChange={setPolicyId}>
+                  <SelectTrigger><SelectValue placeholder="Choose a leave type" /></SelectTrigger>
                   <SelectContent>
                     {policies?.map((p) => (
-                      <SelectItem key={p.id} value={p.leave_type}>{p.label}</SelectItem>
+                      <SelectItem key={p.policy_id} value={p.policy_id}>
+                        {p.label} · {p.entitlement} days
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {policies?.length === 0 && (
+                  <p className="text-xs text-muted-foreground">No leave types are enabled for you. Please contact HR.</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Duration</Label>
@@ -203,8 +215,8 @@ export default function Leave() {
         {balances?.map((b) => (
           <Card key={b.id}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground capitalize flex items-center gap-2">
-                <CalendarDays className="h-4 w-4" /> {b.leave_type} Leave
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <CalendarDays className="h-4 w-4" /> {leaveLabel(b)}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -248,7 +260,7 @@ export default function Leave() {
             <TableBody>
               {requests?.map((req) => (
                 <TableRow key={req.id}>
-                  <TableCell className="capitalize">{req.leave_type}</TableCell>
+                  <TableCell>{leaveLabel(req)}</TableCell>
                   <TableCell>{format(new Date(req.start_date), "MMM d, yyyy")}</TableCell>
                   <TableCell>{format(new Date(req.end_date), "MMM d, yyyy")}</TableCell>
                   <TableCell className="whitespace-nowrap text-xs">
