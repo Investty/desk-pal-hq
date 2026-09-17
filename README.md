@@ -26,7 +26,21 @@ A scalable, multi-company, role-based HRMS for employee management, attendance a
 - **Carry forward** — HR decides per leave type whether unused balance carries forward at year end (and a max), with a one-click year-end run.
 
 ### Payroll
-- Salary structures per employee; monthly payroll run; payslips (Gross → Deductions → Net) with printable/PDF view and CSV export.
+- **Salary structures** per employee — Basic, DA, HRA, other allowances, PF rate, professional tax, TDS, effective from a date.
+- **Pay periods** — every month/year is a period with a status: Draft → In progress → Paid. Marking a period paid **locks** its payslips against edits, re-runs and imports; HR/Admin can reopen it. A Pay periods table shows status, payslip count, net paid and pay date per month.
+- **Payroll run** — generates payslips for everyone with a salary structure for the chosen month; PF is computed on Basic + DA.
+- **Payslips** — Gross → Deductions → Net with the full earnings/deductions breakdown, printable/PDF view, CSV export and a year-to-date summary. Employees see only their own.
+
+### Reports & analytics
+- KPI cards (active headcount, attendance rate, approved leave days, monthly net payroll) with period (30/90/YTD) and department filters.
+- Charts with legends, tooltips and empty states: headcount by department, approved leave by type, attendance trend (present/late/absent), monthly payroll composition — each linking through to the underlying records.
+- Attendance reports with date ranges, search, paging and CSV export.
+
+### Dashboard & communication
+- Role-aware dashboard: quick check-in/out, pending approvals, balances, who's on leave today, announcements.
+- **Celebrations** — only today's birthdays and work anniversaries are shown; anyone can send a wish with a message, the person is notified and can reply with a thank-you.
+- **Notifications** for leave/attendance request events, approvals, rejections, flags and wishes. Platform-wide broadcasts from the owner console appear as banners.
+- **Documents** — employee document storage with per-company access control and storage limits.
 
 ### Performance & Onboarding
 - Review cycles with self-rating → manager rating → complete flow; joining/exit onboarding checklists.
