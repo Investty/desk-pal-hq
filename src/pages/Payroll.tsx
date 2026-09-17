@@ -142,11 +142,16 @@ export default function Payroll() {
       });
       const { error } = await supabase.from("payslips").upsert(rows, { onConflict: "user_id,month,year" });
       if (error) throw error;
+      const { error: pErr } = await supabase
+        .from("pay_periods")
+        .upsert({ month: m, year: y, status: "processing", processed_at: new Date().toISOString() }, { onConflict: "company_id,month,year" });
+      if (pErr) throw pErr;
       return rows.length;
     },
     onSuccess: (count) => {
       toast.success(`Payroll generated for ${count} employee${count === 1 ? "" : "s"}!`);
       queryClient.invalidateQueries({ queryKey: ["payslips"] });
+      queryClient.invalidateQueries({ queryKey: ["pay-periods"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
