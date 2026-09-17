@@ -151,14 +151,19 @@ export default function Leave() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Leave Type</Label>
-                <Select value={leaveType} onValueChange={(v) => setLeaveType(v as LeaveType)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Select value={policyId} onValueChange={setPolicyId}>
+                  <SelectTrigger><SelectValue placeholder="Choose a leave type" /></SelectTrigger>
                   <SelectContent>
                     {policies?.map((p) => (
-                      <SelectItem key={p.id} value={p.leave_type}>{p.label}</SelectItem>
+                      <SelectItem key={p.policy_id} value={p.policy_id}>
+                        {p.label} · {p.entitlement} days
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {policies?.length === 0 && (
+                  <p className="text-xs text-muted-foreground">No leave types are enabled for you. Please contact HR.</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Duration</Label>
