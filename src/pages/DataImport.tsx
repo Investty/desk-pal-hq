@@ -156,6 +156,18 @@ export default function DataImport() {
           />
         </TabsContent>
 
+        <TabsContent value="attendance" className="mt-4">
+          <SheetImporter
+            title="Import past attendance"
+            description="Load previous months' attendance. Each row is matched to an employee by email; a day already recorded is updated rather than duplicated. Hours are worked out from the times when not given, including night shifts that end the next morning."
+            fields={attendanceFields}
+            rpc="import_attendance"
+            templateName="attendance-import-template.csv"
+            sampleRow={["asha.nair@example.com", "2026-08-04", "09:28", "18:35", "", "present"]}
+            onDone={() => queryClient.invalidateQueries({ queryKey: ["import-batches"] })}
+          />
+        </TabsContent>
+
         <TabsContent value="history" className="mt-4">
           <Card>
             <CardHeader>
