@@ -9,6 +9,7 @@ import AdminInsights from "@/components/dashboard/AdminInsights";
 import OnLeaveToday from "@/components/dashboard/OnLeaveToday";
 import YesterdayAttendance from "@/components/dashboard/YesterdayAttendance";
 import { Link } from "react-router-dom";
+import { leaveLabel } from "@/lib/leave";
 
 function StatCard({ title, value, icon: Icon, description, variant = "default" }: {
   title: string; value: string | number; icon: React.ElementType; description?: string;

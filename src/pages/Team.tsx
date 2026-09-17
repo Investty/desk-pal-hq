@@ -206,7 +206,7 @@ export default function Team() {
                 return (
                   <TableRow key={l.id}>
                     <TableCell>{person?.full_name || "—"}</TableCell>
-                    <TableCell className="capitalize">{l.leave_type}</TableCell>
+                    <TableCell>{leaveLabel(l)}</TableCell>
                     <TableCell>{format(new Date(l.start_date), "MMM d")}</TableCell>
                     <TableCell>{format(new Date(l.end_date), "MMM d")}</TableCell>
                     <TableCell>{l.day_portion === "full_day" ? "Full day" : "Half day"}</TableCell>
@@ -243,7 +243,7 @@ export default function Team() {
                 return (
                   <TableRow key={l.id}>
                     <TableCell>{person?.full_name || "—"}</TableCell>
-                    <TableCell className="capitalize">{l.leave_type}</TableCell>
+                    <TableCell>{leaveLabel(l)}</TableCell>
                     <TableCell>{format(new Date(l.start_date), "MMM d, yyyy")}</TableCell>
                     <TableCell>{format(new Date(l.end_date), "MMM d, yyyy")}</TableCell>
                     <TableCell>{l.day_portion === "full_day" ? "Full day" : "Half day"}</TableCell>
