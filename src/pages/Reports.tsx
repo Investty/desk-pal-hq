@@ -155,7 +155,7 @@ export default function Reports() {
       return acc;
     }, {});
     const leaveDistribution = Object.entries(leaveMap).map(([name, value]) => ({
-      name: name.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase()),
+      name: name.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()),
       value,
     })).sort((a, b) => b.value - a.value);
     const approvedLeaveDays = leaveDistribution.reduce((sum, item) => sum + item.value, 0);
