@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,14 +10,9 @@ import { Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Login() {
-  const { signIn, signUp } = useAuth();
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [mode, setMode] = useState<"create" | "join">("create");
+  const { signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [inviteCode, setInviteCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleForgotPassword = async () => {
@@ -36,17 +32,8 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = isSignUp
-      ? await signUp(email, password, fullName, mode === "create"
-        ? { companyName: companyName.trim() }
-        : { inviteCode: inviteCode.trim() })
-      : await signIn(email, password);
-
-    if (error) {
-      toast.error(error.message.replace(/^Database error saving new user$/, "Sign-up failed. Check your invite code."));
-    } else if (isSignUp) {
-      toast.success(mode === "create" ? "Company created! You are its admin." : "Account created!");
-    }
+    const { error } = await signIn(email, password);
+    if (error) toast.error(error.message);
     setLoading(false);
   };
 
@@ -57,40 +44,11 @@ export default function Login() {
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
             <Building2 className="h-6 w-6 text-primary-foreground" />
           </div>
-          <CardTitle className="text-2xl">MiniHRMS</CardTitle>
-          <CardDescription>
-            {isSignUp ? "Set up your company or join one" : "Sign in to your account"}
-          </CardDescription>
+          <CardTitle className="text-2xl">Welcome back</CardTitle>
+          <CardDescription>Sign in to your MiniHRMS account</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {isSignUp && (
-              <>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button type="button" variant={mode === "create" ? "default" : "outline"} onClick={() => setMode("create")}>
-                    New company
-                  </Button>
-                  <Button type="button" variant={mode === "join" ? "default" : "outline"} onClick={() => setMode("join")}>
-                    I have an invite
-                  </Button>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
-                </div>
-                {mode === "create" ? (
-                  <div className="space-y-2">
-                    <Label htmlFor="company">Company Name</Label>
-                    <Input id="company" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="Acme Pvt Ltd" required />
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <Label htmlFor="invite">Invite Code</Label>
-                    <Input id="invite" value={inviteCode} onChange={(e) => setInviteCode(e.target.value.toUpperCase())} placeholder="A1B2C3D4" required />
-                  </div>
-                )}
-              </>
-            )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
@@ -100,21 +58,17 @@ export default function Login() {
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Please wait..." : isSignUp ? "Create Account" : "Sign In"}
+              {loading ? "Please wait..." : "Sign In"}
             </Button>
           </form>
-          {!isSignUp && (
-            <div className="mt-3 text-center text-sm">
-              <button type="button" onClick={handleForgotPassword} disabled={loading} className="text-muted-foreground hover:text-primary hover:underline">
-                Forgot password?
-              </button>
-            </div>
-          )}
-          <div className="mt-4 text-center text-sm text-muted-foreground">
-            {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
-            <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary hover:underline font-medium">
-              {isSignUp ? "Sign in" : "Sign up"}
+          <div className="mt-3 text-center text-sm">
+            <button type="button" onClick={handleForgotPassword} disabled={loading} className="text-muted-foreground hover:text-primary hover:underline">
+              Forgot password?
             </button>
+          </div>
+          <div className="mt-4 text-center text-sm text-muted-foreground">
+            Don't have an account?{" "}
+            <Link to="/signup" className="text-primary hover:underline font-medium">Sign up</Link>
           </div>
         </CardContent>
       </Card>
