@@ -8,7 +8,7 @@
 
 # Reports & Analytics dashboard
 
-- [ ] Add responsive workforce, attendance, leave, and payroll KPIs
-- [ ] Add date and department filters with readable chart states
-- [ ] Add chart drill-down links, tooltips, legends, and empty states
-- [ ] Verify desktop/mobile presentation and reporting calculations
+- [x] Add responsive workforce, attendance, leave, and payroll KPIs
+- [x] Add date and department filters with readable chart states
+- [x] Add chart drill-down links, tooltips, legends, and empty states
+- [x] Verify desktop/mobile presentation and reporting calculations
