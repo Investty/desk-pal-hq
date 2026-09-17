@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/layout/AppLayout";
 import Login from "@/pages/Login";
+import Signup from "@/pages/Signup";
 import Dashboard from "@/pages/Dashboard";
 import Employees from "@/pages/Employees";
 import Attendance from "@/pages/Attendance";
@@ -105,6 +106,7 @@ function AuthRoute({ children }: { children: React.ReactNode }) {
 const AppRoutes = () => (
   <Routes>
     <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
+    <Route path="/signup" element={<AuthRoute><Signup /></AuthRoute>} />
     <Route path="/reset-password" element={<ResetPassword />} />
     <Route path="/join" element={<JoinRoute />} />
     <Route path="/owner" element={<OwnerRoute />} />
