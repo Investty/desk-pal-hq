@@ -78,6 +78,7 @@ export default function DataImport() {
         <TabsList>
           <TabsTrigger value="people">People</TabsTrigger>
           <TabsTrigger value="shifts">Shifts</TabsTrigger>
+          <TabsTrigger value="attendance">Attendance</TabsTrigger>
           <TabsTrigger value="history">History</TabsTrigger>
         </TabsList>
 
