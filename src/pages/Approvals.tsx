@@ -17,9 +17,9 @@ import AttendanceFlags from "@/components/attendance/AttendanceFlags";
 import { Input } from "@/components/ui/input";
 import { ListPager } from "@/components/ui/list-pager";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { leaveLabel } from "@/lib/leave";
 
 const PAGE_SIZE = 20;
-const LEAVE_TYPES = ["sick", "casual", "paid", "compensatory", "bereavement", "maternity", "paternity"];
 
 type Stage = "manager" | "hr";
 type RevokeAction = "cancelled" | "rejected";
