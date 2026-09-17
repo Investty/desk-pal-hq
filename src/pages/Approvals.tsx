@@ -103,10 +103,10 @@ export default function Approvals() {
     queryFn: async () => {
       let q = supabase
         .from("leave_requests")
-        .select("*", { count: "exact" })
+        .select("*, leave_policies:policy_id(label)", { count: "exact" })
         .eq("status", "approved")
         .order("start_date", { ascending: false });
-      if (apType !== "all") q = q.eq("leave_type", apType as "sick");
+      if (apType !== "all") q = q.eq("policy_id", apType);
       if (apFrom) q = q.gte("start_date", apFrom);
       if (apTo) q = q.lte("end_date", apTo);
       const { data, count } = await q.range(apPage * PAGE_SIZE, apPage * PAGE_SIZE + PAGE_SIZE - 1);
@@ -259,7 +259,7 @@ export default function Approvals() {
                 <SelectTrigger className="w-44"><SelectValue placeholder="All leave types" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All leave types</SelectItem>
-                  {LEAVE_TYPES.map((t) => (<SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>))}
+                  {(leaveTypes || []).map((t) => (<SelectItem key={t.id} value={t.id}>{t.label}</SelectItem>))}
                 </SelectContent>
               </Select>
               <div>
