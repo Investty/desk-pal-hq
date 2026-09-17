@@ -127,9 +127,18 @@ Bring existing records in from Excel, CSV or a Tally export instead of typing th
 - When status is blank it is decided from the employee's shift for that date: no check-in → absent, check-in after shift start plus grace → late, otherwise present.
 - Rows are skipped with a reason when the email is unknown, the date is missing/invalid/in the future, a check-out has no check-in, the status is not present/absent/late, or hours fall outside 0–24.
 
-**Import history** — each run records the file, what was imported, and how many rows were added and skipped. Every import is written to the audit log.
+**Leave history** — email, leave type, start date, end date, day portion, status, reason.
+- Each row is matched to an employee by email and to one of the company's configured leave types by code, label or type name.
+- Rows are skipped with a reason when the email is unknown, the leave type is not configured, dates are missing or the end is before the start, a half-day spans two dates, or the dates clash with leave already recorded.
+- Balances are not touched and no notifications are sent — this is history, not new requests.
 
-Leave history and payroll history importers are planned next and are not built yet.
+**Payroll history** — email, month, year, basic, DA, HRA, other allowances, PF, professional tax, TDS, gross, deductions, net.
+- Each row is matched to an employee by email and to a pay period by month and year.
+- Earnings and deductions are validated as numbers; gross, total deductions and net pay are calculated from the parts when those columns are left empty.
+- An existing payslip for that person and month is updated rather than duplicated, and each imported month is recorded as a **paid** pay period so it is locked against accidental re-runs (HR can reopen it from Payroll).
+- Rows are skipped with a reason when the email is unknown, the month is outside 1–12, the year is out of range, or any amount is not a valid number.
+
+**Import history** — each run records the file, what was imported, and how many rows were added and skipped. Every import is written to the audit log.
 
 ## Tech stack
 
