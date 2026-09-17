@@ -47,12 +47,20 @@ export default function Approvals() {
   const [apPage, setApPage] = useState(0);
 
 
+  const { data: leaveTypes } = useQuery({
+    queryKey: ["company-leave-types"],
+    queryFn: async () => {
+      const { data } = await supabase.from("leave_policies").select("id, label").order("label");
+      return data || [];
+    },
+  });
+
   const { data: requests } = useQuery({
     queryKey: ["pending-approvals"],
     queryFn: async () => {
       const { data } = await supabase
         .from("leave_requests")
-        .select("*")
+        .select("*, leave_policies:policy_id(label)")
         .eq("status", "pending")
         .order("created_at", { ascending: false });
       return await attachProfiles(data || []);
