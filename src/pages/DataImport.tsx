@@ -9,7 +9,7 @@ import { Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import SheetImporter from "@/components/import/SheetImporter";
-import { attendanceFields, employeeFields, leaveFields, shiftFields } from "@/lib/importSheet";
+import { attendanceFields, employeeFields, leaveFields, payrollFields, shiftFields } from "@/lib/importSheet";
 
 interface PendingRow {
   id: string;
@@ -80,6 +80,7 @@ export default function DataImport() {
           <TabsTrigger value="shifts">Shifts</TabsTrigger>
           <TabsTrigger value="attendance">Attendance</TabsTrigger>
           <TabsTrigger value="leave">Leave</TabsTrigger>
+          <TabsTrigger value="payroll">Payroll</TabsTrigger>
           <TabsTrigger value="history">History</TabsTrigger>
         </TabsList>
 
@@ -177,6 +178,18 @@ export default function DataImport() {
             rpc="import_leave"
             templateName="leave-import-template.csv"
             sampleRow={["asha.nair@example.com", "Casual", "2026-06-10", "2026-06-12", "full day", "approved", "Family function"]}
+            onDone={() => queryClient.invalidateQueries({ queryKey: ["import-batches"] })}
+          />
+        </TabsContent>
+
+        <TabsContent value="payroll" className="mt-4">
+          <SheetImporter
+            title="Import past payroll"
+            description="Load salary slips already paid in earlier months. Each row is matched to an employee by email; gross, total deductions and net pay are worked out from the parts when left empty. An existing slip for that month is updated rather than duplicated, and the month is recorded as a paid pay period."
+            fields={payrollFields}
+            rpc="import_payroll"
+            templateName="payroll-import-template.csv"
+            sampleRow={["asha.nair@example.com", "6", "2026", "25000", "5000", "10000", "5000", "3600", "200", "1500", "", "", ""]}
             onDone={() => queryClient.invalidateQueries({ queryKey: ["import-batches"] })}
           />
         </TabsContent>
