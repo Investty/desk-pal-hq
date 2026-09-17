@@ -169,6 +169,18 @@ export default function DataImport() {
           />
         </TabsContent>
 
+        <TabsContent value="leave" className="mt-4">
+          <SheetImporter
+            title="Import past leave"
+            description="Load leave already taken in earlier months. Each row is matched to an employee by email and to one of your leave types by name. Historical leave does not send notifications and does not change this year's leave balances."
+            fields={leaveFields}
+            rpc="import_leave"
+            templateName="leave-import-template.csv"
+            sampleRow={["asha.nair@example.com", "Casual", "2026-06-10", "2026-06-12", "full day", "approved", "Family function"]}
+            onDone={() => queryClient.invalidateQueries({ queryKey: ["import-batches"] })}
+          />
+        </TabsContent>
+
         <TabsContent value="history" className="mt-4">
           <Card>
             <CardHeader>
