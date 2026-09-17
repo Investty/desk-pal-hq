@@ -257,11 +257,26 @@ export default function Payroll() {
               </Select>
             </div>
             <div className="space-y-1 w-28"><Label>Year</Label><Input type="number" value={runYear} onChange={(e) => setRunYear(e.target.value)} /></div>
-            <Button onClick={() => runPayroll.mutate()} disabled={runPayroll.isPending}>
+            <Button onClick={() => runPayroll.mutate()} disabled={runPayroll.isPending || isLocked}>
               <Play className="h-4 w-4 mr-2" /> Generate Payslips
             </Button>
-            <p className="text-xs text-muted-foreground self-center">
+            <div className="flex items-center gap-2">
+              <Badge variant={isLocked ? "secondary" : "outline"} className="capitalize">
+                {currentPeriod?.status === "paid" ? "Paid · locked" : currentPeriod?.status === "processing" ? "In progress" : "Not started"}
+              </Badge>
+              {isLocked ? (
+                <Button variant="outline" size="sm" onClick={() => setPeriodStatus.mutate("draft")} disabled={setPeriodStatus.isPending}>
+                  <Unlock className="h-4 w-4 mr-2" /> Reopen period
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" onClick={() => setPeriodStatus.mutate("paid")} disabled={setPeriodStatus.isPending}>
+                  <Lock className="h-4 w-4 mr-2" /> Mark paid &amp; lock
+                </Button>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground self-center w-full">
               Generates payslips for all {salaries?.length || 0} employees with a salary structure. PF is computed on Basic + DA (existing payslips are overwritten).
+              {isLocked && " This period is marked paid — reopen it before making changes."}
             </p>
           </CardContent>
         </Card>
