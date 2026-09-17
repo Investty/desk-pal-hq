@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Wallet, Play, Printer, IndianRupee, Download } from "lucide-react";
+import { Wallet, Play, Printer, IndianRupee, Download, Lock, Unlock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { downloadCsv } from "@/lib/csv";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,6 +24,15 @@ interface PayslipRow {
   gross: number; deductions: number; net: number; created_at: string;
   basic: number; da: number; hra: number; special_allowance: number;
   pf: number; professional_tax: number; tds: number;
+}
+
+interface PeriodRow {
+  id: string;
+  month: number;
+  year: number;
+  status: string;
+  paid_at: string | null;
+  processed_at: string | null;
 }
 
 interface EmpRow {
@@ -77,6 +87,46 @@ export default function Payroll() {
     },
   });
 
+  const { data: periods } = useQuery({
+    queryKey: ["pay-periods"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("pay_periods")
+        .select("id, month, year, status, paid_at, processed_at")
+        .order("year", { ascending: false })
+        .order("month", { ascending: false });
+      return (data || []) as PeriodRow[];
+    },
+  });
+
+  const currentPeriod = periods?.find((p) => p.month === Number(runMonth) && p.year === Number(runYear));
+  const isLocked = currentPeriod?.status === "paid";
+
+  const setPeriodStatus = useMutation({
+    mutationFn: async (status: "draft" | "processing" | "paid") => {
+      const m = Number(runMonth), y = Number(runYear);
+      const { error } = await supabase.from("pay_periods").upsert(
+        {
+          month: m,
+          year: y,
+          status,
+          processed_at: status === "draft" ? null : new Date().toISOString(),
+          paid_at: status === "paid" ? new Date().toISOString() : null,
+        },
+        { onConflict: "company_id,month,year" },
+      );
+      if (error) throw error;
+      return status;
+    },
+    onSuccess: (status) => {
+      toast.success(
+        status === "paid" ? "Pay period marked paid and locked" : status === "processing" ? "Pay period marked in progress" : "Pay period reopened",
+      );
+      queryClient.invalidateQueries({ queryKey: ["pay-periods"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const runPayroll = useMutation({
     mutationFn: async () => {
       const m = Number(runMonth), y = Number(runYear);
@@ -93,11 +143,16 @@ export default function Payroll() {
       });
       const { error } = await supabase.from("payslips").upsert(rows, { onConflict: "user_id,month,year" });
       if (error) throw error;
+      const { error: pErr } = await supabase
+        .from("pay_periods")
+        .upsert({ month: m, year: y, status: "processing", processed_at: new Date().toISOString() }, { onConflict: "company_id,month,year" });
+      if (pErr) throw pErr;
       return rows.length;
     },
     onSuccess: (count) => {
       toast.success(`Payroll generated for ${count} employee${count === 1 ? "" : "s"}!`);
       queryClient.invalidateQueries({ queryKey: ["payslips"] });
+      queryClient.invalidateQueries({ queryKey: ["pay-periods"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -203,11 +258,26 @@ export default function Payroll() {
               </Select>
             </div>
             <div className="space-y-1 w-28"><Label>Year</Label><Input type="number" value={runYear} onChange={(e) => setRunYear(e.target.value)} /></div>
-            <Button onClick={() => runPayroll.mutate()} disabled={runPayroll.isPending}>
+            <Button onClick={() => runPayroll.mutate()} disabled={runPayroll.isPending || isLocked}>
               <Play className="h-4 w-4 mr-2" /> Generate Payslips
             </Button>
-            <p className="text-xs text-muted-foreground self-center">
+            <div className="flex items-center gap-2">
+              <Badge variant={isLocked ? "secondary" : "outline"} className="capitalize">
+                {currentPeriod?.status === "paid" ? "Paid · locked" : currentPeriod?.status === "processing" ? "In progress" : "Not started"}
+              </Badge>
+              {isLocked ? (
+                <Button variant="outline" size="sm" onClick={() => setPeriodStatus.mutate("draft")} disabled={setPeriodStatus.isPending}>
+                  <Unlock className="h-4 w-4 mr-2" /> Reopen period
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" onClick={() => setPeriodStatus.mutate("paid")} disabled={setPeriodStatus.isPending}>
+                  <Lock className="h-4 w-4 mr-2" /> Mark paid &amp; lock
+                </Button>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground self-center w-full">
               Generates payslips for all {salaries?.length || 0} employees with a salary structure. PF is computed on Basic + DA (existing payslips are overwritten).
+              {isLocked && " This period is marked paid — reopen it before making changes."}
             </p>
           </CardContent>
         </Card>
@@ -234,6 +304,44 @@ export default function Payroll() {
             ) : (
               <p className="text-muted-foreground pt-2">No salary structure has been set for you yet.</p>
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {isAdmin && !!periods?.length && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">Pay periods</CardTitle></CardHeader>
+          <CardContent className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Period</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Payslips</TableHead>
+                  <TableHead>Net paid</TableHead>
+                  <TableHead>Paid on</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {periods.map((p) => {
+                  const slips = (payslips || []).filter((s) => s.month === p.month && s.year === p.year);
+                  const net = slips.reduce((a, s) => a + Number(s.net), 0);
+                  return (
+                    <TableRow key={p.id}>
+                      <TableCell className="font-medium">{MONTHS[p.month - 1]} {p.year}</TableCell>
+                      <TableCell>
+                        <Badge variant={p.status === "paid" ? "secondary" : "outline"}>
+                          {p.status === "paid" ? "Paid · locked" : p.status === "processing" ? "In progress" : "Draft"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{slips.length}</TableCell>
+                      <TableCell>{fmt(net)}</TableCell>
+                      <TableCell>{p.paid_at ? format(new Date(p.paid_at), "dd MMM yyyy") : "—"}</TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       )}

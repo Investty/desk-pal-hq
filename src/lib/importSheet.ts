@@ -51,6 +51,22 @@ export const leaveFields: FieldDef[] = [
   { key: "reason", label: "Reason", aliases: ["reason", "remarks", "note", "notes", "purpose", "description"] },
 ];
 
+export const payrollFields: FieldDef[] = [
+  { key: "email", label: "Employee email", required: true, kind: "email", aliases: ["email", "email id", "e-mail", "employee email", "official email"] },
+  { key: "month", label: "Month (1-12)", required: true, kind: "number", aliases: ["month", "pay month", "salary month", "period month"] },
+  { key: "year", label: "Year", required: true, kind: "number", aliases: ["year", "pay year", "salary year", "period year"] },
+  { key: "basic", label: "Basic", aliases: ["basic", "basic pay", "basic salary"] },
+  { key: "da", label: "DA", aliases: ["da", "dearness allowance"] },
+  { key: "hra", label: "HRA", aliases: ["hra", "house rent allowance"] },
+  { key: "special_allowance", label: "Other allowances", aliases: ["special allowance", "other allowances", "allowances", "special pay"] },
+  { key: "pf", label: "PF", aliases: ["pf", "provident fund", "epf", "pf deduction"] },
+  { key: "professional_tax", label: "Professional tax", aliases: ["professional tax", "pt", "p tax"] },
+  { key: "tds", label: "TDS", aliases: ["tds", "income tax", "tax deducted"] },
+  { key: "gross", label: "Gross", hint: "Added up from the parts if empty", aliases: ["gross", "gross pay", "gross salary", "total earnings"] },
+  { key: "deductions", label: "Total deductions", hint: "Added up from the parts if empty", aliases: ["deductions", "total deductions", "total deduction"] },
+  { key: "net", label: "Net pay", hint: "Gross minus deductions if empty", aliases: ["net", "net pay", "net salary", "take home", "amount paid"] },
+];
+
 const pad = (n: number) => String(n).padStart(2, "0");
 
 function fromDate(d: Date, kind: "date" | "time") {
