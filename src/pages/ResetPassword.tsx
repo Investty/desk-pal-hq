@@ -69,7 +69,13 @@ export default function ResetPassword() {
             </Button>
           </form>
           <div className="mt-4 text-center text-sm text-muted-foreground">
-            <button onClick={() => navigate("/login")} className="text-primary hover:underline font-medium">
+            <button
+              onClick={async () => {
+                await supabase.auth.signOut();
+                navigate("/login", { replace: true });
+              }}
+              className="text-primary hover:underline font-medium"
+            >
               Back to sign in
             </button>
           </div>
