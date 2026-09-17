@@ -2061,6 +2061,7 @@ export type Database = {
         Args: { _filename?: string; _rows: Json }
         Returns: Json
       }
+      import_leave: { Args: { _filename: string; _rows: Json }; Returns: Json }
       import_shifts: {
         Args: { _filename?: string; _rows: Json }
         Returns: Json
