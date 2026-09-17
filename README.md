@@ -184,7 +184,8 @@ The frontend reads its backend URL and publishable key from `.env` (already comm
 2. **Complete the setup wizard** (`/setup`): company details + timezone → weekly offs → departments → invite codes → finish.
 3. **Invite HR first**, then have HR configure: leave types & carry-forward, shifts + monthly rosters, attendance rules (early leave / regularization toggles and caps), holidays, salary structures.
 4. **Invite employees** from the Employees page (email + invite code required).
-5. **Run payroll** monthly from the Payroll page after attendance is settled.
+5. **Import existing records** (optional) from `/import`: people → shifts → attendance → leave → payroll history.
+6. **Run payroll** monthly from the Payroll page after attendance is settled, then mark the pay period paid to lock it.
 
 ### Environment
 | Variable | Purpose |
