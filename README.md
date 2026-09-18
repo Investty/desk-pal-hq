@@ -201,14 +201,14 @@ Each company is on a plan (Free / Starter / Pro / Enterprise) and the platform o
 
 Company-scoped tables (every row carries `company_id`, and row-level security matches it against the signed-in user's active company):
 
-- **People & access** — `companies`, `company_members`, `profiles`, `user_roles`, `departments`, `invites`, `pending_employees`.
-- **Attendance** — `attendance`, `attendance_requests`, `attendance_flags`, `attendance_rules`, `shifts`, `employee_shifts`, `holidays`, `weekly_offs`.
-- **Leave** — `leave_policies`, `employee_leave_settings`, `leave_balances`, `leave_requests`, `leave_approvals`, `comp_off_grants`.
+- **People & access** — `companies` (name, timezone, weekly offs, setup state, plan/billing), `profiles`, `user_roles`, `departments`, `company_invites`, `pending_employees`.
+- **Attendance** — `attendance`, `attendance_requests`, `attendance_flags`, `attendance_rules`, `shifts`, `employee_shifts`, `holidays`.
+- **Leave** — `leave_policies`, `applicable_leave_types`, `employee_leave_settings`, `leave_balances`, `leave_requests`, `comp_off_grants`.
 - **Payroll** — `salary_structures`, `pay_periods`, `payslips`.
-- **Workplace** — `announcements`, `documents`, `notifications`, `celebration_wishes`, `onboarding_tasks`, `performance_reviews`, `audit_logs`, `import_batches`.
-- **Platform** — `plans`, `company_billing`, `broadcasts`, `broadcast_dismissals`, `support_sessions`, `platform_admins`.
+- **Workplace** — `announcements`, `employee_documents`, `notifications`, `celebration_wishes`, `onboarding_checklists`, `performance_cycles`, `performance_reviews`, `audit_logs`, `import_batches`.
+- **Platform (owner only)** — `plans`, `platform_admins`, `platform_audit_logs`, `company_features`, `company_limits`, `company_usage_counters`, `broadcasts`, `broadcast_reads`, `impersonation_sessions`.
 
-Key database rules live in functions and triggers rather than the UI: `has_role` / `is_hr` / `current_company_id` (used inside RLS policies), `shift_for`, `clock_in` / `clock_out` / `close_attendance_day`, `validate_attendance_request`, `apply_attendance_request`, `prevent_leave_overlap`, `check_leave_balance`, `prevent_all_leave_types_disabled`, `run_leave_carry_forward`, `guard_locked_pay_period`, `link_pending_employee`, and the five `import_*` functions.
+Key rules live in the database rather than the UI: `has_role` / `is_hr` / `is_manager_of` / `is_platform_admin` / `current_company_id` (used inside RLS policies), `shift_for`, `clock_in` / `clock_out` / `close_attendance_day`, `apply_attendance_request`, `is_working_day` / `working_days_between`, `hr_set_employee_leave`, `run_leave_carry_forward`, `redeem_invite`, `remove_employee` / `restore_employee`, `set_active_company`, `link_pending_employee`, the owner RPCs (`owner_*`) and the five importers (`import_employees`, `import_shifts`, `import_attendance`, `import_leave`, `import_payroll`). Leave overlap, balance checks, locked pay periods, self-approval and "last leave type enabled" are enforced by triggers.
 
 ## Tech stack
 
