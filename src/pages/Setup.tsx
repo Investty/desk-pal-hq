@@ -50,7 +50,10 @@ export default function Setup() {
     queryKey: ["setup-company", company?.id],
     enabled: !!company?.id,
     queryFn: async () => {
-      const { data } = await supabase.from("companies").select("*").eq("id", company!.id).maybeSingle();
+      const companyId = company?.id;
+      if (!companyId) throw new Error("No active company selected");
+      const { data, error } = await supabase.from("companies").select("*").eq("id", companyId).maybeSingle();
+      if (error) throw error;
       return data;
     },
   });
@@ -78,11 +81,13 @@ export default function Setup() {
   const saveCompany = async () => {
     if (name.trim().length < 2) return toast.error("Company name must be at least 2 characters");
     if (name.trim().length > 60) return toast.error("Company name must be 60 characters or less");
+    const companyId = company?.id;
+    if (!companyId) return toast.error("Company is still loading — please try again");
     setSaving(true);
     const { error } = await supabase
       .from("companies")
       .update({ name: name.trim(), timezone })
-      .eq("id", company!.id);
+      .eq("id", companyId);
     setSaving(false);
     if (error) return toast.error(error.message);
     await refresh();
@@ -93,10 +98,7 @@ export default function Setup() {
     if (weeklyOffs.length >= 7)
       return toast.error("You must keep at least one working day — every day cannot be an off day");
     setSaving(true);
-    const { error } = await supabase
-      .from("companies")
-      .update({ weekly_offs: weeklyOffs })
-      .eq("id", company!.id);
+    const { error } = await supabase.rpc("set_company_weekly_offs", { _weekly_offs: weeklyOffs });
     setSaving(false);
     if (error) return toast.error(error.message);
     setStep(2);
@@ -141,11 +143,13 @@ export default function Setup() {
   };
 
   const finish = async () => {
+    const companyId = company?.id;
+    if (!companyId) return toast.error("Company is still loading — please try again");
     setSaving(true);
     const { error } = await supabase
       .from("companies")
       .update({ setup_completed_at: new Date().toISOString() })
-      .eq("id", company!.id);
+      .eq("id", companyId);
     setSaving(false);
     if (error) return toast.error(error.message);
     await refresh();

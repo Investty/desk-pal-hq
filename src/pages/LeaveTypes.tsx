@@ -35,7 +35,8 @@ export default function LeaveTypes() {
   const [selected, setSelected] = useState<string[]>([]);
 
   const { data: policies } = useQuery({
-    queryKey: ["leave-policies"],
+    queryKey: ["leave-policies", company?.id],
+    enabled: !!company?.id,
     queryFn: async () => {
       const { data, error } = await supabase.from("leave_policies").select("*").order("label");
       if (error) throw error;
@@ -44,7 +45,8 @@ export default function LeaveTypes() {
   });
 
   const { data: people } = useQuery({
-    queryKey: ["leave-type-people"],
+    queryKey: ["leave-type-people", company?.id],
+    enabled: !!company?.id,
     queryFn: async () => {
       const { data } = await supabase
         .from("profiles")
@@ -58,11 +60,6 @@ export default function LeaveTypes() {
   const enabledCount = policies?.filter((p) => p.is_enabled).length ?? 0;
   const lastRun = policies?.find((p) => p.last_carry_forward_at)?.last_carry_forward_at;
 
-  const syncBalances = async (policyId: string) => {
-    const { error } = await supabase.rpc("hr_sync_policy_balances", { _policy_id: policyId });
-    if (error) throw error;
-  };
-
   const update = useMutation({
     mutationFn: async ({ id, values }: {
       id: string;
@@ -70,7 +67,6 @@ export default function LeaveTypes() {
     }) => {
       const { error } = await supabase.from("leave_policies").update(values).eq("id", id);
       if (error) throw error;
-      if (values.default_days !== undefined || values.is_enabled !== undefined) await syncBalances(id);
     },
     onSuccess: () => {
       toast.success("Leave type updated");
@@ -82,13 +78,15 @@ export default function LeaveTypes() {
 
   const create = useMutation({
     mutationFn: async () => {
+      const companyId = company?.id;
+      if (!companyId) throw new Error("Company is still loading — please try again");
       const label = name.trim();
       if (label.length < 2 || label.length > 40) throw new Error("Leave type name must be 2–40 characters");
       if (appliesTo === "selected" && selected.length === 0) throw new Error("Pick at least one employee");
       const { data, error } = await supabase
         .from("leave_policies")
         .insert({
-          company_id: company!.id,
+          company_id: companyId,
           label,
           code: slugify(label) || `type_${Date.now()}`,
           default_days: days,
@@ -113,7 +111,6 @@ export default function LeaveTypes() {
           if (e) throw e;
         }
       }
-      await syncBalances(data.id);
     },
     onSuccess: () => {
       toast.success("Leave type created");

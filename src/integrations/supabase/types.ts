@@ -2350,6 +2350,10 @@ export type Database = {
       }
       run_leave_carry_forward: { Args: never; Returns: number }
       set_active_company: { Args: { _company_id: string }; Returns: undefined }
+      set_company_weekly_offs: {
+        Args: { _weekly_offs: number[] }
+        Returns: number[]
+      }
       shift_for: {
         Args: { _date: string; _user: string }
         Returns: {
