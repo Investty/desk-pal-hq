@@ -56,14 +56,16 @@ export default function JoinCompany() {
             <div className="space-y-2 pt-2 border-t">
               <p className="text-sm text-muted-foreground">Your companies</p>
               {memberships.map((m) => (
-                <button
+                <Button
+                  type="button"
+                  variant="ghost"
                   key={m.company_id}
                   onClick={async () => { await switchCompany(m.company_id); navigate("/"); }}
-                  className="w-full flex items-center justify-between rounded-md border px-3 py-2 text-sm hover:bg-accent"
+                  className="h-auto w-full justify-between border px-3 py-2"
                 >
                   <span>{m.company_name}</span>
                   <Badge variant="role" className="uppercase text-xs">{m.role === "hr" ? "HR" : m.role}</Badge>
-                </button>
+                </Button>
               ))}
             </div>
           )}

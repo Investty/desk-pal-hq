@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
   DropdownMenuSeparator, DropdownMenuTrigger,
@@ -68,7 +69,7 @@ export default function AppSidebar() {
         {!collapsed && (
           <DropdownMenu>
             <DropdownMenuTrigger className="min-w-0 text-left">
-              <span className="block text-lg font-bold text-sidebar-foreground tracking-tight leading-tight">MiniHRMS</span>
+              <span className="block text-lg font-bold text-sidebar-foreground leading-tight">MiniHRMS</span>
               <span className="block text-xs text-sidebar-muted truncate">{company?.name} ▾</span>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
@@ -91,12 +92,17 @@ export default function AppSidebar() {
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-        <button
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
           onClick={() => setCollapsed(!collapsed)}
-          className="ml-auto p-1.5 rounded-md hover:bg-sidebar-accent text-sidebar-muted"
+          className="ml-auto h-8 w-8 border-0 text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
+          title={collapsed ? "Expand navigation" : "Collapse navigation"}
         >
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </button>
+        </Button>
       </div>
 
       <nav className="flex-1 py-4 space-y-1 px-2 overflow-y-auto">
@@ -109,10 +115,10 @@ export default function AppSidebar() {
               <Link
                 to={item.path}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium sidebar-transition",
+                   "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium sidebar-transition",
                     pathname === item.path
                      ? "border-l-2 border-sidebar-primary bg-sidebar-accent/15 pl-[10px] text-sidebar-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                     : "text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                 )}
                 title={collapsed ? item.label : undefined}
               >
@@ -124,11 +130,11 @@ export default function AppSidebar() {
                   key={child.path}
                   to={child.path}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg text-sm sidebar-transition py-2",
+                     "flex items-center gap-3 rounded-md text-sm sidebar-transition py-2",
                     collapsed ? "px-3" : "pl-9 pr-3 border-l border-sidebar-border ml-4",
                     pathname === child.path
                        ? "border-l-2 border-sidebar-primary bg-sidebar-accent/15 text-sidebar-foreground"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                       : "text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   )}
                   title={collapsed ? child.label : undefined}
                 >
@@ -154,9 +160,9 @@ export default function AppSidebar() {
               <p className="text-xs text-sidebar-muted uppercase">{role === "hr" ? "HR" : role}</p>
             </div>
           )}
-          <button onClick={signOut} className="p-1.5 rounded-md hover:bg-sidebar-accent text-sidebar-muted shrink-0" title="Sign out">
+          <Button type="button" variant="ghost" size="icon" onClick={signOut} className="h-8 w-8 shrink-0 border-0 text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" title="Sign out" aria-label="Sign out">
             <LogOut className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
       </div>
     </aside>

@@ -17,6 +17,7 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        overlay: "hsl(var(--overlay))",
         primary: {
           50: "var(--color-primary-50)", 100: "var(--color-primary-100)", 200: "var(--color-primary-200)",
           300: "var(--color-primary-300)", 400: "var(--color-primary-400)", 500: "var(--color-primary-500)",
@@ -52,7 +53,7 @@ export default {
           "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
           accent: "hsl(var(--sidebar-accent))",
           "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
+          border: "var(--sidebar-border)",
           ring: "hsl(var(--sidebar-ring))",
           muted: "hsl(var(--sidebar-muted))",
         },
@@ -60,7 +61,7 @@ export default {
       borderRadius: {
         sm: "var(--radius-sm)", md: "var(--radius-md)", lg: "var(--radius-lg)", xl: "var(--radius-xl)", full: "var(--radius-full)",
       },
-      fontFamily: { sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"] },
+      fontFamily: { sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"] },
       boxShadow: { card: "var(--card-shadow)", "card-hover": "var(--card-shadow-hover)" },
       keyframes: {
         "accordion-down": { from: { height: "0" }, to: { height: "var(--radix-accordion-content-height)" } },
