@@ -67,12 +67,20 @@ export default function Company() {
   const saveWeeklyOffs = useMutation({
     mutationFn: async (days: number[]) => {
       if (days.length >= 7) throw new Error("At least one working day is required — you cannot mark every day as an off day");
-      const { error } = await supabase.from("companies").update({ weekly_offs: days }).eq("id", companyRow!.id);
+      const id = companyRow?.id ?? company?.id;
+      if (!id) throw new Error("Company is still loading — please try again");
+      const { data, error } = await supabase
+        .from("companies")
+        .update({ weekly_offs: days })
+        .eq("id", id)
+        .select("id");
       if (error) throw error;
+      if (!data || data.length === 0) throw new Error("You do not have permission to change the work week");
     },
     onSuccess: () => {
       toast.success("Work week updated");
       queryClient.invalidateQueries({ queryKey: ["company"] });
+      refresh();
     },
     onError: (e: Error) => toast.error(e.message),
   });
