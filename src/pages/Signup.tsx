@@ -38,9 +38,19 @@ export default function Signup() {
         return;
       }
     }
+    const normalizedEmail = email.trim().toLowerCase();
+    if (normalizedEmail.length > 254) {
+      toast.error("Email must be 254 characters or less");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/.test(normalizedEmail)) {
+      toast.error("Enter a valid email address");
+      return;
+    }
+    setEmail(normalizedEmail);
     setLoading(true);
     const { error } = await signUp(
-      email,
+      normalizedEmail,
       password,
       name,
       mode === "create" ? { companyName: companyName.trim() } : { inviteCode: inviteCode.trim() },
