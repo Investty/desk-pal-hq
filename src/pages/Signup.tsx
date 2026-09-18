@@ -42,7 +42,7 @@ export default function Signup() {
     const { error } = await signUp(
       email,
       password,
-      fullName,
+      name,
       mode === "create" ? { companyName: companyName.trim() } : { inviteCode: inviteCode.trim() },
     );
     if (error) {
@@ -75,7 +75,7 @@ export default function Signup() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
-              <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required maxLength={80} />
+              <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required minLength={2} maxLength={80} />
             </div>
             {mode === "create" ? (
               <div className="space-y-2">
