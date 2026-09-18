@@ -157,6 +157,59 @@ Bring existing records in from Excel, CSV or a Tally export instead of typing th
 
 **Import history** — each run records the file, what was imported, and how many rows were added and skipped. Every import is written to the audit log.
 
+## Screens & routes
+
+| Route | Screen | Who can open it |
+|---|---|---|
+| `/login`, `/signup`, `/reset-password` | Sign in, sign up (new company or invite code), password reset | Signed-out visitors |
+| `/join` | Join a company with an invite code / pick the active company | Signed-in users with no active company |
+| `/setup` | Company setup wizard | Admin of a company that hasn't finished setup |
+| `/` | Dashboard (role-aware) | Everyone |
+| `/attendance` | Own attendance, check in/out, today's shift, requests | Everyone |
+| `/leave` | Leave balances, apply, own requests, yearly calendar | Everyone |
+| `/holidays` | Company holiday list | Everyone (managed by HR/Admin) |
+| `/profile` | My profile — personal and employment details | Everyone |
+| `/notifications` | Notification inbox | Everyone |
+| `/announcements` | Company announcements | Everyone (feature flag) |
+| `/org-chart` | Reporting structure | Everyone (feature flag) |
+| `/documents` | Employee documents | Everyone (feature flag) |
+| `/onboarding` | Joining/exit checklists | Everyone (feature flag) |
+| `/performance` | Review cycles and ratings | Everyone (feature flag) |
+| `/payroll` | Payslips; payroll run and pay periods for HR/Admin | Everyone (feature flag) |
+| `/team` | My Team | Manager, HR, Admin |
+| `/approvals` | Leave and attendance approvals | Manager, HR, Admin |
+| `/employees` | Employee directory and records | Manager, HR, Admin |
+| `/attendance-reports` | Attendance reporting and export | Manager, HR, Admin (feature flag) |
+| `/reports` | Reports & analytics dashboard | HR, Admin (feature flag) |
+| `/salary` | Salary structure entry | HR, Admin (feature flag) |
+| `/leave-types` | Company leave types and carry forward | HR, Admin |
+| `/shifts` | Shifts and monthly rosters | HR, Admin |
+| `/attendance-rules` | Early-leave and regularization rules | HR, Admin |
+| `/departments` | Departments | HR, Admin |
+| `/import` | Data import | HR, Admin |
+| `/audit-logs` | Audit log | HR, Admin (feature flag) |
+| `/company` | Company settings (Departments and User Roles nested here for Admin) | HR, Admin |
+| `/user-roles` | Role management | Admin |
+| `/owner` | Platform owner console | Platform owner |
+| `/suspended` | Shown when the company is suspended | Members of a suspended company |
+
+## Feature flags & plans
+
+Each company is on a plan (Free / Starter / Pro / Enterprise) and the platform owner can switch individual modules on or off per company: payroll, performance, onboarding, documents, attendance regularization, announcements, reports, org chart, audit logs. A disabled module disappears from the sidebar and its route is blocked. Seats, document storage and monthly notifications are limited per company — a banner warns at 90% and the database blocks the action at the limit.
+
+## Data model overview
+
+Company-scoped tables (every row carries `company_id`, and row-level security matches it against the signed-in user's active company):
+
+- **People & access** — `companies`, `company_members`, `profiles`, `user_roles`, `departments`, `invites`, `pending_employees`.
+- **Attendance** — `attendance`, `attendance_requests`, `attendance_flags`, `attendance_rules`, `shifts`, `employee_shifts`, `holidays`, `weekly_offs`.
+- **Leave** — `leave_policies`, `employee_leave_settings`, `leave_balances`, `leave_requests`, `leave_approvals`, `comp_off_grants`.
+- **Payroll** — `salary_structures`, `pay_periods`, `payslips`.
+- **Workplace** — `announcements`, `documents`, `notifications`, `celebration_wishes`, `onboarding_tasks`, `performance_reviews`, `audit_logs`, `import_batches`.
+- **Platform** — `plans`, `company_billing`, `broadcasts`, `broadcast_dismissals`, `support_sessions`, `platform_admins`.
+
+Key database rules live in functions and triggers rather than the UI: `has_role` / `is_hr` / `current_company_id` (used inside RLS policies), `shift_for`, `clock_in` / `clock_out` / `close_attendance_day`, `validate_attendance_request`, `apply_attendance_request`, `prevent_leave_overlap`, `check_leave_balance`, `prevent_all_leave_types_disabled`, `run_leave_carry_forward`, `guard_locked_pay_period`, `link_pending_employee`, and the five `import_*` functions.
+
 ## Tech stack
 
 - **Frontend:** React 18, TypeScript 5, Vite 5, Tailwind CSS v3, shadcn/ui, Recharts, TanStack Query
