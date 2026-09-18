@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HRMS Brand Identity System</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    /* ── PRIMARY BLUE ── */
+    --color-primary-50:   #EFF6FF;
+    --color-primary-100:  #DBEAFE;
+    --color-primary-200:  #BFDBFE;
+    --color-primary-300:  #93C5FD;
+    --color-primary-400:  #60A5FA;
+    --color-primary-500:  #3B82F6;
+    --color-primary-600:  #2563EB;   /* ← MAIN PRIMARY */
+    --color-primary-700:  #1D4ED8;
+    --color-primary-800:  #1E40AF;
+    --color-primary-900:  #1E3A8A;
+
+    /* ── SECONDARY VIOLET ── */
+    --color-secondary-50:  #F5F3FF;
+    --color-secondary-100: #EDE9FE;
+    --color-secondary-200: #DDD6FE;
+    --color-secondary-300: #C4B5FD;
+    --color-secondary-400: #A78BFA;
+    --color-secondary-500: #8B5CF6;
+    --color-secondary-600: #7C3AED;   /* ← MAIN SECONDARY */
+    --color-secondary-700: #6D28D9;
+    --color-secondary-800: #5B21B6;
+    --color-secondary-900: #4C1D95;
+
+    /* ── NEUTRALS / SLATE ── */
+    --color-neutral-0:    #FFFFFF;
+    --color-neutral-50:   #F8FAFC;
+    --color-neutral-100:  #F1F5F9;
+    --color-neutral-200:  #E2E8F0;
+    --color-neutral-300:  #CBD5E1;
+    --color-neutral-400:  #94A3B8;
+    --color-neutral-500:  #64748B;
+    --color-neutral-600:  #475569;
+    --color-neutral-700:  #334155;
+    --color-neutral-800:  #1E293B;
+    --color-neutral-900:  #0F172A;
+
+    /* ── STATUS COLORS ── */
+    --color-success-light: #DCFCE7;
+    --color-success:       #22C55E;
+    --color-success-dark:  #16A34A;
+
+    --color-warning-light: #FEF3C7;
+    --color-warning:       #F59E0B;
+    --color-warning-dark:  #D97706;
+
+    --color-danger-light:  #FEE2E2;
+    --color-danger:        #EF4444;
+    --color-danger-dark:   #DC2626;
+
+    --color-info-light:    #E0F2FE;
+    --color-info:          #0EA5E9;
+    --color-info-dark:     #0284C7;
+
+    /* ── SIDEBAR ── */
+    --sidebar-bg:          #111827;
+    --sidebar-border:      #1F2937;
+    --sidebar-text:        #9CA3AF;
+    --sidebar-text-active: #F9FAFB;
+    --sidebar-item-active-bg: rgba(37, 99, 235, 0.15);
+    --sidebar-item-active-border: #2563EB;
+
+    /* ── SURFACE / LAYOUT ── */
+    --page-bg:             #F0F4FF;
+    --card-bg:             #FFFFFF;
+    --card-border:         #E2E8F0;
+    --card-shadow:         0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --card-shadow-hover:   0 4px 12px rgba(0,0,0,0.08);
+
+    /* ── TYPOGRAPHY ── */
+    --font-family:         'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-size-xs:        0.75rem;
+    --font-size-sm:        0.875rem;
+    --font-size-base:      1rem;
+    --font-size-lg:        1.125rem;
+    --font-size-xl:        1.25rem;
+    --font-size-2xl:       1.5rem;
+    --font-size-3xl:       1.875rem;
+
+    --font-weight-normal:  400;
+    --font-weight-medium:  500;
+    --font-weight-semibold:600;
+    --font-weight-bold:    700;
+    --font-weight-extrabold: 800;
+
+    --letter-spacing-tight: -0.025em;
+    --letter-spacing-normal: 0em;
+
+    /* ── BORDER RADIUS ── */
+    --radius-sm:    0.25rem;   /* inputs, small chips */
+    --radius-md:    0.375rem;  /* form elements, dropdowns */
+    --radius-lg:    0.5rem;    /* cards, panels */
+    --radius-xl:    0.75rem;   /* modals, dialogs */
+    --radius-full:  9999px;    /* pills, avatars */
+
+    /* ── SPACING ── */
+    --space-1:  0.25rem;
+    --space-2:  0.5rem;
+    --space-3:  0.75rem;
+    --space-4:  1rem;
+    --space-5:  1.25rem;
+    --space-6:  1.5rem;
+    --space-8:  2rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+
+    /* ── TRANSITIONS ── */
+    --transition-fast:   150ms ease;
+    --transition-normal: 200ms ease;
+  }
+
+  body {
+    font-family: var(--font-family);
+    background: #F0F4FF;
+    color: #1E293B;
+    line-height: 1.5;
+    padding: 2rem;
+  }
+
+  /* ─── LAYOUT ─── */
+  .page-header {
+    margin-bottom: 3rem;
+  }
+  .page-header h1 {
+    font-size: 1.875rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: #0F172A;
+  }
+  .page-header p {
+    color: #64748B;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+  }
+
+  .section {
+    margin-bottom: 3rem;
+  }
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #E2E8F0;
+  }
+
+  .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+
+  /* ─── COLOR SWATCHES ─── */
+  .swatch-group { display: flex; gap: 0; border-radius: 0.5rem; overflow: hidden; margin-bottom: 0.5rem; }
+  .swatch {
+    flex: 1;
+    height: 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 4px 6px;
+  }
+  .swatch span {
+    font-size: 10px;
+    font-weight: 600;
+    opacity: 0.75;
+  }
+  .swatch.light span { color: #1E293B; }
+  .swatch.dark span  { color: #fff; }
+  .swatch.main {
+    flex: 2;
+    position: relative;
+  }
+  .swatch.main::after {
+    content: 'MAIN';
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    opacity: 0.7;
+  }
+
+  /* ─── STATUS PILLS ─── */
+  .status-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+  .status-pill .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+  .pill-success { background: #DCFCE7; color: #16A34A; }
+  .pill-success .dot { background: #22C55E; }
+  .pill-warning { background: #FEF3C7; color: #D97706; }
+  .pill-warning .dot { background: #F59E0B; }
+  .pill-danger  { background: #FEE2E2; color: #DC2626; }
+  .pill-danger  .dot { background: #EF4444; }
+  .pill-info    { background: #E0F2FE; color: #0284C7; }
+  .pill-info    .dot { background: #0EA5E9; }
+
+  /* ─── TYPOGRAPHY SCALE ─── */
+  .type-row {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #F1F5F9;
+  }
+  .type-label {
+    font-size: 0.75rem;
+    color: #94A3B8;
+    font-weight: 500;
+    width: 80px;
+    flex-shrink: 0;
+  }
+  .type-meta {
+    font-size: 0.75rem;
+    color: #CBD5E1;
+    margin-left: auto;
+    white-space: nowrap;
+  }
+
+  /* ─── BUTTONS ─── */
+  .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    font-family: var(--font-family);
+    transition: all 150ms ease;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #2563EB, #1D4ED8);
+    color: white;
+    box-shadow: 0 1px 2px rgba(37,99,235,0.3);
+  }
+  .btn-secondary {
+    background: linear-gradient(135deg, #7C3AED, #6D28D9);
+    color: white;
+    box-shadow: 0 1px 2px rgba(124,58,237,0.3);
+  }
+  .btn-outline {
+    background: white;
+    color: #2563EB;
+    border: 1px solid #2563EB;
+  }
+  .btn-ghost {
+    background: transparent;
+    color: #475569;
+    border: 1px solid #E2E8F0;
+  }
+  .btn-danger {
+    background: linear-gradient(135deg, #EF4444, #DC2626);
+    color: white;
+  }
+
+  /* ─── BADGES ─── */
+  .badge-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  .badge-blue   { background: #DBEAFE; color: #1D4ED8; }
+  .badge-violet { background: #EDE9FE; color: #6D28D9; }
+  .badge-green  { background: #DCFCE7; color: #16A34A; }
+  .badge-amber  { background: #FEF3C7; color: #D97706; }
+  .badge-red    { background: #FEE2E2; color: #DC2626; }
+  .badge-slate  { background: #F1F5F9; color: #475569; }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: white;
+    border: 1px solid #E2E8F0;
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .card-title {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #64748B;
+    margin-bottom: 0.5rem;
+  }
+  .card-value {
+    font-size: 1.875rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: #0F172A;
+    line-height: 1;
+  }
+  .card-sub {
+    font-size: 0.75rem;
+    color: #94A3B8;
+    margin-top: 0.375rem;
+  }
+  .card-accent-blue   { border-left: 3px solid #2563EB; }
+  .card-accent-violet { border-left: 3px solid #7C3AED; }
+  .card-accent-green  { border-left: 3px solid #22C55E; }
+  .card-accent-amber  { border-left: 3px solid #F59E0B; }
+
+  /* ─── SIDEBAR PREVIEW ─── */
+  .sidebar-preview {
+    background: #111827;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    min-width: 200px;
+  }
+  .sidebar-logo {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #1F2937;
+  }
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 0.625rem;
+    border-radius: 0.375rem;
+    font-size: 0.8125rem;
+    color: #9CA3AF;
+    margin-bottom: 0.25rem;
+    cursor: pointer;
+  }
+  .sidebar-item.active {
+    background: rgba(37, 99, 235, 0.15);
+    color: #F9FAFB;
+    border-left: 2px solid #2563EB;
+    padding-left: calc(0.625rem - 2px);
+  }
+  .sidebar-item .icon {
+    width: 16px;
+    height: 16px;
+    background: currentColor;
+    border-radius: 2px;
+    opacity: 0.7;
+    flex-shrink: 0;
+  }
+
+  /* ─── RADIUS DEMO ─── */
+  .radius-demo {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .radius-box {
+    background: #DBEAFE;
+    border: 1.5px solid #2563EB;
+    width: 56px;
+    height: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+  }
+  .radius-box span {
+    font-size: 10px;
+    font-weight: 600;
+    color: #1D4ED8;
+  }
+
+  /* ─── CSS OUTPUT ─── */
+  .code-block {
+    background: #0F172A;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    line-height: 1.7;
+    color: #94A3B8;
+  }
+  .code-block .comment { color: #475569; }
+  .code-block .var     { color: #93C5FD; }
+  .code-block .val     { color: #C4B5FD; }
+  .code-block .val-blue   { color: #60A5FA; }
+  .code-block .val-violet { color: #A78BFA; }
+  .code-block .val-green  { color: #86EFAC; }
+  .code-block .val-amber  { color: #FCD34D; }
+  .code-block .val-red    { color: #FCA5A5; }
+
+  .tab-row {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid #E2E8F0;
+    margin-bottom: 1.5rem;
+  }
+  .tab {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #64748B;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .tab.active {
+    color: #2563EB;
+    border-bottom-color: #2563EB;
+  }
+
+  .two-col { display: grid; grid-template-columns: 220px 1fr; gap: 1.5rem; }
+
+  @media (max-width: 768px) {
+    .grid-5, .grid-4, .grid-3, .grid-2, .two-col { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>HRMS Brand Identity System</h1>
+  <p>Complete token reference — Blue Primary · Violet Secondary · Inter · Enterprise HRMS</p>
+</div>
+
+<!-- ── COLORS ── -->
+<div class="section">
+  <div class="section-label">Color System</div>
+
+  <p style="font-size:0.8125rem;color:#64748B;margin-bottom:1rem;">Primary Blue — buttons, links, active states, primary CTAs</p>
+  <div class="swatch-group" style="margin-bottom:1.5rem;">
+    <div class="swatch light" style="background:#EFF6FF;"><span>50</span></div>
+    <div class="swatch light" style="background:#DBEAFE;"><span>100</span></div>
+    <div class="swatch light" style="background:#BFDBFE;"><span>200</span></div>
+    <div class="swatch light" style="background:#93C5FD;"><span>300</span></div>
+    <div class="swatch dark"  style="background:#60A5FA;"><span>400</span></div>
+    <div class="swatch dark"  style="background:#3B82F6;"><span>500</span></div>
+    <div class="swatch dark main" style="background:#2563EB;"><span>#2563EB</span></div>
+    <div class="swatch dark"  style="background:#1D4ED8;"><span>700</span></div>
+    <div class="swatch dark"  style="background:#1E40AF;"><span>800</span></div>
+    <div class="swatch dark"  style="background:#1E3A8A;"><span>900</span></div>
+  </div>
+
+  <p style="font-size:0.8125rem;color:#64748B;margin-bottom:1rem;">Secondary Violet — role badges, department tags, plan tiers, chart series 2</p>
+  <div class="swatch-group" style="margin-bottom:1.5rem;">
+    <div class="swatch light" style="background:#F5F3FF;"><span>50</span></div>
+    <div class="swatch light" style="background:#EDE9FE;"><span>100</span></div>
+    <div class="swatch light" style="background:#DDD6FE;"><span>200</span></div>
+    <div class="swatch light" style="background:#C4B5FD;"><span>300</span></div>
+    <div class="swatch dark"  style="background:#A78BFA;"><span>400</span></div>
+    <div class="swatch dark"  style="background:#8B5CF6;"><span>500</span></div>
+    <div class="swatch dark main" style="background:#7C3AED;"><span>#7C3AED</span></div>
+    <div class="swatch dark"  style="background:#6D28D9;"><span>700</span></div>
+    <div class="swatch dark"  style="background:#5B21B6;"><span>800</span></div>
+    <div class="swatch dark"  style="background:#4C1D95;"><span>900</span></div>
+  </div>
+
+  <p style="font-size:0.8125rem;color:#64748B;margin-bottom:1rem;">Neutrals — all surfaces, text, borders</p>
+  <div class="swatch-group" style="margin-bottom:1.5rem;border:1px solid #E2E8F0;border-radius:0.5rem;">
+    <div class="swatch light" style="background:#FFFFFF;border-right:1px solid #E2E8F0;"><span>0</span></div>
+    <div class="swatch light" style="background:#F8FAFC;"><span>50</span></div>
+    <div class="swatch light" style="background:#F1F5F9;"><span>100</span></div>
+    <div class="swatch light" style="background:#E2E8F0;"><span>200</span></div>
+    <div class="swatch light" style="background:#CBD5E1;"><span>300</span></div>
+    <div class="swatch dark"  style="background:#94A3B8;"><span>400</span></div>
+    <div class="swatch dark"  style="background:#64748B;"><span>500</span></div>
+    <div class="swatch dark"  style="background:#475569;"><span>600</span></div>
+    <div class="swatch dark"  style="background:#334155;"><span>700</span></div>
+    <div class="swatch dark"  style="background:#1E293B;"><span>800</span></div>
+    <div class="swatch dark"  style="background:#0F172A;"><span>900</span></div>
+  </div>
+
+  <p style="font-size:0.8125rem;color:#64748B;margin-bottom:0.75rem;">Status Colors</p>
+  <div class="status-row">
+    <span class="status-pill pill-success"><span class="dot"></span>Active</span>
+    <span class="status-pill pill-warning"><span class="dot"></span>Pending</span>
+    <span class="status-pill pill-danger"><span class="dot"></span>Terminated</span>
+    <span class="status-pill pill-info"><span class="dot"></span>On Leave</span>
+  </div>
+</div>
+
+<!-- ── TYPOGRAPHY ── -->
+<div class="section">
+  <div class="section-label">Typography — Inter</div>
+  <div class="type-row">
+    <span class="type-label">3xl / 800</span>
+    <span style="font-size:1.875rem;font-weight:800;letter-spacing:-0.025em;color:#0F172A;">Page Heading</span>
+    <span class="type-meta">1.875rem · −0.025em · weight 800</span>
+  </div>
+  <div class="type-row">
+    <span class="type-label">2xl / 700</span>
+    <span style="font-size:1.5rem;font-weight:700;letter-spacing:-0.025em;color:#0F172A;">Section Title</span>
+    <span class="type-meta">1.5rem · −0.025em · weight 700</span>
+  </div>
+  <div class="type-row">
+    <span class="type-label">xl / 600</span>
+    <span style="font-size:1.25rem;font-weight:600;color:#1E293B;">Card Heading</span>
+    <span class="type-meta">1.25rem · 0 · weight 600</span>
+  </div>
+  <div class="type-row">
+    <span class="type-label">lg / 500</span>
+    <span style="font-size:1.125rem;font-weight:500;color:#1E293B;">Subheading</span>
+    <span class="type-meta">1.125rem · 0 · weight 500</span>
+  </div>
+  <div class="type-row">
+    <span class="type-label">base / 400</span>
+    <span style="font-size:1rem;color:#334155;">Body text for descriptions, paragraphs, and general UI content.</span>
+    <span class="type-meta">1rem · 0 · weight 400</span>
+  </div>
+  <div class="type-row">
+    <span class="type-label">sm / 400</span>
+    <span style="font-size:0.875rem;color:#475569;">Secondary text, form labels, table cells, helper text.</span>
+    <span class="type-meta">0.875rem · 0 · weight 400</span>
+  </div>
+  <div class="type-row">
+    <span class="type-label">xs / 500</span>
+    <span style="font-size:0.75rem;font-weight:500;color:#64748B;">Captions, timestamps, meta info, badge labels.</span>
+    <span class="type-meta">0.75rem · 0 · weight 500</span>
+  </div>
+</div>
+
+<!-- ── BUTTONS ── -->
+<div class="section">
+  <div class="section-label">Buttons</div>
+  <div class="btn-row">
+    <button class="btn btn-primary">Save Changes</button>
+    <button class="btn btn-secondary">Assign Role</button>
+    <button class="btn btn-outline">Export</button>
+    <button class="btn btn-ghost">Cancel</button>
+    <button class="btn btn-danger">Terminate</button>
+  </div>
+  <p style="font-size:0.75rem;color:#94A3B8;margin-top:0.75rem;">Primary = blue actions · Secondary = violet for role/category actions · Ghost = neutral/cancel</p>
+</div>
+
+<!-- ── BADGES ── -->
+<div class="section">
+  <div class="section-label">Badges & Tags</div>
+  <div class="badge-row">
+    <span class="badge badge-blue">Engineering</span>
+    <span class="badge badge-violet">Admin</span>
+    <span class="badge badge-violet">Manager</span>
+    <span class="badge badge-green">Full-time</span>
+    <span class="badge badge-amber">Contract</span>
+    <span class="badge badge-red">Offboarding</span>
+    <span class="badge badge-slate">Remote</span>
+  </div>
+  <p style="font-size:0.75rem;color:#94A3B8;margin-top:0.75rem;">Blue = departments · Violet = roles & permissions · Others = employment type / status</p>
+</div>
+
+<!-- ── BORDER RADIUS ── -->
+<div class="section">
+  <div class="section-label">Border Radius</div>
+  <div class="radius-demo">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.375rem;">
+      <div class="radius-box" style="border-radius:0.25rem;"></div>
+      <span style="font-size:10px;color:#94A3B8;font-weight:500;">sm · 0.25rem<br><span style="color:#CBD5E1;">chips, tags</span></span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.375rem;">
+      <div class="radius-box" style="border-radius:0.375rem;"></div>
+      <span style="font-size:10px;color:#94A3B8;font-weight:500;">md · 0.375rem<br><span style="color:#CBD5E1;">inputs, buttons</span></span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.375rem;">
+      <div class="radius-box" style="border-radius:0.5rem;"></div>
+      <span style="font-size:10px;color:#94A3B8;font-weight:500;">lg · 0.5rem<br><span style="color:#CBD5E1;">cards, panels</span></span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.375rem;">
+      <div class="radius-box" style="border-radius:0.75rem;"></div>
+      <span style="font-size:10px;color:#94A3B8;font-weight:500;">xl · 0.75rem<br><span style="color:#CBD5E1;">modals, dialogs</span></span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.375rem;">
+      <div class="radius-box" style="border-radius:9999px;"></div>
+      <span style="font-size:10px;color:#94A3B8;font-weight:500;">full · pill<br><span style="color:#CBD5E1;">avatars, status</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- ── UI PREVIEW ── -->
+<div class="section">
+  <div class="section-label">Live UI Preview</div>
+  <div class="two-col">
+
+    <!-- Sidebar -->
+    <div class="sidebar-preview">
+      <div class="sidebar-logo">⬡ HRFlow</div>
+      <div class="sidebar-item active">
+        <div class="icon" style="border-radius:3px;"></div>
+        Dashboard
+      </div>
+      <div class="sidebar-item">
+        <div class="icon"></div>
+        Employees
+      </div>
+      <div class="sidebar-item">
+        <div class="icon"></div>
+        Payroll
+      </div>
+      <div class="sidebar-item">
+        <div class="icon"></div>
+        Attendance
+      </div>
+      <div class="sidebar-item">
+        <div class="icon"></div>
+        Leave
+      </div>
+      <div class="sidebar-item">
+        <div class="icon"></div>
+        Reports
+      </div>
+      <div style="margin-top:1rem;padding-top:0.75rem;border-top:1px solid #1F2937;">
+        <div class="sidebar-item">
+          <div class="icon"></div>
+          Settings
+        </div>
+      </div>
+    </div>
+
+    <!-- Stat Cards -->
+    <div>
+      <div class="grid-2" style="margin-bottom:1rem;">
+        <div class="card card-accent-blue">
+          <div class="card-title">Total Employees</div>
+          <div class="card-value">1,248</div>
+          <div class="card-sub">↑ 12 this month</div>
+        </div>
+        <div class="card card-accent-violet">
+          <div class="card-title">Active Roles</div>
+          <div class="card-value">34</div>
+          <div class="card-sub">Across 8 departments</div>
+        </div>
+        <div class="card card-accent-green">
+          <div class="card-title">Attendance Rate</div>
+          <div class="card-value">94.2%</div>
+          <div class="card-sub">↑ 2.1% vs last month</div>
+        </div>
+        <div class="card card-accent-amber">
+          <div class="card-title">Pending Approvals</div>
+          <div class="card-value">17</div>
+          <div class="card-sub">Leave + expense requests</div>
+        </div>
+      </div>
+
+      <!-- Sample employee row -->
+      <div class="card" style="padding:1rem;">
+        <div style="font-size:0.8125rem;font-weight:600;color:#0F172A;margin-bottom:0.75rem;">Recent Hires</div>
+        <div style="display:flex;flex-direction:column;gap:0.625rem;">
+          <div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0;border-bottom:1px solid #F1F5F9;">
+            <div style="width:32px;height:32px;border-radius:9999px;background:#DBEAFE;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:#1D4ED8;flex-shrink:0;">AP</div>
+            <div style="flex:1;">
+              <div style="font-size:0.8125rem;font-weight:500;color:#1E293B;">Arjun Patel</div>
+              <div style="font-size:0.75rem;color:#94A3B8;">Senior Engineer</div>
+            </div>
+            <span class="badge badge-blue">Engineering</span>
+            <span class="status-pill pill-success" style="padding:0.2rem 0.5rem;font-size:0.7rem;"><span class="dot"></span>Active</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0;border-bottom:1px solid #F1F5F9;">
+            <div style="width:32px;height:32px;border-radius:9999px;background:#EDE9FE;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:#6D28D9;flex-shrink:0;">SM</div>
+            <div style="flex:1;">
+              <div style="font-size:0.8125rem;font-weight:500;color:#1E293B;">Sneha Mehta</div>
+              <div style="font-size:0.75rem;color:#94A3B8;">HR Manager</div>
+            </div>
+            <span class="badge badge-violet">Manager</span>
+            <span class="status-pill pill-success" style="padding:0.2rem 0.5rem;font-size:0.7rem;"><span class="dot"></span>Active</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0;">
+            <div style="width:32px;height:32px;border-radius:9999px;background:#DCFCE7;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:#16A34A;flex-shrink:0;">RK</div>
+            <div style="flex:1;">
+              <div style="font-size:0.8125rem;font-weight:500;color:#1E293B;">Rahul Kumar</div>
+              <div style="font-size:0.75rem;color:#94A3B8;">Finance Analyst</div>
+            </div>
+            <span class="badge badge-blue">Finance</span>
+            <span class="status-pill pill-warning" style="padding:0.2rem 0.5rem;font-size:0.7rem;"><span class="dot"></span>Pending</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CSS TOKENS ── -->
+<div class="section">
+  <div class="section-label">CSS Variables — Copy into globals.css</div>
+  <div class="code-block"><pre><span class="comment">/* ── HRMS Brand Tokens — globals.css ── */</span>
+<span class="comment">/* Generated brand system: Blue Primary + Violet Secondary */</span>
+
+:root {
+  <span class="comment">/* Primary Blue */</span>
+  <span class="var">--color-primary-50</span>:   <span class="val-blue">#EFF6FF</span>;
+  <span class="var">--color-primary-100</span>:  <span class="val-blue">#DBEAFE</span>;
+  <span class="var">--color-primary-200</span>:  <span class="val-blue">#BFDBFE</span>;
+  <span class="var">--color-primary-500</span>:  <span class="val-blue">#3B82F6</span>;
+  <span class="var">--color-primary-600</span>:  <span class="val-blue">#2563EB</span>;  <span class="comment">/* MAIN */</span>
+  <span class="var">--color-primary-700</span>:  <span class="val-blue">#1D4ED8</span>;
+
+  <span class="comment">/* Secondary Violet */</span>
+  <span class="var">--color-secondary-50</span>:  <span class="val-violet">#F5F3FF</span>;
+  <span class="var">--color-secondary-100</span>: <span class="val-violet">#EDE9FE</span>;
+  <span class="var">--color-secondary-200</span>: <span class="val-violet">#DDD6FE</span>;
+  <span class="var">--color-secondary-400</span>: <span class="val-violet">#A78BFA</span>;
+  <span class="var">--color-secondary-600</span>: <span class="val-violet">#7C3AED</span>;  <span class="comment">/* MAIN */</span>
+  <span class="var">--color-secondary-700</span>: <span class="val-violet">#6D28D9</span>;
+
+  <span class="comment">/* Neutrals */</span>
+  <span class="var">--color-neutral-0</span>:   <span class="val">#FFFFFF</span>;
+  <span class="var">--color-neutral-50</span>:  <span class="val">#F8FAFC</span>;
+  <span class="var">--color-neutral-100</span>: <span class="val">#F1F5F9</span>;
+  <span class="var">--color-neutral-200</span>: <span class="val">#E2E8F0</span>;
+  <span class="var">--color-neutral-400</span>: <span class="val">#94A3B8</span>;
+  <span class="var">--color-neutral-500</span>: <span class="val">#64748B</span>;
+  <span class="var">--color-neutral-800</span>: <span class="val">#1E293B</span>;
+  <span class="var">--color-neutral-900</span>: <span class="val">#0F172A</span>;
+
+  <span class="comment">/* Status */</span>
+  <span class="var">--color-success</span>:       <span class="val-green">#22C55E</span>;
+  <span class="var">--color-success-light</span>: <span class="val-green">#DCFCE7</span>;
+  <span class="var">--color-success-dark</span>:  <span class="val-green">#16A34A</span>;
+  <span class="var">--color-warning</span>:       <span class="val-amber">#F59E0B</span>;
+  <span class="var">--color-warning-light</span>: <span class="val-amber">#FEF3C7</span>;
+  <span class="var">--color-warning-dark</span>:  <span class="val-amber">#D97706</span>;
+  <span class="var">--color-danger</span>:        <span class="val-red">#EF4444</span>;
+  <span class="var">--color-danger-light</span>:  <span class="val-red">#FEE2E2</span>;
+  <span class="var">--color-danger-dark</span>:   <span class="val-red">#DC2626</span>;
+  <span class="var">--color-info</span>:          <span class="val-blue">#0EA5E9</span>;
+  <span class="var">--color-info-light</span>:    <span class="val-blue">#E0F2FE</span>;
+
+  <span class="comment">/* Sidebar */</span>
+  <span class="var">--sidebar-bg</span>:                <span class="val">#111827</span>;
+  <span class="var">--sidebar-border</span>:            <span class="val">#1F2937</span>;
+  <span class="var">--sidebar-text</span>:              <span class="val">#9CA3AF</span>;
+  <span class="var">--sidebar-text-active</span>:       <span class="val">#F9FAFB</span>;
+  <span class="var">--sidebar-item-active-bg</span>:    <span class="val">rgba(37, 99, 235, 0.15)</span>;
+  <span class="var">--sidebar-item-active-border</span>: <span class="val-blue">#2563EB</span>;
+
+  <span class="comment">/* Surfaces */</span>
+  <span class="var">--page-bg</span>:     <span class="val">#F0F4FF</span>;  <span class="comment">/* faint blue tint — intentional */</span>
+  <span class="var">--card-bg</span>:     <span class="val">#FFFFFF</span>;
+  <span class="var">--card-border</span>: <span class="val">#E2E8F0</span>;
+  <span class="var">--card-shadow</span>: <span class="val">0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04)</span>;
+
+  <span class="comment">/* Typography */</span>
+  <span class="var">--font-family</span>: <span class="val">'Inter', -apple-system, BlinkMacSystemFont, sans-serif</span>;
+
+  <span class="comment">/* Border Radius */</span>
+  <span class="var">--radius-sm</span>:   <span class="val">0.25rem</span>;   <span class="comment">/* chips, small tags */</span>
+  <span class="var">--radius-md</span>:   <span class="val">0.375rem</span>;  <span class="comment">/* inputs, buttons */</span>
+  <span class="var">--radius-lg</span>:   <span class="val">0.5rem</span>;    <span class="comment">/* cards, panels */</span>
+  <span class="var">--radius-xl</span>:   <span class="val">0.75rem</span>;   <span class="comment">/* modals, dialogs */</span>
+  <span class="var">--radius-full</span>: <span class="val">9999px</span>;    <span class="comment">/* pills, avatars */</span>
+}</pre></div>
+</div>
+
+<!-- ── USAGE RULES ── -->
+<div class="section">
+  <div class="section-label">Where Each Color Lives</div>
+  <div class="grid-2">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
+        <div style="width:12px;height:12px;border-radius:50%;background:#2563EB;"></div>
+        <span style="font-size:0.8125rem;font-weight:600;color:#1E293B;">Primary Blue #2563EB</span>
+      </div>
+      <div style="font-size:0.8125rem;color:#475569;line-height:1.8;">
+        Primary CTA buttons<br>
+        Active nav/menu items<br>
+        Links and anchors<br>
+        Focus rings<br>
+        Department badges<br>
+        Chart series 1<br>
+        Sidebar active border
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
+        <div style="width:12px;height:12px;border-radius:50%;background:#7C3AED;"></div>
+        <span style="font-size:0.8125rem;font-weight:600;color:#1E293B;">Secondary Violet #7C3AED</span>
+      </div>
+      <div style="font-size:0.8125rem;color:#475569;line-height:1.8;">
+        Role & permission badges<br>
+        Plan / tier indicators<br>
+        Secondary action buttons<br>
+        Chart series 2<br>
+        Empty state illustrations<br>
+        Onboarding highlights<br>
+        Feature flag tags
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:0.8125rem;font-weight:600;color:#1E293B;margin-bottom:0.75rem;">🚫 Never mix these two</div>
+      <div style="font-size:0.8125rem;color:#475569;line-height:1.8;">
+        Never use violet for primary CTAs<br>
+        Never use blue for role/permission badges<br>
+        Never put both colors in the same button or badge<br>
+        Max 3 places violet appears per screen
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:0.8125rem;font-weight:600;color:#1E293B;margin-bottom:0.75rem;">✅ Heading style rule</div>
+      <div style="font-size:0.8125rem;color:#475569;line-height:1.8;">
+        H1 page titles: weight 800, tracking −0.025em<br>
+        H2 section titles: weight 700, tracking −0.025em<br>
+        H3 card titles: weight 600, tracking 0<br>
+        Body text: weight 400, color #334155<br>
+        Labels/meta: weight 500, color #64748B
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
