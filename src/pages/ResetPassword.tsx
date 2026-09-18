@@ -46,7 +46,7 @@ export default function ResetPassword() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
             <KeyRound className="h-6 w-6 text-primary-foreground" />
           </div>
           <CardTitle className="text-2xl">Set a new password</CardTitle>
@@ -69,15 +69,18 @@ export default function ResetPassword() {
             </Button>
           </form>
           <div className="mt-4 text-center text-sm text-muted-foreground">
-            <button
+            <Button
+              type="button"
+              variant="link"
+              size="sm"
               onClick={async () => {
                 await supabase.auth.signOut();
                 navigate("/login", { replace: true });
               }}
-              className="text-primary hover:underline font-medium"
+              className="h-auto p-0"
             >
               Back to sign in
-            </button>
+            </Button>
           </div>
         </CardContent>
       </Card>

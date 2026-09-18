@@ -62,9 +62,9 @@ export default function Login() {
             </Button>
           </form>
           <div className="mt-3 text-center text-sm">
-            <button type="button" onClick={handleForgotPassword} disabled={loading} className="text-muted-foreground hover:text-primary hover:underline">
+            <Button type="button" variant="link" size="sm" onClick={handleForgotPassword} disabled={loading} className="h-auto p-0 text-muted-foreground hover:text-primary">
               Forgot password?
-            </button>
+            </Button>
           </div>
           <div className="mt-4 text-center text-sm text-muted-foreground">
             Don't have an account?{" "}

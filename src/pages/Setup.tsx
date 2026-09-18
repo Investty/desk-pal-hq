@@ -166,10 +166,13 @@ export default function Setup() {
         <ol className="flex flex-wrap items-center justify-center gap-2">
           {steps.map((s, i) => (
             <li key={s.key}>
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => setStep(i)}
                 className={cn(
-                  "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                  "h-auto rounded-full border px-3 py-1.5 text-xs",
                   i === step
                     ? "bg-primary text-primary-foreground border-primary"
                     : i < step
@@ -179,7 +182,7 @@ export default function Setup() {
               >
                 {i < step ? <Check className="h-3.5 w-3.5" /> : <s.icon className="h-3.5 w-3.5" />}
                 {s.label}
-              </button>
+              </Button>
             </li>
           ))}
         </ol>
@@ -273,13 +276,16 @@ export default function Setup() {
                 {suggestedDepartments
                   .filter((s) => !(departments ?? []).some((d) => d.name.toLowerCase() === s.toLowerCase()))
                   .map((s) => (
-                    <button
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
                       key={s}
                       onClick={() => addDepartment(s)}
-                      className="rounded-full border border-dashed px-3 py-1 text-xs text-muted-foreground hover:text-foreground hover:border-primary"
+                      className="h-auto rounded-full border border-dashed px-3 py-1 text-xs text-muted-foreground hover:border-primary hover:text-foreground"
                     >
                       + {s}
-                    </button>
+                    </Button>
                   ))}
               </div>
 
@@ -399,9 +405,9 @@ export default function Setup() {
         )}
 
         <div className="text-center">
-          <button onClick={() => navigate("/", { replace: true })} className="text-xs text-muted-foreground hover:underline">
+          <Button type="button" variant="link" size="sm" onClick={() => navigate("/", { replace: true })} className="h-auto p-0 text-xs text-muted-foreground">
             Skip for now
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -34,7 +34,7 @@ function StatCard({ title, value, icon: Icon, description, variant = "default" }
         <Icon className={`h-5 w-5 ${colors[variant]}`} />
       </CardHeader>
       <CardContent>
-        <div className="text-3xl font-extrabold tracking-tight text-neutral-900">{value}</div>
+        <div className="text-3xl font-extrabold text-neutral-900" style={{ letterSpacing: "var(--letter-spacing-tight)" }}>{value}</div>
         {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
       </CardContent>
     </Card>

@@ -122,14 +122,16 @@ export default function SheetImporter({ title, description, fields, rpc, templat
             onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
           />
           {!workbook ? (
-            <button
+            <Button
+              type="button"
+              variant="ghost"
               onClick={() => fileInput.current?.click()}
-              className="w-full border-2 border-dashed rounded-lg py-12 flex flex-col items-center gap-2 text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+              className="h-auto w-full flex-col border-2 border-dashed py-12 text-muted-foreground hover:border-primary hover:bg-primary-50 hover:text-primary"
             >
               <Upload className="h-8 w-8" />
               <span className="font-medium">Choose an Excel or CSV file</span>
               <span className="text-xs">Exports from Tally or any payroll sheet work fine</span>
-            </button>
+            </Button>
           ) : (
             <div className="flex flex-wrap items-center gap-3">
               <Badge variant="secondary" className="gap-2 py-1.5 px-3">

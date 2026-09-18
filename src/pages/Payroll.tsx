@@ -170,14 +170,14 @@ export default function Payroll() {
       `<tr><td>${l}</td><td style="text-align:right;${strong ? "font-weight:700" : ""}">${v}</td></tr>`;
     win.document.write(`<!doctype html><html><head><title>Payslip ${MONTHS[p.month - 1]} ${p.year}</title>
       <style>
-        body{font-family:ui-sans-serif,system-ui,sans-serif;padding:40px;color:#111}
-        h1{font-size:20px;margin:0 0 4px}
-        h2{font-size:13px;margin:18px 0 6px;text-transform:uppercase;letter-spacing:.05em;color:#555}
-        .muted{color:#666;font-size:12px}
+        body{font-family:Inter,-apple-system,BlinkMacSystemFont,sans-serif;padding:40px;color:#1E293B}
+        h1{font-size:20px;font-weight:700;letter-spacing:-.025em;color:#0F172A;margin:0 0 4px}
+        h2{font-size:13px;font-weight:600;margin:18px 0 6px;text-transform:uppercase;letter-spacing:0;color:#475569}
+        .muted{color:#64748B;font-size:12px}
         .grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;margin:20px 0;font-size:13px}
         table{width:100%;border-collapse:collapse;font-size:13px}
-        td{padding:6px 0;border-bottom:1px solid #eee}
-        .total td{border-top:2px solid #111;border-bottom:none;font-size:15px}
+        td{padding:6px 0;border-bottom:1px solid #E2E8F0}
+        .total td{border-top:2px solid #0F172A;border-bottom:none;font-size:15px}
       </style></head><body>
       <h1>${e?.company || "Payslip"}</h1>
       <div class="muted">Payslip for ${MONTHS[p.month - 1]} ${p.year}</div>
