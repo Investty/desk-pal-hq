@@ -30,7 +30,10 @@ export default function Company() {
     queryKey: ["company", company?.id],
     enabled: !!company?.id,
     queryFn: async () => {
-      const { data } = await supabase.from("companies").select("*").eq("id", company!.id).maybeSingle();
+      const companyId = company?.id;
+      if (!companyId) throw new Error("No active company selected");
+      const { data, error } = await supabase.from("companies").select("*").eq("id", companyId).maybeSingle();
+      if (error) throw error;
       if (data) {
         setName((prev) => prev || data.name);
         setWeeklyOffs((prev) => prev ?? (data.weekly_offs ?? [0, 6]));
@@ -67,20 +70,13 @@ export default function Company() {
   const saveWeeklyOffs = useMutation({
     mutationFn: async (days: number[]) => {
       if (days.length >= 7) throw new Error("At least one working day is required — you cannot mark every day as an off day");
-      const id = companyRow?.id ?? company?.id;
-      if (!id) throw new Error("Company is still loading — please try again");
-      const { data, error } = await supabase
-        .from("companies")
-        .update({ weekly_offs: days })
-        .eq("id", id)
-        .select("id");
+      const { error } = await supabase.rpc("set_company_weekly_offs", { _weekly_offs: days });
       if (error) throw error;
-      if (!data || data.length === 0) throw new Error("You do not have permission to change the work week");
     },
     onSuccess: () => {
       toast.success("Work week updated");
       queryClient.invalidateQueries({ queryKey: ["company"] });
-      refresh();
+      void refresh();
     },
     onError: (e: Error) => toast.error(e.message),
   });
