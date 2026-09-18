@@ -52,7 +52,9 @@ export default function Company() {
       const trimmed = name.trim();
       if (trimmed.length < 2) throw new Error("Company name must be at least 2 characters");
       if (trimmed.length > 60) throw new Error("Company name must be 60 characters or less");
-      const { error } = await supabase.from("companies").update({ name: trimmed }).eq("id", companyRow!.id);
+      const id = companyRow?.id ?? company?.id;
+      if (!id) throw new Error("Company is still loading — please try again");
+      const { error } = await supabase.from("companies").update({ name: trimmed }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
