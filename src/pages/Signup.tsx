@@ -21,6 +21,16 @@ export default function Signup() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const name = fullName.trim().replace(/\s+/g, " ");
+    if (name.length < 2 || name.length > 80) {
+      toast.error("Full name must be between 2 and 80 characters");
+      return;
+    }
+    if (!/^[\p{L}][\p{L} .'-]*$/u.test(name)) {
+      toast.error("Full name may contain letters, spaces, hyphens, apostrophes and dots only");
+      return;
+    }
+    setFullName(name);
     if (mode === "create") {
       const name = companyName.trim();
       if (name.length < 2 || name.length > 60) {
