@@ -20,7 +20,7 @@ const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Frida
 
 export default function Company() {
   const queryClient = useQueryClient();
-  const { company, user } = useAuth();
+  const { company, user, refresh } = useAuth();
   const [name, setName] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<Role>("employee");

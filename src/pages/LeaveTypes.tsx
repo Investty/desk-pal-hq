@@ -70,7 +70,7 @@ export default function LeaveTypes() {
     }) => {
       const { error } = await supabase.from("leave_policies").update(values).eq("id", id);
       if (error) throw error;
-      if (values.default_days !== undefined || values.is_enabled === true) await syncBalances(id);
+      if (values.default_days !== undefined || values.is_enabled !== undefined) await syncBalances(id);
     },
     onSuccess: () => {
       toast.success("Leave type updated");
