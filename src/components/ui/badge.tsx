@@ -11,7 +11,7 @@ const badgeVariants = cva(
         default: "border-transparent bg-primary-100 text-primary-700",
         secondary: "border-transparent bg-secondary-100 text-secondary-700",
         role: "border-transparent bg-secondary-100 text-secondary-700",
-        department: "border-transparent bg-secondary-100 text-secondary-700",
+        department: "border-transparent bg-primary-100 text-primary-700",
         success: "border-transparent bg-success-light text-success-dark",
         warning: "border-transparent bg-warning-light text-warning-dark",
         danger: "border-transparent bg-danger-light text-danger-dark",

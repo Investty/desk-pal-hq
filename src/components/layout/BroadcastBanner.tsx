@@ -10,7 +10,7 @@ interface BroadcastItem {
 
 const STYLES: Record<string, { wrap: string; icon: typeof Info }> = {
   info: { wrap: "border-primary/40 bg-primary/10", icon: Megaphone },
-  warning: { wrap: "border-amber-500/50 bg-amber-500/10", icon: Info },
+  warning: { wrap: "border-warning/50 bg-warning/10", icon: Info },
   critical: { wrap: "border-destructive/50 bg-destructive/10", icon: AlertTriangle },
 };
 

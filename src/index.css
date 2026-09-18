@@ -84,7 +84,7 @@
     --font-weight-semibold: 600;
     --font-weight-bold: 700;
     --font-weight-extrabold: 800;
-    --letter-spacing-tight: 0em;
+    --letter-spacing-tight: -0.025em;
     --letter-spacing-normal: 0em;
 
     /* Radius, spacing, and motion */
@@ -141,6 +141,7 @@
     --sidebar-border: 215 28% 17%;
     --sidebar-ring: 221 83% 53%;
     --sidebar-muted: 218 11% 65%;
+    --overlay: 222.22 47.37% 11.18%;
   }
 
   .dark {
@@ -171,6 +172,7 @@
     --sidebar-accent-foreground: 210 20% 90%;
     --sidebar-border: 220 15% 15%;
     --sidebar-ring: 221 83% 53%;
+    --overlay: 220 20% 5%;
   }
 }
 
