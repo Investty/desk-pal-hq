@@ -38,9 +38,19 @@ export default function Signup() {
         return;
       }
     }
+    const normalizedEmail = email.trim().toLowerCase();
+    if (normalizedEmail.length > 254) {
+      toast.error("Email must be 254 characters or less");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/.test(normalizedEmail)) {
+      toast.error("Enter a valid email address");
+      return;
+    }
+    setEmail(normalizedEmail);
     setLoading(true);
     const { error } = await signUp(
-      email,
+      normalizedEmail,
       password,
       name,
       mode === "create" ? { companyName: companyName.trim() } : { inviteCode: inviteCode.trim() },
@@ -104,7 +114,7 @@ export default function Signup() {
             )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={254} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
