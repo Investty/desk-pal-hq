@@ -114,7 +114,7 @@ export default function Signup() {
             )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={254} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
