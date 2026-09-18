@@ -62,7 +62,7 @@ export default function Leave() {
         .from("leave_balances")
         .select("*, leave_policies:policy_id(label, is_enabled)")
         .eq("user_id", user!.id);
-      return data || [];
+      return (data || []).filter((b) => b.leave_policies?.is_enabled !== false);
     },
   });
 

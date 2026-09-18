@@ -20,16 +20,17 @@ const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Frida
 
 export default function Company() {
   const queryClient = useQueryClient();
-  const { company, user } = useAuth();
+  const { company, user, refresh } = useAuth();
   const [name, setName] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<Role>("employee");
   const [weeklyOffs, setWeeklyOffs] = useState<number[] | null>(null);
 
   const { data: companyRow } = useQuery({
-    queryKey: ["company"],
+    queryKey: ["company", company?.id],
+    enabled: !!company?.id,
     queryFn: async () => {
-      const { data } = await supabase.from("companies").select("*").maybeSingle();
+      const { data } = await supabase.from("companies").select("*").eq("id", company!.id).maybeSingle();
       if (data) {
         setName((prev) => prev || data.name);
         setWeeklyOffs((prev) => prev ?? (data.weekly_offs ?? [0, 6]));
@@ -51,7 +52,9 @@ export default function Company() {
       const trimmed = name.trim();
       if (trimmed.length < 2) throw new Error("Company name must be at least 2 characters");
       if (trimmed.length > 60) throw new Error("Company name must be 60 characters or less");
-      const { error } = await supabase.from("companies").update({ name: trimmed }).eq("id", companyRow!.id);
+      const id = companyRow?.id ?? company?.id;
+      if (!id) throw new Error("Company is still loading — please try again");
+      const { error } = await supabase.from("companies").update({ name: trimmed }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -64,12 +67,20 @@ export default function Company() {
   const saveWeeklyOffs = useMutation({
     mutationFn: async (days: number[]) => {
       if (days.length >= 7) throw new Error("At least one working day is required — you cannot mark every day as an off day");
-      const { error } = await supabase.from("companies").update({ weekly_offs: days }).eq("id", companyRow!.id);
+      const id = companyRow?.id ?? company?.id;
+      if (!id) throw new Error("Company is still loading — please try again");
+      const { data, error } = await supabase
+        .from("companies")
+        .update({ weekly_offs: days })
+        .eq("id", id)
+        .select("id");
       if (error) throw error;
+      if (!data || data.length === 0) throw new Error("You do not have permission to change the work week");
     },
     onSuccess: () => {
       toast.success("Work week updated");
       queryClient.invalidateQueries({ queryKey: ["company"] });
+      refresh();
     },
     onError: (e: Error) => toast.error(e.message),
   });
