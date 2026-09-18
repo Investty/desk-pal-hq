@@ -53,7 +53,7 @@ export default {
           "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
           accent: "hsl(var(--sidebar-accent))",
           "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
+          border: "var(--sidebar-border)",
           ring: "hsl(var(--sidebar-ring))",
           muted: "hsl(var(--sidebar-muted))",
         },
@@ -61,7 +61,7 @@ export default {
       borderRadius: {
         sm: "var(--radius-sm)", md: "var(--radius-md)", lg: "var(--radius-lg)", xl: "var(--radius-xl)", full: "var(--radius-full)",
       },
-      fontFamily: { sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"] },
+      fontFamily: { sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"] },
       boxShadow: { card: "var(--card-shadow)", "card-hover": "var(--card-shadow-hover)" },
       keyframes: {
         "accordion-down": { from: { height: "0" }, to: { height: "var(--radix-accordion-content-height)" } },

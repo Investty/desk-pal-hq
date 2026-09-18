@@ -71,7 +71,7 @@
     --card-shadow-hover: 0 4px 12px rgb(0 0 0 / 0.08);
 
     /* Typography */
-    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-size-xs: 0.75rem;
     --font-size-sm: 0.875rem;
     --font-size-base: 1rem;
@@ -84,7 +84,7 @@
     --font-weight-semibold: 600;
     --font-weight-bold: 700;
     --font-weight-extrabold: 800;
-    --letter-spacing-tight: -0.025em;
+    --letter-spacing-tight: 0em;
     --letter-spacing-normal: 0em;
 
     /* Radius, spacing, and motion */
@@ -138,7 +138,7 @@
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 221 83% 53%;
     --sidebar-accent-foreground: 220 14% 96%;
-    --sidebar-border: 215 28% 17%;
+    --sidebar-border: #1F2937;
     --sidebar-ring: 221 83% 53%;
     --sidebar-muted: 218 11% 65%;
     --overlay: 222.22 47.37% 11.18%;
@@ -170,7 +170,7 @@
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 18% 12%;
     --sidebar-accent-foreground: 210 20% 90%;
-    --sidebar-border: 220 15% 15%;
+    --sidebar-border: #1F2937;
     --sidebar-ring: 221 83% 53%;
     --overlay: 220 20% 5%;
   }

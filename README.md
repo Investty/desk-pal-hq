@@ -4,6 +4,10 @@ A scalable, multi-company, role-based HRMS for employee management, attendance a
 
 **Live app:** https://desk-pal-hq.lovable.app
 
+## Design system
+
+The mandatory interface source of truth is [`docs/brand-tokens.html`](docs/brand-tokens.html), with implementation rules summarized in [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md). All future interface work must use the shared semantic tokens and components described there; feature screens must not introduce direct palette colors, unrelated radii, or one-off button styles.
+
 ## What it does
 
 ### Core HR
