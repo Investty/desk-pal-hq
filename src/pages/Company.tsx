@@ -27,9 +27,10 @@ export default function Company() {
   const [weeklyOffs, setWeeklyOffs] = useState<number[] | null>(null);
 
   const { data: companyRow } = useQuery({
-    queryKey: ["company"],
+    queryKey: ["company", company?.id],
+    enabled: !!company?.id,
     queryFn: async () => {
-      const { data } = await supabase.from("companies").select("*").maybeSingle();
+      const { data } = await supabase.from("companies").select("*").eq("id", company!.id).maybeSingle();
       if (data) {
         setName((prev) => prev || data.name);
         setWeeklyOffs((prev) => prev ?? (data.weekly_offs ?? [0, 6]));
