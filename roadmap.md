@@ -24,4 +24,4 @@
 - [x] Consolidate the app onto one Sonner notification renderer
 - [x] Apply brand tokens, semantic status accents, icons, timing, and controls
 - [x] Document notification rules in the permanent design system
-- [ ] Verify success and error notifications at desktop and mobile widths
+- [x] Verify success and error notifications at desktop and mobile widths
