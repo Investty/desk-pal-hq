@@ -2146,6 +2146,7 @@ export type Database = {
           title: string
         }[]
       }
+      notify_incomplete_profiles: { Args: never; Returns: number }
       owner_audit: {
         Args: { _action: string; _company_id: string; _details: Json }
         Returns: undefined
