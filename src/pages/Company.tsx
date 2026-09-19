@@ -92,6 +92,24 @@ export default function Company() {
       if (!email) throw new Error("Email is required");
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || email.length > 255)
         throw new Error("Please enter a valid email address");
+      const normalized = email.toLowerCase();
+
+      const { data: existingMember } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("company_id", company?.id ?? "")
+        .ilike("email", normalized)
+        .maybeSingle();
+      if (existingMember) throw new Error("This user already exists in your company");
+
+      const { data: openInvite } = await supabase
+        .from("company_invites")
+        .select("code")
+        .ilike("email", normalized)
+        .is("used_at", null)
+        .maybeSingle();
+      if (openInvite) throw new Error(`An unused invite already exists for this email (code ${openInvite.code})`);
+
       const { error } = await supabase.from("company_invites").insert({
         email,
         role: inviteRole,
