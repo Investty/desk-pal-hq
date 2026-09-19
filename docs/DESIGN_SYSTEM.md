@@ -102,6 +102,15 @@ Letter spacing remains `0` throughout the application for readability and platfo
 - Icon-only actions require an accessible label and a visible browser tooltip/title.
 - Charts use semantic CSS variables, never literal color values.
 
+### Toast notifications
+
+- Sonner is the single notification renderer. Mount only the shared `Toaster` exported by `components/ui/sonner`.
+- Toasts appear at the top right on desktop and adapt to the viewport on mobile. Up to four may be visible at once.
+- Use `toast.success` for completed actions, `toast.error` for failures or blocked actions, `toast.warning` for caution, and `toast.info` for neutral updates. Loading uses the info treatment.
+- Semantic accents are fixed: success green, error red, warning amber, and information blue. Each type uses its matching Lucide icon.
+- Toast surfaces use the card background, shared border, `rounded-md`, Inter typography, and `shadow-card`. Do not add page-level toast colors, icons, positions, or durations.
+- Keep titles concise and outcome-focused. Put supporting context in `description` when needed. The standard duration is 4.5 seconds; actionable messages may remain longer through an explicit call option.
+
 ## Prohibited patterns
 
 - Direct Tailwind palette colors such as `bg-blue-600`, `text-red-500`, `border-gray-200`, `bg-black`, or `text-white` in product components.
@@ -110,6 +119,7 @@ Letter spacing remains `0` throughout the application for readability and platfo
 - Violet primary calls to action or violet department badges.
 - New status colors or inconsistent status meanings.
 - One-off typography, shadows, gradients, or radii in feature pages.
+- Directly mounting another toast renderer or applying one-off toast styling in a feature page.
 
 Print/export documents may use literal values because they render outside the application CSS, but those values must match the canonical Inter, neutral, primary, and border palette.
 
