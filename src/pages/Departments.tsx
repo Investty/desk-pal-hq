@@ -10,7 +10,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/components/ui/sonner";
 import { format } from "date-fns";
-import { Building2, Plus } from "lucide-react";
+import { Building2, Plus, Sparkles } from "lucide-react";
+
+const suggestedDepartments = ["Engineering", "Sales", "Marketing", "Human Resources", "Finance", "Operations", "Support"];
 
 export default function Departments() {
   const queryClient = useQueryClient();
@@ -45,6 +47,33 @@ export default function Departments() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const addSuggested = useMutation({
+    mutationFn: async (deptName: string) => {
+      const { error } = await supabase.from("departments").insert({ name: deptName });
+      if (error) throw error;
+    },
+    onSuccess: (_d, deptName) => {
+      toast.success(`${deptName} added!`);
+      queryClient.invalidateQueries({ queryKey: ["departments"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const addAllSuggested = useMutation({
+    mutationFn: async (names: string[]) => {
+      const { error } = await supabase.from("departments").insert(names.map((n) => ({ name: n })));
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Suggested departments added!");
+      queryClient.invalidateQueries({ queryKey: ["departments"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const existingNames = new Set((departments || []).map((d) => d.name.trim().toLowerCase()));
+  const missingSuggestions = suggestedDepartments.filter((s) => !existingNames.has(s.toLowerCase()));
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -74,6 +103,38 @@ export default function Departments() {
           </DialogContent>
         </Dialog>
       </div>
+
+      {missingSuggestions.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" /> Suggested departments
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">Quick-start with common departments — click to add, or add all at once.</p>
+          </CardHeader>
+          <CardContent className="flex flex-wrap items-center gap-2">
+            {missingSuggestions.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => addSuggested.mutate(s)}
+                disabled={addSuggested.isPending || addAllSuggested.isPending}
+                className="inline-flex items-center gap-1 rounded-full border border-border bg-secondary/50 px-3 py-1.5 text-sm hover:bg-secondary transition-colors disabled:opacity-50"
+              >
+                <Plus className="h-3.5 w-3.5" /> {s}
+              </button>
+            ))}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => addAllSuggested.mutate(missingSuggestions)}
+              disabled={addSuggested.isPending || addAllSuggested.isPending}
+            >
+              Add all ({missingSuggestions.length})
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardContent className="pt-6">
