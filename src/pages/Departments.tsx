@@ -45,8 +45,32 @@ export default function Departments() {
       setDescription("");
       queryClient.invalidateQueries({ queryKey: ["departments"] });
     },
+  const addSuggested = useMutation({
+    mutationFn: async (deptName: string) => {
+      const { error } = await supabase.from("departments").insert({ name: deptName });
+      if (error) throw error;
+    },
+    onSuccess: (_d, deptName) => {
+      toast.success(`${deptName} added!`);
+      queryClient.invalidateQueries({ queryKey: ["departments"] });
+    },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const addAllSuggested = useMutation({
+    mutationFn: async (names: string[]) => {
+      const { error } = await supabase.from("departments").insert(names.map((n) => ({ name: n })));
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Suggested departments added!");
+      queryClient.invalidateQueries({ queryKey: ["departments"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const existingNames = new Set((departments || []).map((d) => d.name.trim().toLowerCase()));
+  const missingSuggestions = suggestedDepartments.filter((s) => !existingNames.has(s.toLowerCase()));
 
   return (
     <div className="space-y-6">
