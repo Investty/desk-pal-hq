@@ -45,6 +45,9 @@ export default function Departments() {
       setDescription("");
       queryClient.invalidateQueries({ queryKey: ["departments"] });
     },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const addSuggested = useMutation({
     mutationFn: async (deptName: string) => {
       const { error } = await supabase.from("departments").insert({ name: deptName });
