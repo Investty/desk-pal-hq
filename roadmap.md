@@ -17,4 +17,4 @@
 
 - [x] Replace native required-field wording with custom field-specific messages
 - [x] Add accessible show/hide controls to every password field
-- [ ] Verify account forms and password controls in the live preview
+- [x] Verify account forms and password controls in the live preview
