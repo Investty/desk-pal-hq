@@ -18,3 +18,10 @@
 - [x] Replace native required-field wording with custom field-specific messages
 - [x] Add accessible show/hide controls to every password field
 - [x] Verify account forms and password controls in the live preview
+
+# Branded platform notifications
+
+- [x] Consolidate the app onto one Sonner notification renderer
+- [x] Apply brand tokens, semantic status accents, icons, timing, and controls
+- [x] Document notification rules in the permanent design system
+- [ ] Verify success and error notifications at desktop and mobile widths
