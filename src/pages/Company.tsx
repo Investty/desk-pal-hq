@@ -111,7 +111,7 @@ export default function Company() {
       if (openInvite) throw new Error(`An unused invite already exists for this email (code ${openInvite.code})`);
 
       const { error } = await supabase.from("company_invites").insert({
-        email,
+        email: normalized,
         role: inviteRole,
         created_by: user?.id ?? null,
       });
