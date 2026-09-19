@@ -24,8 +24,12 @@ export default function Attendance() {
     queryKey: ["shift-for-today", today],
     queryFn: async () => {
       const { data } = await supabase.rpc("shift_for", { _user: user!.id, _date: today });
-      const row = Array.isArray(data) ? data[0] : data;
-      return row as { name: string; start_time: string; end_time: string; grace_minutes: number } | null;
+      const row = (Array.isArray(data) ? data[0] : data) as
+        | { name: string | null; start_time: string | null; end_time: string | null; grace_minutes: number | null }
+        | null;
+      // The RPC returns an all-null row when the company has no shift configured.
+      if (!row || !row.name || !row.start_time || !row.end_time) return null;
+      return row as { name: string; start_time: string; end_time: string; grace_minutes: number };
     },
   });
 
