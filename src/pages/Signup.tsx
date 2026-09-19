@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -85,7 +86,7 @@ export default function Signup() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
-              <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required minLength={2} maxLength={80} />
+              <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required requiredMessage="Please enter Full Name" minLength={2} maxLength={80} />
             </div>
             {mode === "create" ? (
               <div className="space-y-2">
@@ -98,6 +99,7 @@ export default function Signup() {
                   minLength={2}
                   maxLength={60}
                   required
+                  requiredMessage="Please enter Company Name"
                 />
               </div>
             ) : (
@@ -109,16 +111,17 @@ export default function Signup() {
                   onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
                   placeholder="A1B2C3D4"
                   required
+                  requiredMessage="Please enter Invite Code"
                 />
               </div>
             )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={254} />
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required requiredMessage="Please enter Email Address" maxLength={254} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
+              <PasswordInput id="password" value={password} onChange={(e) => setPassword(e.target.value)} required requiredMessage="Please enter Password" minLength={6} />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Please wait..." : "Create Account"}

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -58,11 +58,11 @@ export default function ResetPassword() {
           <form onSubmit={submit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="pw">New password</Label>
-              <Input id="pw" type="password" minLength={6} required value={password} onChange={(e) => setPassword(e.target.value)} />
+              <PasswordInput id="pw" minLength={6} required requiredMessage="Please enter New Password" value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="pw2">Confirm password</Label>
-              <Input id="pw2" type="password" minLength={6} required value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+              <PasswordInput id="pw2" minLength={6} required requiredMessage="Please confirm Password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
             </div>
             <Button type="submit" className="w-full" disabled={loading || !ready}>
               {loading ? "Saving..." : "Update password"}

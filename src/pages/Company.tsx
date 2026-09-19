@@ -175,6 +175,7 @@ export default function Company() {
               <Input
                 type="email"
                 required
+                requiredMessage="Please enter Email Address"
                 maxLength={255}
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
