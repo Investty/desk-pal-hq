@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Trash2 } from "lucide-react";
 import { format } from "date-fns";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/sonner";
 import SheetImporter from "@/components/import/SheetImporter";
 import { attendanceFields, employeeFields, leaveFields, payrollFields, shiftFields } from "@/lib/importSheet";
 

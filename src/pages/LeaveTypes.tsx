@@ -15,7 +15,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/sonner";
 import { Settings2, RefreshCw, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { slugify } from "@/lib/leave";

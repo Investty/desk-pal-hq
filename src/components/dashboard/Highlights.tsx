@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Cake, PartyPopper, Gift, Pencil, Heart } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/sonner";
 
 interface Celebration {
   user_id: string;

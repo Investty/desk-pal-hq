@@ -16,7 +16,7 @@ import { ListPager } from "@/components/ui/list-pager";
 import { Search, Users, UserMinus, UserPlus, Download, CalendarDays } from "lucide-react";
 import EmployeeLeaveDialog from "@/components/employees/EmployeeLeaveDialog";
 import { downloadCsv } from "@/lib/csv";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/sonner";
 import { format } from "date-fns";
 
 interface EmployeeRow {
