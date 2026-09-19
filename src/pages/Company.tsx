@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -34,13 +34,18 @@ export default function Company() {
       if (!companyId) throw new Error("No active company selected");
       const { data, error } = await supabase.from("companies").select("*").eq("id", companyId).maybeSingle();
       if (error) throw error;
-      if (data) {
-        setName((prev) => prev || data.name);
-        setWeeklyOffs((prev) => prev ?? (data.weekly_offs ?? [0, 6]));
-      }
       return data;
     },
   });
+
+  useEffect(() => {
+    const currentName = companyRow?.name ?? company?.name;
+    if (currentName) setName((prev) => (prev ? prev : currentName));
+  }, [companyRow?.name, company?.name]);
+
+  useEffect(() => {
+    if (companyRow) setWeeklyOffs((prev) => prev ?? (companyRow.weekly_offs ?? [0, 6]));
+  }, [companyRow]);
 
   const { data: invites } = useQuery({
     queryKey: ["company-invites"],
