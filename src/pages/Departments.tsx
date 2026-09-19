@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +11,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/components/ui/sonner";
 import { format } from "date-fns";
-import { Building2, Plus } from "lucide-react";
+import { Building2, Plus, Sparkles } from "lucide-react";
+
+const suggestedDepartments = ["Engineering", "Sales", "Marketing", "Human Resources", "Finance", "Operations", "Support"];
 
 export default function Departments() {
   const queryClient = useQueryClient();
