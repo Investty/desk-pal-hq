@@ -12,3 +12,9 @@
 - [x] Add date and department filters with readable chart states
 - [x] Add chart drill-down links, tooltips, legends, and empty states
 - [x] Verify desktop/mobile presentation and reporting calculations
+
+# Required-field messages and password visibility
+
+- [x] Replace native required-field wording with custom field-specific messages
+- [x] Add accessible show/hide controls to every password field
+- [ ] Verify account forms and password controls in the live preview
