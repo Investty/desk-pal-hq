@@ -143,13 +143,19 @@ export default function Company() {
 
       <Card>
         <CardHeader><CardTitle className="text-base">Company details</CardTitle></CardHeader>
-        <CardContent className="flex flex-wrap items-end gap-3">
-          <div className="space-y-1 flex-1 min-w-[220px]">
-            <Label>Company name</Label>
-            <Input value={name} maxLength={60} onChange={(e) => setName(e.target.value)} />
-            <p className="text-xs text-muted-foreground">{name.trim().length}/60 characters</p>
+        <CardContent className="space-y-1">
+          <Label htmlFor="company-name">Company name</Label>
+          <div className="flex flex-wrap items-center gap-3">
+            <Input
+              id="company-name"
+              className="flex-1 min-w-[220px]"
+              value={name}
+              maxLength={60}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <Button onClick={() => rename.mutate()} disabled={!name.trim() || rename.isPending}>Save</Button>
           </div>
-          <Button onClick={() => rename.mutate()} disabled={!name.trim() || rename.isPending}>Save</Button>
+          <p className="text-xs text-muted-foreground">{name.trim().length}/60 characters</p>
         </CardContent>
       </Card>
 
