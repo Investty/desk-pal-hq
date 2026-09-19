@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -34,13 +34,18 @@ export default function Company() {
       if (!companyId) throw new Error("No active company selected");
       const { data, error } = await supabase.from("companies").select("*").eq("id", companyId).maybeSingle();
       if (error) throw error;
-      if (data) {
-        setName((prev) => prev || data.name);
-        setWeeklyOffs((prev) => prev ?? (data.weekly_offs ?? [0, 6]));
-      }
       return data;
     },
   });
+
+  useEffect(() => {
+    const currentName = companyRow?.name ?? company?.name;
+    if (currentName) setName((prev) => (prev ? prev : currentName));
+  }, [companyRow?.name, company?.name]);
+
+  useEffect(() => {
+    if (companyRow) setWeeklyOffs((prev) => prev ?? (companyRow.weekly_offs ?? [0, 6]));
+  }, [companyRow]);
 
   const { data: invites } = useQuery({
     queryKey: ["company-invites"],
@@ -87,8 +92,26 @@ export default function Company() {
       if (!email) throw new Error("Email is required");
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || email.length > 255)
         throw new Error("Please enter a valid email address");
+      const normalized = email.toLowerCase();
+
+      const { data: existingMember } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("company_id", company?.id ?? "")
+        .ilike("email", normalized)
+        .maybeSingle();
+      if (existingMember) throw new Error("This user already exists in your company");
+
+      const { data: openInvite } = await supabase
+        .from("company_invites")
+        .select("code")
+        .ilike("email", normalized)
+        .is("used_at", null)
+        .maybeSingle();
+      if (openInvite) throw new Error(`An unused invite already exists for this email (code ${openInvite.code})`);
+
       const { error } = await supabase.from("company_invites").insert({
-        email,
+        email: normalized,
         role: inviteRole,
         created_by: user?.id ?? null,
       });
@@ -120,13 +143,19 @@ export default function Company() {
 
       <Card>
         <CardHeader><CardTitle className="text-base">Company details</CardTitle></CardHeader>
-        <CardContent className="flex flex-wrap items-end gap-3">
-          <div className="space-y-1 flex-1 min-w-[220px]">
-            <Label>Company name</Label>
-            <Input value={name} maxLength={60} onChange={(e) => setName(e.target.value)} />
-            <p className="text-xs text-muted-foreground">{name.trim().length}/60 characters</p>
+        <CardContent className="space-y-1">
+          <Label htmlFor="company-name">Company name</Label>
+          <div className="flex flex-wrap items-center gap-3">
+            <Input
+              id="company-name"
+              className="flex-1 min-w-[220px]"
+              value={name}
+              maxLength={60}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <Button onClick={() => rename.mutate()} disabled={!name.trim() || rename.isPending}>Save</Button>
           </div>
-          <Button onClick={() => rename.mutate()} disabled={!name.trim() || rename.isPending}>Save</Button>
+          <p className="text-xs text-muted-foreground">{name.trim().length}/60 characters</p>
         </CardContent>
       </Card>
 
