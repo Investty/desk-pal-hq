@@ -105,6 +105,38 @@ export default function Departments() {
         </Dialog>
       </div>
 
+      {missingSuggestions.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" /> Suggested departments
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">Quick-start with common departments — click to add, or add all at once.</p>
+          </CardHeader>
+          <CardContent className="flex flex-wrap items-center gap-2">
+            {missingSuggestions.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => addSuggested.mutate(s)}
+                disabled={addSuggested.isPending || addAllSuggested.isPending}
+                className="inline-flex items-center gap-1 rounded-full border border-border bg-secondary/50 px-3 py-1.5 text-sm hover:bg-secondary transition-colors disabled:opacity-50"
+              >
+                <Plus className="h-3.5 w-3.5" /> {s}
+              </button>
+            ))}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => addAllSuggested.mutate(missingSuggestions)}
+              disabled={addSuggested.isPending || addAllSuggested.isPending}
+            >
+              Add all ({missingSuggestions.length})
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardContent className="pt-6">
           <Table>
