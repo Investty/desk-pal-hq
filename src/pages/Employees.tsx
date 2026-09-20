@@ -30,6 +30,7 @@ interface EmployeeRow {
   removed_at: string | null;
   removal_reason: string | null;
   last_working_day: string | null;
+  department_id: string | null;
   departments?: { name: string } | null;
 }
 
@@ -84,6 +85,23 @@ export default function Employees() {
       toast.success("Employee removed from the company");
       setRemoving(null); setReason("");
       queryClient.invalidateQueries({ queryKey: ["employees"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const updateDepartment = useMutation({
+    mutationFn: async (p: { profileId: string; departmentId: string | null }) => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ department_id: p.departmentId })
+        .eq("id", p.profileId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Department updated");
+      setEditingDept(null);
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      queryClient.invalidateQueries({ queryKey: ["department-member-counts"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
