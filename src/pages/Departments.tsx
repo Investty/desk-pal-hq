@@ -172,7 +172,9 @@ export default function Departments() {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Description</TableHead>
+                <TableHead>Members</TableHead>
                 <TableHead>Created</TableHead>
+                {isHR && <TableHead className="text-right">Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -180,11 +182,23 @@ export default function Departments() {
                 <TableRow key={d.id}>
                   <TableCell className="font-medium">{d.name}</TableCell>
                   <TableCell className="text-muted-foreground">{d.description || "—"}</TableCell>
+                  <TableCell>{deptCounts?.[d.id] ?? 0}</TableCell>
                   <TableCell>{format(new Date(d.created_at), "MMM d, yyyy")}</TableCell>
+                  {isHR && (
+                    <TableCell className="text-right">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setDeleting({ id: d.id, name: d.name })}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" /> Delete
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
               {departments?.length === 0 && (
-                <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground py-8">No departments yet</TableCell></TableRow>
+                <TableRow><TableCell colSpan={isHR ? 5 : 4} className="text-center text-muted-foreground py-8">No departments yet</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
