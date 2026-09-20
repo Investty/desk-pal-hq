@@ -74,6 +74,32 @@ export default function Departments() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const { data: deptCounts } = useQuery({
+    queryKey: ["department-member-counts"],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("department_id").neq("status", "removed");
+      const counts: Record<string, number> = {};
+      (data || []).forEach((p) => {
+        if (p.department_id) counts[p.department_id] = (counts[p.department_id] || 0) + 1;
+      });
+      return counts;
+    },
+  });
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("departments").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Department deleted");
+      setDeleting(null);
+      queryClient.invalidateQueries({ queryKey: ["departments"] });
+      queryClient.invalidateQueries({ queryKey: ["department-member-counts"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const existingNames = new Set((departments || []).map((d) => d.name.trim().toLowerCase()));
   const missingSuggestions = suggestedDepartments.filter((s) => !existingNames.has(s.toLowerCase()));
 
