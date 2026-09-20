@@ -91,8 +91,12 @@ export default function AttendanceRequests() {
     queryKey: ["shift-for", date],
     queryFn: async () => {
       const { data } = await supabase.rpc("shift_for", { _user: user!.id, _date: date });
-      const row = Array.isArray(data) ? data[0] : data;
-      return row as { name: string; start_time: string; end_time: string } | null;
+      const row = (Array.isArray(data) ? data[0] : data) as
+        | { name: string | null; start_time: string | null; end_time: string | null }
+        | null;
+      // The RPC returns an all-null row when the company has no shift configured.
+      if (!row || !row.name || !row.start_time || !row.end_time) return null;
+      return row as { name: string; start_time: string; end_time: string };
     },
   });
 
