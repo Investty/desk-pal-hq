@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ListPager } from "@/components/ui/list-pager";
-import { Search, Users, UserMinus, UserPlus, Download, CalendarDays } from "lucide-react";
+import { Search, Users, UserMinus, UserPlus, Download, CalendarDays, Building2 } from "lucide-react";
 import EmployeeLeaveDialog from "@/components/employees/EmployeeLeaveDialog";
 import { downloadCsv } from "@/lib/csv";
 import { toast } from "@/components/ui/sonner";
@@ -42,6 +42,8 @@ export default function Employees() {
   const [page, setPage] = useState(0);
   const [removing, setRemoving] = useState<EmployeeRow | null>(null);
   const [leaveFor, setLeaveFor] = useState<{ user_id: string; full_name: string } | null>(null);
+  const [editingDept, setEditingDept] = useState<EmployeeRow | null>(null);
+  const [deptChoice, setDeptChoice] = useState("none");
   const [reason, setReason] = useState("");
   const [lastDay, setLastDay] = useState(format(new Date(), "yyyy-MM-dd"));
   const { isHR, company } = useAuth();
