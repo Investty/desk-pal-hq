@@ -17,9 +17,11 @@ const suggestedDepartments = ["Engineering", "Sales", "Marketing", "Human Resour
 
 export default function Departments() {
   const queryClient = useQueryClient();
+  const { isHR } = useAuth();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [deleting, setDeleting] = useState<{ id: string; name: string } | null>(null);
 
   const { data: departments } = useQuery({
     queryKey: ["departments"],
