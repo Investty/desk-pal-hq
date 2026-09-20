@@ -1,24 +1,27 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/components/ui/sonner";
 import { format } from "date-fns";
-import { Building2, Plus, Sparkles } from "lucide-react";
+import { Building2, Plus, Sparkles, Trash2 } from "lucide-react";
 
 const suggestedDepartments = ["Engineering", "Sales", "Marketing", "Human Resources", "Finance", "Operations", "Support"];
 
 export default function Departments() {
   const queryClient = useQueryClient();
+  const { isHR } = useAuth();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [deleting, setDeleting] = useState<{ id: string; name: string } | null>(null);
 
   const { data: departments } = useQuery({
     queryKey: ["departments"],
@@ -67,6 +70,32 @@ export default function Departments() {
     onSuccess: () => {
       toast.success("Suggested departments added!");
       queryClient.invalidateQueries({ queryKey: ["departments"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const { data: deptCounts } = useQuery({
+    queryKey: ["department-member-counts"],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("department_id").neq("status", "removed");
+      const counts: Record<string, number> = {};
+      (data || []).forEach((p) => {
+        if (p.department_id) counts[p.department_id] = (counts[p.department_id] || 0) + 1;
+      });
+      return counts;
+    },
+  });
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("departments").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Department deleted");
+      setDeleting(null);
+      queryClient.invalidateQueries({ queryKey: ["departments"] });
+      queryClient.invalidateQueries({ queryKey: ["department-member-counts"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -143,7 +172,9 @@ export default function Departments() {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Description</TableHead>
+                <TableHead>Members</TableHead>
                 <TableHead>Created</TableHead>
+                {isHR && <TableHead className="text-right">Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -151,16 +182,57 @@ export default function Departments() {
                 <TableRow key={d.id}>
                   <TableCell className="font-medium">{d.name}</TableCell>
                   <TableCell className="text-muted-foreground">{d.description || "—"}</TableCell>
+                  <TableCell>{deptCounts?.[d.id] ?? 0}</TableCell>
                   <TableCell>{format(new Date(d.created_at), "MMM d, yyyy")}</TableCell>
+                  {isHR && (
+                    <TableCell className="text-right">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setDeleting({ id: d.id, name: d.name })}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" /> Delete
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
               {departments?.length === 0 && (
-                <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground py-8">No departments yet</TableCell></TableRow>
+                <TableRow><TableCell colSpan={isHR ? 5 : 4} className="text-center text-muted-foreground py-8">No departments yet</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete {deleting?.name}?</DialogTitle>
+            <DialogDescription>
+              This permanently removes the department. Past records that mention it are kept.
+            </DialogDescription>
+          </DialogHeader>
+          {deleting && (deptCounts?.[deleting.id] ?? 0) > 0 ? (
+            <p className="text-sm text-destructive">
+              {deptCounts![deleting.id]} {deptCounts![deleting.id] === 1 ? "person is" : "people are"} still assigned to this department.
+              Reassign them from the Employees page before deleting it.
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground">No employees are assigned to this department.</p>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleting(null)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              disabled={remove.isPending || !deleting || (deptCounts?.[deleting.id] ?? 0) > 0}
+              onClick={() => deleting && remove.mutate(deleting.id)}
+            >
+              Delete department
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

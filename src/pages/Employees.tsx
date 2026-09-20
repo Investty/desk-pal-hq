@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ListPager } from "@/components/ui/list-pager";
-import { Search, Users, UserMinus, UserPlus, Download, CalendarDays } from "lucide-react";
+import { Search, Users, UserMinus, UserPlus, Download, CalendarDays, Building2 } from "lucide-react";
 import EmployeeLeaveDialog from "@/components/employees/EmployeeLeaveDialog";
 import { downloadCsv } from "@/lib/csv";
 import { toast } from "@/components/ui/sonner";
@@ -30,6 +30,7 @@ interface EmployeeRow {
   removed_at: string | null;
   removal_reason: string | null;
   last_working_day: string | null;
+  department_id: string | null;
   departments?: { name: string } | null;
 }
 
@@ -42,6 +43,8 @@ export default function Employees() {
   const [page, setPage] = useState(0);
   const [removing, setRemoving] = useState<EmployeeRow | null>(null);
   const [leaveFor, setLeaveFor] = useState<{ user_id: string; full_name: string } | null>(null);
+  const [editingDept, setEditingDept] = useState<EmployeeRow | null>(null);
+  const [deptChoice, setDeptChoice] = useState("none");
   const [reason, setReason] = useState("");
   const [lastDay, setLastDay] = useState(format(new Date(), "yyyy-MM-dd"));
   const { isHR, company } = useAuth();
@@ -82,6 +85,23 @@ export default function Employees() {
       toast.success("Employee removed from the company");
       setRemoving(null); setReason("");
       queryClient.invalidateQueries({ queryKey: ["employees"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const updateDepartment = useMutation({
+    mutationFn: async (p: { profileId: string; departmentId: string | null }) => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ department_id: p.departmentId })
+        .eq("id", p.profileId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Department updated");
+      setEditingDept(null);
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      queryClient.invalidateQueries({ queryKey: ["department-member-counts"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -189,6 +209,13 @@ export default function Employees() {
                         </div>
                         {isHR && (
                           <div className="flex flex-wrap gap-2 mt-3">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => { setEditingDept(emp); setDeptChoice(emp.department_id ?? "none"); }}
+                            >
+                              <Building2 className="h-4 w-4 mr-1" /> Department
+                            </Button>
                             <Button size="sm" variant="outline" onClick={() => setLeaveFor({ user_id: emp.user_id, full_name: emp.full_name })}>
                               <CalendarDays className="h-4 w-4 mr-1" /> Leave
                             </Button>
@@ -250,6 +277,42 @@ export default function Employees() {
       </Tabs>
 
       <EmployeeLeaveDialog employee={leaveFor} onOpenChange={(o) => !o && setLeaveFor(null)} />
+
+      <Dialog open={!!editingDept} onOpenChange={(o) => !o && setEditingDept(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Department for {editingDept?.full_name}</DialogTitle>
+            <DialogDescription>Assign or change which department this person belongs to.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label>Department</Label>
+            <Select value={deptChoice} onValueChange={setDeptChoice}>
+              <SelectTrigger><SelectValue placeholder="Select department" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No department</SelectItem>
+                {(departments || []).map((d) => (
+                  <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingDept(null)}>Cancel</Button>
+            <Button
+              disabled={updateDepartment.isPending}
+              onClick={() =>
+                editingDept &&
+                updateDepartment.mutate({
+                  profileId: editingDept.id,
+                  departmentId: deptChoice === "none" ? null : deptChoice,
+                })
+              }
+            >
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!removing} onOpenChange={(o) => !o && setRemoving(null)}>
         <DialogContent>
