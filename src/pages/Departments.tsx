@@ -204,6 +204,35 @@ export default function Departments() {
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete {deleting?.name}?</DialogTitle>
+            <DialogDescription>
+              This permanently removes the department. Past records that mention it are kept.
+            </DialogDescription>
+          </DialogHeader>
+          {deleting && (deptCounts?.[deleting.id] ?? 0) > 0 ? (
+            <p className="text-sm text-destructive">
+              {deptCounts![deleting.id]} {deptCounts![deleting.id] === 1 ? "person is" : "people are"} still assigned to this department.
+              Reassign them from the Employees page before deleting it.
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground">No employees are assigned to this department.</p>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleting(null)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              disabled={remove.isPending || !deleting || (deptCounts?.[deleting.id] ?? 0) > 0}
+              onClick={() => deleting && remove.mutate(deleting.id)}
+            >
+              Delete department
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
