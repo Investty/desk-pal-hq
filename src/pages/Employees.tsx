@@ -209,6 +209,13 @@ export default function Employees() {
                         </div>
                         {isHR && (
                           <div className="flex flex-wrap gap-2 mt-3">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => { setEditingDept(emp); setDeptChoice(emp.department_id ?? "none"); }}
+                            >
+                              <Building2 className="h-4 w-4 mr-1" /> Department
+                            </Button>
                             <Button size="sm" variant="outline" onClick={() => setLeaveFor({ user_id: emp.user_id, full_name: emp.full_name })}>
                               <CalendarDays className="h-4 w-4 mr-1" /> Leave
                             </Button>
@@ -270,6 +277,42 @@ export default function Employees() {
       </Tabs>
 
       <EmployeeLeaveDialog employee={leaveFor} onOpenChange={(o) => !o && setLeaveFor(null)} />
+
+      <Dialog open={!!editingDept} onOpenChange={(o) => !o && setEditingDept(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Department for {editingDept?.full_name}</DialogTitle>
+            <DialogDescription>Assign or change which department this person belongs to.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label>Department</Label>
+            <Select value={deptChoice} onValueChange={setDeptChoice}>
+              <SelectTrigger><SelectValue placeholder="Select department" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No department</SelectItem>
+                {(departments || []).map((d) => (
+                  <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingDept(null)}>Cancel</Button>
+            <Button
+              disabled={updateDepartment.isPending}
+              onClick={() =>
+                editingDept &&
+                updateDepartment.mutate({
+                  profileId: editingDept.id,
+                  departmentId: deptChoice === "none" ? null : deptChoice,
+                })
+              }
+            >
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!removing} onOpenChange={(o) => !o && setRemoving(null)}>
         <DialogContent>
