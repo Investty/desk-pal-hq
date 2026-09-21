@@ -46,6 +46,8 @@ export default function Employees() {
   const [leaveFor, setLeaveFor] = useState<{ user_id: string; full_name: string } | null>(null);
   const [editingDept, setEditingDept] = useState<EmployeeRow | null>(null);
   const [deptChoice, setDeptChoice] = useState("none");
+  const [editingMgr, setEditingMgr] = useState<EmployeeRow | null>(null);
+  const [mgrChoice, setMgrChoice] = useState("none");
   const [reason, setReason] = useState("");
   const [lastDay, setLastDay] = useState(format(new Date(), "yyyy-MM-dd"));
   const { isHR, company } = useAuth();
@@ -58,6 +60,33 @@ export default function Employees() {
       return data || [];
     },
   });
+
+  const { data: people } = useQuery({
+    queryKey: ["people-for-manager"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name, employee_id, manager_id")
+        .neq("status", "removed")
+        .order("full_name");
+      return (data || []) as { id: string; full_name: string; employee_id: string; manager_id: string | null }[];
+    },
+  });
+
+  const peopleById = new Map((people || []).map((p) => [p.id, p]));
+  const nameOf = (id: string | null) => (id ? peopleById.get(id)?.full_name ?? null : null);
+
+  // A person cannot report to someone who already reports (directly or not) to them.
+  const reportsTo = (candidateId: string, targetId: string) => {
+    let cur = peopleById.get(candidateId);
+    const seen = new Set<string>();
+    while (cur?.manager_id && !seen.has(cur.manager_id)) {
+      if (cur.manager_id === targetId) return true;
+      seen.add(cur.manager_id);
+      cur = peopleById.get(cur.manager_id);
+    }
+    return false;
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ["employees", tab, search, department, page],
