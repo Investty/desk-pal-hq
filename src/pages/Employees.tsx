@@ -136,6 +136,24 @@ export default function Employees() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const updateManager = useMutation({
+    mutationFn: async (p: { profileId: string; managerId: string | null }) => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ manager_id: p.managerId })
+        .eq("id", p.profileId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Reporting manager updated");
+      setEditingMgr(null);
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      queryClient.invalidateQueries({ queryKey: ["people-for-manager"] });
+      queryClient.invalidateQueries({ queryKey: ["org-chart"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const restoreEmployee = useMutation({
     mutationFn: async (userId: string) => {
       const { error } = await supabase.rpc("restore_employee", { _user_id: userId, _role: "employee" });
