@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ListPager } from "@/components/ui/list-pager";
-import { Search, Users, UserMinus, UserPlus, Download, CalendarDays, Building2 } from "lucide-react";
+import { Search, Users, UserMinus, UserPlus, Download, CalendarDays, Building2, Network } from "lucide-react";
 import EmployeeLeaveDialog from "@/components/employees/EmployeeLeaveDialog";
 import { downloadCsv } from "@/lib/csv";
 import { toast } from "@/components/ui/sonner";
@@ -31,6 +31,7 @@ interface EmployeeRow {
   removal_reason: string | null;
   last_working_day: string | null;
   department_id: string | null;
+  manager_id: string | null;
   departments?: { name: string } | null;
 }
 
@@ -45,6 +46,8 @@ export default function Employees() {
   const [leaveFor, setLeaveFor] = useState<{ user_id: string; full_name: string } | null>(null);
   const [editingDept, setEditingDept] = useState<EmployeeRow | null>(null);
   const [deptChoice, setDeptChoice] = useState("none");
+  const [editingMgr, setEditingMgr] = useState<EmployeeRow | null>(null);
+  const [mgrChoice, setMgrChoice] = useState("none");
   const [reason, setReason] = useState("");
   const [lastDay, setLastDay] = useState(format(new Date(), "yyyy-MM-dd"));
   const { isHR, company } = useAuth();
@@ -57,6 +60,33 @@ export default function Employees() {
       return data || [];
     },
   });
+
+  const { data: people } = useQuery({
+    queryKey: ["people-for-manager"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name, employee_id, manager_id")
+        .neq("status", "removed")
+        .order("full_name");
+      return (data || []) as { id: string; full_name: string; employee_id: string; manager_id: string | null }[];
+    },
+  });
+
+  const peopleById = new Map((people || []).map((p) => [p.id, p]));
+  const nameOf = (id: string | null) => (id ? peopleById.get(id)?.full_name ?? null : null);
+
+  // A person cannot report to someone who already reports (directly or not) to them.
+  const reportsTo = (candidateId: string, targetId: string) => {
+    let cur = peopleById.get(candidateId);
+    const seen = new Set<string>();
+    while (cur?.manager_id && !seen.has(cur.manager_id)) {
+      if (cur.manager_id === targetId) return true;
+      seen.add(cur.manager_id);
+      cur = peopleById.get(cur.manager_id);
+    }
+    return false;
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ["employees", tab, search, department, page],
@@ -102,6 +132,24 @@ export default function Employees() {
       setEditingDept(null);
       queryClient.invalidateQueries({ queryKey: ["employees"] });
       queryClient.invalidateQueries({ queryKey: ["department-member-counts"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const updateManager = useMutation({
+    mutationFn: async (p: { profileId: string; managerId: string | null }) => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ manager_id: p.managerId })
+        .eq("id", p.profileId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Reporting manager updated");
+      setEditingMgr(null);
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      queryClient.invalidateQueries({ queryKey: ["people-for-manager"] });
+      queryClient.invalidateQueries({ queryKey: ["org-chart"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -207,6 +255,9 @@ export default function Employees() {
                           <Badge className="text-xs">{emp.employee_id}</Badge>
                           {emp.departments?.name && <Badge variant="department" className="text-xs">{emp.departments.name}</Badge>}
                         </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Reports to: {nameOf(emp.manager_id) ?? "Not assigned"}
+                        </p>
                         {isHR && (
                           <div className="flex flex-wrap gap-2 mt-3">
                             <Button
@@ -215,6 +266,13 @@ export default function Employees() {
                               onClick={() => { setEditingDept(emp); setDeptChoice(emp.department_id ?? "none"); }}
                             >
                               <Building2 className="h-4 w-4 mr-1" /> Department
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => { setEditingMgr(emp); setMgrChoice(emp.manager_id ?? "none"); }}
+                            >
+                              <Network className="h-4 w-4 mr-1" /> Manager
                             </Button>
                             <Button size="sm" variant="outline" onClick={() => setLeaveFor({ user_id: emp.user_id, full_name: emp.full_name })}>
                               <CalendarDays className="h-4 w-4 mr-1" /> Leave
@@ -305,6 +363,49 @@ export default function Employees() {
                 updateDepartment.mutate({
                   profileId: editingDept.id,
                   departmentId: deptChoice === "none" ? null : deptChoice,
+                })
+              }
+            >
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!editingMgr} onOpenChange={(o) => !o && setEditingMgr(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reporting manager for {editingMgr?.full_name}</DialogTitle>
+            <DialogDescription>
+              Choose who this person reports to. This builds the team hierarchy shown in the org chart and the manager's team view.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label>Reports to</Label>
+            <Select value={mgrChoice} onValueChange={setMgrChoice}>
+              <SelectTrigger><SelectValue placeholder="Select manager" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No manager (top of hierarchy)</SelectItem>
+                {(people || [])
+                  .filter((p) => editingMgr && p.id !== editingMgr.id && !reportsTo(p.id, editingMgr.id))
+                  .map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.full_name} · {p.employee_id}</SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              People who already report to {editingMgr?.full_name} are hidden, to keep the hierarchy valid.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingMgr(null)}>Cancel</Button>
+            <Button
+              disabled={updateManager.isPending}
+              onClick={() =>
+                editingMgr &&
+                updateManager.mutate({
+                  profileId: editingMgr.id,
+                  managerId: mgrChoice === "none" ? null : mgrChoice,
                 })
               }
             >
