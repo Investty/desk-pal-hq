@@ -188,8 +188,12 @@ export default function Approvals() {
   });
   const cancelled = cancelledPage?.rows;
 
+  const reports = new Set(directReportIds || []);
+  const hasReports = reports.size > 0;
   const reviewable = (requests || []).filter((r) => r.user_id !== user?.id);
-  const managerQueue = reviewable.filter((r) => r.manager_status === "pending");
+  const managerQueue = reviewable.filter(
+    (r) => r.manager_status === "pending" && (isAdmin || reports.has(r.user_id)),
+  );
   const hrQueue = reviewable.filter((r) => r.manager_status === "approved" && r.hr_status === "pending");
 
   const renderTable = (rows: typeof managerQueue, stage: Stage, emptyText: string) => (
