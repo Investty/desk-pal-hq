@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ListPager } from "@/components/ui/list-pager";
-import { Search, Users, UserMinus, UserPlus, Download, CalendarDays, Building2 } from "lucide-react";
+import { Search, Users, UserMinus, UserPlus, Download, CalendarDays, Building2, Network } from "lucide-react";
 import EmployeeLeaveDialog from "@/components/employees/EmployeeLeaveDialog";
 import { downloadCsv } from "@/lib/csv";
 import { toast } from "@/components/ui/sonner";
@@ -31,6 +31,7 @@ interface EmployeeRow {
   removal_reason: string | null;
   last_working_day: string | null;
   department_id: string | null;
+  manager_id: string | null;
   departments?: { name: string } | null;
 }
 
