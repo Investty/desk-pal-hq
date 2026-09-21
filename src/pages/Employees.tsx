@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -11,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ListPager } from "@/components/ui/list-pager";
 import { Search, Users, UserMinus, UserPlus, Download, CalendarDays, Building2, Network } from "lucide-react";
@@ -35,7 +36,7 @@ interface EmployeeRow {
   departments?: { name: string } | null;
 }
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 10;
 
 export default function Employees() {
   const [tab, setTab] = useState<"active" | "former">("active");
@@ -235,100 +236,151 @@ export default function Employees() {
         </TabsList>
 
         <TabsContent value="active" className="mt-4">
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[1, 2, 3].map((i) => (<Card key={i} className="animate-pulse"><CardContent className="h-32" /></Card>))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {rows.map((emp) => (
-                <Card key={emp.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start gap-4">
-                      <Avatar className="h-12 w-12">
-                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">{initialsOf(emp.full_name)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold truncate">{emp.full_name}</h3>
-                        <p className="text-sm text-muted-foreground truncate">{emp.email}</p>
-                        <div className="flex items-center gap-2 mt-2 flex-wrap">
-                          <Badge className="text-xs">{emp.employee_id}</Badge>
-                          {emp.departments?.name && <Badge variant="department" className="text-xs">{emp.departments.name}</Badge>}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          Reports to: {nameOf(emp.manager_id) ?? "Not assigned"}
-                        </p>
-                        {isHR && (
-                          <div className="flex flex-wrap gap-2 mt-3">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => { setEditingDept(emp); setDeptChoice(emp.department_id ?? "none"); }}
-                            >
-                              <Building2 className="h-4 w-4 mr-1" /> Department
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => { setEditingMgr(emp); setMgrChoice(emp.manager_id ?? "none"); }}
-                            >
-                              <Network className="h-4 w-4 mr-1" /> Manager
-                            </Button>
-                            <Button size="sm" variant="outline" onClick={() => setLeaveFor({ user_id: emp.user_id, full_name: emp.full_name })}>
-                              <CalendarDays className="h-4 w-4 mr-1" /> Leave
-                            </Button>
-                            <Button size="sm" variant="outline" onClick={() => { setRemoving(emp); setReason(""); }}>
-                              <UserMinus className="h-4 w-4 mr-1" /> Remove
-                            </Button>
+          <div className="rounded-lg border bg-card overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50 hover:bg-muted/50">
+                  <TableHead>Employee</TableHead>
+                  <TableHead className="hidden md:table-cell">Employee ID</TableHead>
+                  <TableHead className="hidden lg:table-cell">Department</TableHead>
+                  <TableHead className="hidden lg:table-cell">Reports to</TableHead>
+                  <TableHead className="text-right pr-6">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  [1, 2, 3].map((i) => (
+                    <TableRow key={i}>
+                      <TableCell colSpan={5}><Skeleton className="h-10 w-full" /></TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <>
+                    {rows.map((emp) => (
+                      <TableRow key={emp.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-9 w-9">
+                              <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">{initialsOf(emp.full_name)}</AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                              <p className="font-medium truncate">{emp.full_name}</p>
+                              <p className="text-sm text-muted-foreground truncate">{emp.email}</p>
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              {rows.length === 0 && (
-                <div className="col-span-full text-center py-12 text-muted-foreground">
-                  <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p>No employees found</p>
-                </div>
-              )}
-            </div>
-          )}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <Badge className="text-xs">{emp.employee_id}</Badge>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">
+                          {emp.departments?.name
+                            ? <Badge variant="department" className="text-xs">{emp.departments.name}</Badge>
+                            : <span className="text-sm text-muted-foreground">—</span>}
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm">
+                          {nameOf(emp.manager_id) ?? <span className="text-muted-foreground">Not assigned</span>}
+                        </TableCell>
+                        <TableCell className="text-right pr-6">
+                          {isHR ? (
+                            <div className="flex flex-wrap justify-end gap-1.5">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => { setEditingDept(emp); setDeptChoice(emp.department_id ?? "none"); }}
+                              >
+                                <Building2 className="h-4 w-4 mr-1" /> Department
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => { setEditingMgr(emp); setMgrChoice(emp.manager_id ?? "none"); }}
+                              >
+                                <Network className="h-4 w-4 mr-1" /> Manager
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => setLeaveFor({ user_id: emp.user_id, full_name: emp.full_name })}>
+                                <CalendarDays className="h-4 w-4 mr-1" /> Leave
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => { setRemoving(emp); setReason(""); }}>
+                                <UserMinus className="h-4 w-4 mr-1" /> Remove
+                              </Button>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {rows.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                          <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                          <p>No employees found</p>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </>
+                )}
+              </TableBody>
+            </Table>
+          </div>
           <ListPager page={page} pageSize={PAGE_SIZE} total={total} onPage={setPage} />
         </TabsContent>
 
         <TabsContent value="former" className="mt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {rows.map((emp) => (
-              <Card key={emp.id}>
-                <CardContent className="pt-6">
-                  <div className="flex items-start gap-4">
-                    <Avatar className="h-12 w-12">
-                      <AvatarFallback className="bg-muted text-muted-foreground font-semibold">{initialsOf(emp.full_name)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold truncate">{emp.full_name}</h3>
-                      <p className="text-sm text-muted-foreground truncate">{emp.email}</p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Left on {emp.last_working_day ? format(new Date(emp.last_working_day), "dd MMM yyyy") : "—"}
-                      </p>
-                      {emp.removal_reason && <p className="text-xs text-muted-foreground">Reason: {emp.removal_reason}</p>}
-                      {isHR && (
-                        <Button size="sm" variant="outline" className="mt-3" onClick={() => restoreEmployee.mutate(emp.user_id)}>
+          <div className="rounded-lg border bg-card overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50 hover:bg-muted/50">
+                  <TableHead>Employee</TableHead>
+                  <TableHead className="hidden md:table-cell">Employee ID</TableHead>
+                  <TableHead className="hidden lg:table-cell">Left on</TableHead>
+                  <TableHead className="hidden lg:table-cell">Reason</TableHead>
+                  <TableHead className="text-right pr-6">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rows.map((emp) => (
+                  <TableRow key={emp.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-9 w-9">
+                          <AvatarFallback className="bg-muted text-muted-foreground font-semibold text-xs">{initialsOf(emp.full_name)}</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">{emp.full_name}</p>
+                          <p className="text-sm text-muted-foreground truncate">{emp.email}</p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <Badge className="text-xs">{emp.employee_id}</Badge>
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell text-sm">
+                      {emp.last_working_day ? format(new Date(emp.last_working_day), "dd MMM yyyy") : "—"}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell text-sm text-muted-foreground max-w-[240px] truncate">
+                      {emp.removal_reason || "—"}
+                    </TableCell>
+                    <TableCell className="text-right pr-6">
+                      {isHR ? (
+                        <Button size="sm" variant="outline" onClick={() => restoreEmployee.mutate(emp.user_id)}>
                           <UserPlus className="h-4 w-4 mr-1" /> Add back
                         </Button>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">—</span>
                       )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            {rows.length === 0 && (
-              <div className="col-span-full text-center py-12 text-muted-foreground">
-                <p>No former employees</p>
-              </div>
-            )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {rows.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                      <p>No former employees</p>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           </div>
           <ListPager page={page} pageSize={PAGE_SIZE} total={total} onPage={setPage} />
         </TabsContent>
