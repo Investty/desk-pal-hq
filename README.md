@@ -11,8 +11,9 @@ The mandatory interface source of truth is [`docs/brand-tokens.html`](docs/brand
 ## What it does
 
 ### Core HR
-- **Employees** — directory with search, department/status filters, paging and CSV export; invite people via email + invite code; former-employee (removed/restored) lifecycle.
-- **Departments, Holidays, Announcements** — company-level lists managed by HR/Admin.
+- **Employees** — clean row-based list (10 per page) with search by name/email/employee code, department/status filters, paging and CSV export; invite people via email + invite code; former-employee (removed/restored) lifecycle.
+- **Manager assignment** — HR/Admin set or change each person's reporting manager from the employee list; loop-creating choices are excluded so the hierarchy stays valid. This powers the Org Chart and each manager's team view.
+- **Departments, Holidays, Announcements** — company-level lists managed by HR/Admin. Departments can be deleted once everyone assigned has been moved out (member count shown), and suggested defaults (Engineering, Sales, HR, …) can be added in one click.
 - **My Profile** — self-service personal and employment details, avatar upload.
 
 ### Attendance
@@ -44,7 +45,8 @@ The mandatory interface source of truth is [`docs/brand-tokens.html`](docs/brand
 ### Dashboard & communication
 - Role-aware dashboard: quick check-in/out, pending approvals, balances, who's on leave today, announcements.
 - **Celebrations** — only today's birthdays and work anniversaries are shown; anyone can send a wish with a message, the person is notified and can reply with a thank-you.
-- **Notifications** for leave/attendance request events, approvals, rejections, flags and wishes. Platform-wide broadcasts from the owner console appear as banners.
+- **Notifications** — a new leave request alerts the person's reporting manager and HR/Admin; every approval, rejection or cancellation notifies the employee, their manager and HR as relevant. Attendance-request events, flags and wishes also notify. Platform-wide broadcasts from the owner console appear as banners.
+- **Profile-completion reminders** — a scheduled job (1st & 16th of each month) nudges employees whose personal details (phone, DOB, address, emergency contact) are missing, with no repeat within 14 days.
 - **Documents** — employee document storage with per-company access control and storage limits.
 
 ### Performance & Onboarding
@@ -87,7 +89,7 @@ A user can belong to multiple companies; roles are **per company**, and all data
 
 - **Manager** — everything an Employee can do, plus:
   - My Team page: team members' attendance and leave.
-  - First-stage approval of team leave; cancel approved team leave (balance reallocated).
+  - First-stage approval of team leave; cancel approved team leave (balance reallocated). Approvals are strictly scoped — a manager only sees requests from their direct reports, never the whole company.
   - Approve/reject team attendance requests.
   - Grant comp-off days to team members.
   - **Cannot:** approve their own requests (self-approval blocked in the database), approve people outside their team, manage employees/payroll/policies, or access User Roles.
