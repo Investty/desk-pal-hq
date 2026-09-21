@@ -55,6 +55,25 @@ export default function Approvals() {
     },
   });
 
+  // Only the people who directly report to the signed-in user
+  const { data: directReportIds } = useQuery({
+    queryKey: ["my-direct-report-ids", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const { data: me } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      if (!me?.id) return [] as string[];
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("manager_id", me.id);
+      return (data || []).map((p) => p.user_id);
+    },
+  });
+
   const { data: requests } = useQuery({
     queryKey: ["pending-approvals"],
     queryFn: async () => {
@@ -169,8 +188,12 @@ export default function Approvals() {
   });
   const cancelled = cancelledPage?.rows;
 
+  const reports = new Set(directReportIds || []);
+  const hasReports = reports.size > 0;
   const reviewable = (requests || []).filter((r) => r.user_id !== user?.id);
-  const managerQueue = reviewable.filter((r) => r.manager_status === "pending");
+  const managerQueue = reviewable.filter(
+    (r) => r.manager_status === "pending" && (isAdmin || reports.has(r.user_id)),
+  );
   const hrQueue = reviewable.filter((r) => r.manager_status === "approved" && r.hr_status === "pending");
 
   const renderTable = (rows: typeof managerQueue, stage: Stage, emptyText: string) => (
@@ -233,10 +256,12 @@ export default function Approvals() {
         <p className="text-muted-foreground">Leave requests move through the reporting manager, then HR</p>
       </div>
 
-      <Card>
-        <CardHeader><CardTitle>Stage 1 — Reporting Manager</CardTitle></CardHeader>
-        <CardContent>{renderTable(managerQueue, "manager", "No requests awaiting manager review")}</CardContent>
-      </Card>
+      {(isAdmin || hasReports) && (
+        <Card>
+          <CardHeader><CardTitle>Stage 1 — Reporting Manager</CardTitle></CardHeader>
+          <CardContent>{renderTable(managerQueue, "manager", "No requests awaiting manager review")}</CardContent>
+        </Card>
+      )}
 
       <AttendanceApprovals />
 
