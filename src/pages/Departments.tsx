@@ -23,7 +23,7 @@ export default function Departments() {
   const [description, setDescription] = useState("");
   const [deleting, setDeleting] = useState<{ id: string; name: string } | null>(null);
 
-  const { data: departments } = useQuery({
+  const { data: departments, isLoading } = useQuery({
     queryKey: ["departments"],
     queryFn: async () => {
       const { data } = await supabase.from("departments").select("*").order("name");
@@ -133,7 +133,7 @@ export default function Departments() {
         </Dialog>
       </div>
 
-      {missingSuggestions.length > 0 && (
+      {!isLoading && missingSuggestions.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
@@ -197,8 +197,11 @@ export default function Departments() {
                   )}
                 </TableRow>
               ))}
-              {departments?.length === 0 && (
+              {!isLoading && departments?.length === 0 && (
                 <TableRow><TableCell colSpan={isHR ? 5 : 4} className="text-center text-muted-foreground py-8">No departments yet</TableCell></TableRow>
+              )}
+              {isLoading && (
+                <TableRow><TableCell colSpan={isHR ? 5 : 4} className="text-center text-muted-foreground py-8">Loading departments…</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
