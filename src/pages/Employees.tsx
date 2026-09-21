@@ -255,6 +255,9 @@ export default function Employees() {
                           <Badge className="text-xs">{emp.employee_id}</Badge>
                           {emp.departments?.name && <Badge variant="department" className="text-xs">{emp.departments.name}</Badge>}
                         </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Reports to: {nameOf(emp.manager_id) ?? "Not assigned"}
+                        </p>
                         {isHR && (
                           <div className="flex flex-wrap gap-2 mt-3">
                             <Button
@@ -263,6 +266,13 @@ export default function Employees() {
                               onClick={() => { setEditingDept(emp); setDeptChoice(emp.department_id ?? "none"); }}
                             >
                               <Building2 className="h-4 w-4 mr-1" /> Department
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => { setEditingMgr(emp); setMgrChoice(emp.manager_id ?? "none"); }}
+                            >
+                              <Network className="h-4 w-4 mr-1" /> Manager
                             </Button>
                             <Button size="sm" variant="outline" onClick={() => setLeaveFor({ user_id: emp.user_id, full_name: emp.full_name })}>
                               <CalendarDays className="h-4 w-4 mr-1" /> Leave
