@@ -55,6 +55,25 @@ export default function Approvals() {
     },
   });
 
+  // Only the people who directly report to the signed-in user
+  const { data: directReportIds } = useQuery({
+    queryKey: ["my-direct-report-ids", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const { data: me } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      if (!me?.id) return [] as string[];
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("manager_id", me.id);
+      return (data || []).map((p) => p.user_id);
+    },
+  });
+
   const { data: requests } = useQuery({
     queryKey: ["pending-approvals"],
     queryFn: async () => {
