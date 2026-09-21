@@ -256,10 +256,12 @@ export default function Approvals() {
         <p className="text-muted-foreground">Leave requests move through the reporting manager, then HR</p>
       </div>
 
-      <Card>
-        <CardHeader><CardTitle>Stage 1 — Reporting Manager</CardTitle></CardHeader>
-        <CardContent>{renderTable(managerQueue, "manager", "No requests awaiting manager review")}</CardContent>
-      </Card>
+      {(isAdmin || hasReports) && (
+        <Card>
+          <CardHeader><CardTitle>Stage 1 — Reporting Manager</CardTitle></CardHeader>
+          <CardContent>{renderTable(managerQueue, "manager", "No requests awaiting manager review")}</CardContent>
+        </Card>
+      )}
 
       <AttendanceApprovals />
 
