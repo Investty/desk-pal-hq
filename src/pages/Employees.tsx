@@ -372,6 +372,49 @@ export default function Employees() {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={!!editingMgr} onOpenChange={(o) => !o && setEditingMgr(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reporting manager for {editingMgr?.full_name}</DialogTitle>
+            <DialogDescription>
+              Choose who this person reports to. This builds the team hierarchy shown in the org chart and the manager's team view.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label>Reports to</Label>
+            <Select value={mgrChoice} onValueChange={setMgrChoice}>
+              <SelectTrigger><SelectValue placeholder="Select manager" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No manager (top of hierarchy)</SelectItem>
+                {(people || [])
+                  .filter((p) => editingMgr && p.id !== editingMgr.id && !reportsTo(p.id, editingMgr.id))
+                  .map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.full_name} · {p.employee_id}</SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              People who already report to {editingMgr?.full_name} are hidden, to keep the hierarchy valid.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingMgr(null)}>Cancel</Button>
+            <Button
+              disabled={updateManager.isPending}
+              onClick={() =>
+                editingMgr &&
+                updateManager.mutate({
+                  profileId: editingMgr.id,
+                  managerId: mgrChoice === "none" ? null : mgrChoice,
+                })
+              }
+            >
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={!!removing} onOpenChange={(o) => !o && setRemoving(null)}>
         <DialogContent>
           <DialogHeader>
