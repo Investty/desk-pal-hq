@@ -33,7 +33,8 @@ export default function AttendanceRequests() {
   const [flagId, setFlagId] = useState<string | null>(null);
 
   const { data: rules } = useQuery({
-    queryKey: ["attendance-rules"],
+    queryKey: ["attendance-rules", user?.id],
+    enabled: !!user?.id,
     queryFn: async () => {
       const { data } = await supabase.from("attendance_rules").select("*").maybeSingle();
       return data;
@@ -41,12 +42,14 @@ export default function AttendanceRequests() {
   });
 
   const { data: flags } = useQuery({
-    queryKey: ["my-attendance-flags"],
+    queryKey: ["my-attendance-flags", user?.id],
+    enabled: !!user?.id,
     queryFn: async () => {
+      if (!user?.id) return [];
       const { data } = await supabase
         .from("attendance_flags")
         .select("*")
-        .eq("user_id", user!.id)
+        .eq("user_id", user.id)
         .eq("status", "open")
         .order("start_date", { ascending: false });
       return data || [];
@@ -54,12 +57,14 @@ export default function AttendanceRequests() {
   });
 
   const { data: requests } = useQuery({
-    queryKey: ["my-attendance-requests"],
+    queryKey: ["my-attendance-requests", user?.id],
+    enabled: !!user?.id,
     queryFn: async () => {
+      if (!user?.id) return [];
       const { data } = await supabase
         .from("attendance_requests")
         .select("*")
-        .eq("user_id", user!.id)
+        .eq("user_id", user.id)
         .order("date", { ascending: false })
         .limit(30);
       return data || [];
@@ -68,15 +73,16 @@ export default function AttendanceRequests() {
 
   const monthStart = date ? `${date.slice(0, 7)}-01` : null;
   const { data: usage } = useQuery({
-    enabled: !!monthStart,
-    queryKey: ["attendance-request-usage", monthStart],
+    enabled: !!monthStart && !!user?.id,
+    queryKey: ["attendance-request-usage", user?.id, monthStart],
     queryFn: async () => {
-      const end = new Date(new Date(monthStart!).getFullYear(), new Date(monthStart!).getMonth() + 1, 0);
+      if (!monthStart || !user?.id) return { regularization: 0, early_leave: 0 };
+      const end = new Date(new Date(monthStart).getFullYear(), new Date(monthStart).getMonth() + 1, 0);
       const { data } = await supabase
         .from("attendance_requests")
         .select("request_type, status")
-        .eq("user_id", user!.id)
-        .gte("date", monthStart!)
+        .eq("user_id", user.id)
+        .gte("date", monthStart)
         .lte("date", format(end, "yyyy-MM-dd"));
       const rows = (data || []).filter((r) => r.status === "pending" || r.status === "approved");
       return {
@@ -87,10 +93,11 @@ export default function AttendanceRequests() {
   });
 
   const { data: shift } = useQuery({
-    enabled: !!date,
-    queryKey: ["shift-for", date],
+    enabled: !!date && !!user?.id,
+    queryKey: ["shift-for", user?.id, date],
     queryFn: async () => {
-      const { data } = await supabase.rpc("shift_for", { _user: user!.id, _date: date });
+      if (!user?.id) return null;
+      const { data } = await supabase.rpc("shift_for", { _user: user.id, _date: date });
       const row = (Array.isArray(data) ? data[0] : data) as
         | { name: string | null; start_time: string | null; end_time: string | null }
         | null;

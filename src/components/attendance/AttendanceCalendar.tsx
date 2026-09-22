@@ -12,7 +12,7 @@ const iso = (y: number, m: number, d: number) =>
   `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
 export default function AttendanceCalendar() {
-  const { company } = useAuth();
+  const { company, user } = useAuth();
   const today = new Date();
   const [cursor, setCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
 
@@ -25,11 +25,14 @@ export default function AttendanceCalendar() {
   const weeklyOffs: number[] = (company as unknown as { weekly_offs?: number[] })?.weekly_offs ?? [0, 6];
 
   const { data: records } = useQuery({
-    queryKey: ["attendance-calendar", monthStart],
+    queryKey: ["attendance-calendar", user?.id, monthStart],
+    enabled: !!user?.id,
     queryFn: async () => {
+      if (!user?.id) return [];
       const { data, error } = await supabase
         .from("attendance")
         .select("date, check_in, check_out, working_hours, status")
+        .eq("user_id", user.id)
         .gte("date", monthStart)
         .lte("date", monthEnd);
       if (error) throw error;

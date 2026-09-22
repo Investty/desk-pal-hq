@@ -21,9 +21,11 @@ export default function Attendance() {
   const today = format(new Date(), "yyyy-MM-dd");
 
   const { data: myShift } = useQuery({
-    queryKey: ["shift-for-today", today],
+    queryKey: ["shift-for-today", user?.id, today],
+    enabled: !!user?.id,
     queryFn: async () => {
-      const { data } = await supabase.rpc("shift_for", { _user: user!.id, _date: today });
+      if (!user?.id) return null;
+      const { data } = await supabase.rpc("shift_for", { _user: user.id, _date: today });
       const row = (Array.isArray(data) ? data[0] : data) as
         | { name: string | null; start_time: string | null; end_time: string | null; grace_minutes: number | null }
         | null;
@@ -34,9 +36,16 @@ export default function Attendance() {
   });
 
   const { data: todayRecord } = useQuery({
-    queryKey: ["attendance-today", today],
+    queryKey: ["attendance-today", user?.id, today],
+    enabled: !!user?.id,
     queryFn: async () => {
-      const { data } = await supabase.from("attendance").select("*").eq("date", today).maybeSingle();
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from("attendance")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("date", today)
+        .maybeSingle();
       return data;
     },
   });
@@ -47,9 +56,15 @@ export default function Attendance() {
   const [to, setTo] = useState("");
 
   const { data: history } = useQuery({
-    queryKey: ["attendance-history", page, from, to],
+    queryKey: ["attendance-history", user?.id, page, from, to],
+    enabled: !!user?.id,
     queryFn: async () => {
-      let q = supabase.from("attendance").select("*", { count: "exact" }).order("date", { ascending: false });
+      if (!user?.id) return { rows: [], count: 0 };
+      let q = supabase
+        .from("attendance")
+        .select("*", { count: "exact" })
+        .eq("user_id", user.id)
+        .order("date", { ascending: false });
       if (from) q = q.gte("date", from);
       if (to) q = q.lte("date", to);
       const { data, count } = await q.range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
