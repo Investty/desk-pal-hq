@@ -65,7 +65,7 @@ export default function Dashboard() {
   });
 
   const { data: stats } = useQuery({
-    queryKey: ["dashboard-stats", isAdmin, isManager, directReportIds],
+    queryKey: ["dashboard-stats", user?.id, isAdmin, isManager, directReportIds],
     enabled: (isAdmin || isManager) && (isAdmin || directReportIds !== undefined),
     queryFn: async () => {
       if (isAdmin) {
@@ -129,9 +129,16 @@ export default function Dashboard() {
 
 
   const { data: myTodayAttendance } = useQuery({
-    queryKey: ["my-today-attendance", today],
+    queryKey: ["my-today-attendance", user?.id, today],
+    enabled: !!user?.id,
     queryFn: async () => {
-      const { data } = await supabase.from("attendance").select("*").eq("date", today).maybeSingle();
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from("attendance")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("date", today)
+        .maybeSingle();
       return data;
     },
   });
@@ -159,10 +166,10 @@ export default function Dashboard() {
         <p className="text-muted-foreground">{format(new Date(), "EEEE, MMMM d, yyyy")}</p>
       </div>
 
-      {(isAdmin || isManager) && stats && (
+      {isAdmin && stats && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {isAdmin && <StatCard title="Total Employees" value={stats.totalEmployees} icon={Users} variant="info" />}
-          {isAdmin && <StatCard title="Today's Attendance" value={stats.todayAttendance} icon={Clock} variant="success" />}
+          <StatCard title="Total Employees" value={stats.totalEmployees} icon={Users} variant="info" />
+          <StatCard title="Today's Attendance" value={stats.todayAttendance} icon={Clock} variant="success" />
           <Link to="/approvals" className="block">
             <StatCard
               title="Pending Approvals"
@@ -176,6 +183,17 @@ export default function Dashboard() {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {isManager && stats && (
+          <Link to="/approvals" className="block">
+            <StatCard
+              title="Pending Approvals"
+              value={stats.pendingLeaves + stats.pendingAttendance}
+              icon={AlertCircle}
+              variant="warning"
+              description={`${stats.pendingLeaves} leave · ${stats.pendingAttendance} attendance`}
+            />
+          </Link>
+        )}
         <StatCard
           title="Today's Status"
           value={myTodayAttendance?.check_in ? (myTodayAttendance.check_out ? "Completed" : "Checked In") : "Not Checked In"}
