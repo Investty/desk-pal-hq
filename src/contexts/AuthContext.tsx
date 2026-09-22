@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
@@ -88,6 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
   const [supportSession, setSupportSession] = useState<SupportSession | null>(null);
   const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   const loadCompanyContext = async (companyId: string, userId: string) => {
     const [profileRes, companyRes, featureRes] = await Promise.all([
@@ -153,6 +155,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (session?.user) {
         // Token refreshes / tab focus events must not re-trigger a full reload.
         if (loadedForUser === session.user.id) return;
+        // A different account is signing in — drop every cached query so the
+        // previous person's data can never flash on this person's screens.
+        queryClient.clear();
         loadedForUser = session.user.id;
         const uid = session.user.id;
         setLoading(true);
@@ -160,6 +165,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         loadedForUser = null;
         inFlight = null;
+        queryClient.clear();
         setProfile(null);
         setRole(null);
         setCompany(null);
@@ -188,7 +194,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     return () => subscription.unsubscribe();
-  }, [fetchUserData]);
+  }, [fetchUserData, queryClient]);
 
   const refresh = async () => {
     if (user) await fetchUserData(user.id);
@@ -197,6 +203,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const switchCompany = async (companyId: string) => {
     const { error } = await supabase.rpc("set_active_company", { _company_id: companyId });
     if (error) throw error;
+    queryClient.clear();
     if (user) await fetchUserData(user.id);
   };
 
