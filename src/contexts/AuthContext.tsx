@@ -203,6 +203,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const switchCompany = async (companyId: string) => {
     const { error } = await supabase.rpc("set_active_company", { _company_id: companyId });
     if (error) throw error;
+    queryClient.clear();
     if (user) await fetchUserData(user.id);
   };
 
