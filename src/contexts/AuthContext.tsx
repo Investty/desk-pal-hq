@@ -194,7 +194,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     return () => subscription.unsubscribe();
-  }, [fetchUserData]);
+  }, [fetchUserData, queryClient]);
 
   const refresh = async () => {
     if (user) await fetchUserData(user.id);
