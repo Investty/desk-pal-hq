@@ -89,6 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
   const [supportSession, setSupportSession] = useState<SupportSession | null>(null);
   const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   const loadCompanyContext = async (companyId: string, userId: string) => {
     const [profileRes, companyRes, featureRes] = await Promise.all([
