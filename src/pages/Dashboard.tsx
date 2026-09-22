@@ -45,24 +45,68 @@ export default function Dashboard() {
   const { isAdmin, isManager, profile, user } = useAuth();
   const today = format(new Date(), "yyyy-MM-dd");
 
-  const { data: stats } = useQuery({
-    queryKey: ["dashboard-stats", isAdmin],
+  // Only the people who directly report to the signed-in user (same rule as the Approvals page)
+  const { data: directReportIds } = useQuery({
+    queryKey: ["my-direct-report-ids", user?.id],
+    enabled: !!user?.id && isManager,
     queryFn: async () => {
-      if (isAdmin || isManager) {
-        const [employees, todayAttendance, pendingLeaves] = await Promise.all([
+      const { data: me } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      if (!me?.id) return [] as string[];
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("manager_id", me.id);
+      return (data || []).map((p) => p.user_id);
+    },
+  });
+
+  const { data: stats } = useQuery({
+    queryKey: ["dashboard-stats", isAdmin, isManager, directReportIds],
+    enabled: (isAdmin || isManager) && (isAdmin || directReportIds !== undefined),
+    queryFn: async () => {
+      if (isAdmin) {
+        const [employees, todayAttendance, pendingLeaves, pendingAttendance] = await Promise.all([
           supabase.from("profiles").select("id", { count: "exact", head: true }).eq("is_active", true),
           supabase.from("attendance").select("id", { count: "exact", head: true }).eq("date", today),
           supabase.from("leave_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
+          supabase.from("attendance_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
         ]);
         return {
           totalEmployees: employees.count || 0,
           todayAttendance: todayAttendance.count || 0,
           pendingLeaves: pendingLeaves.count || 0,
+          pendingAttendance: pendingAttendance.count || 0,
         };
       }
-      return null;
+      // Manager: only requests from their own direct reports
+      const reports = directReportIds || [];
+      if (reports.length === 0) {
+        return { totalEmployees: 0, todayAttendance: 0, pendingLeaves: 0, pendingAttendance: 0 };
+      }
+      const [pendingLeaves, pendingAttendance] = await Promise.all([
+        supabase
+          .from("leave_requests")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "pending")
+          .eq("manager_status", "pending")
+          .in("user_id", reports),
+        supabase
+          .from("attendance_requests")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "pending")
+          .in("user_id", reports),
+      ]);
+      return {
+        totalEmployees: 0,
+        todayAttendance: 0,
+        pendingLeaves: pendingLeaves.count || 0,
+        pendingAttendance: pendingAttendance.count || 0,
+      };
     },
-    enabled: isAdmin || isManager,
   });
 
   const { data: myLeaveBalances } = useQuery({
