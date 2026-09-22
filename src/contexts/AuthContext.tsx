@@ -155,6 +155,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (session?.user) {
         // Token refreshes / tab focus events must not re-trigger a full reload.
         if (loadedForUser === session.user.id) return;
+        // A different account is signing in — drop every cached query so the
+        // previous person's data can never flash on this person's screens.
+        queryClient.clear();
         loadedForUser = session.user.id;
         const uid = session.user.id;
         setLoading(true);
@@ -162,6 +165,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         loadedForUser = null;
         inFlight = null;
+        queryClient.clear();
         setProfile(null);
         setRole(null);
         setCompany(null);
