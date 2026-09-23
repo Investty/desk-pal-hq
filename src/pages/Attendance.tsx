@@ -50,6 +50,29 @@ export default function Attendance() {
     },
   });
 
+  const { data: todayLeave } = useQuery({
+    queryKey: ["attendance-today-leave", user?.id, today],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from("leave_requests")
+        .select("day_portion, leave_type, leave_policies(label)")
+        .eq("user_id", user.id)
+        .eq("status", "approved")
+        .lte("start_date", today)
+        .gte("end_date", today)
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  const onFullDayLeave = !!todayLeave && todayLeave.day_portion === "full_day";
+  const leaveLabel =
+    (todayLeave as { leave_policies?: { label: string } | null } | null)?.leave_policies?.label ||
+    todayLeave?.leave_type?.replace(/_/g, " ") ||
+    "Leave";
+
   const PAGE_SIZE = 25;
   const [page, setPage] = useState(0);
   const [from, setFrom] = useState("");
