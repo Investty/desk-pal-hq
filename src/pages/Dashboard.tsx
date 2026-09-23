@@ -175,17 +175,16 @@ export default function Dashboard() {
 
       {isAdmin && stats && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <StatCard title="Total Employees" value={stats.totalEmployees} icon={Users} variant="info" />
-          <StatCard title="Today's Attendance" value={stats.todayAttendance} icon={Clock} variant="success" />
-          <Link to="/approvals" className="block">
-            <StatCard
-              title="Pending Approvals"
-              value={stats.pendingLeaves + stats.pendingAttendance}
-              icon={AlertCircle}
-              variant="warning"
-              description={`${stats.pendingLeaves} leave · ${stats.pendingAttendance} attendance`}
-            />
-          </Link>
+          <StatCard title="Total Employees" value={stats.totalEmployees} icon={Users} variant="info" to="/employees" />
+          <StatCard title="Today's Attendance" value={stats.todayAttendance} icon={Clock} variant="success" to="/attendance-reports" />
+          <StatCard
+            title="Pending Approvals"
+            value={stats.pendingLeaves + stats.pendingAttendance}
+            icon={AlertCircle}
+            variant="warning"
+            description={`${stats.pendingLeaves} leave · ${stats.pendingAttendance} attendance`}
+            to="/approvals"
+          />
         </div>
       )}
 
