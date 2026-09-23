@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +24,8 @@ const MIN_REASON = 10;
 
 export default function AttendanceRequests() {
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<RequestType>("regularization");
@@ -31,6 +34,16 @@ export default function AttendanceRequests() {
   const [checkOut, setCheckOut] = useState("");
   const [reason, setReason] = useState("");
   const [flagId, setFlagId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const state = location.state as { openRequest?: boolean; type?: RequestType } | null;
+    if (state?.openRequest) {
+      if (state.type) setType(state.type);
+      setFlagId(null);
+      setOpen(true);
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state, location.pathname, navigate]);
 
   const { data: rules } = useQuery({
     queryKey: ["attendance-rules", user?.id],

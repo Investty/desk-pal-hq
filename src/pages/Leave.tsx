@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +36,8 @@ const requestDays = (start: string, end: string, portion: DayPortion) =>
 
 export default function Leave() {
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [policyId, setPolicyId] = useState("");
@@ -43,6 +46,13 @@ export default function Leave() {
   const [reason, setReason] = useState("");
   const [isPublic, setIsPublic] = useState(true);
   const [dayPortion, setDayPortion] = useState<DayPortion>("full_day");
+
+  useEffect(() => {
+    if ((location.state as { open?: boolean } | null)?.open) {
+      setOpen(true);
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state, location.pathname, navigate]);
 
   const { data: policies } = useQuery({
     queryKey: ["my-leave-types", user?.id],
