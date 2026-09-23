@@ -265,6 +265,9 @@ The service-role key is **not available** on Lovable Cloud by design — all pri
 - Self-approval/self-edit guards on attendance, leave, performance reviews and profiles (enforced in the database, not just the UI).
 - Tamper-proof audit logs; platform-owner actions logged server-side.
 - Attendance-request and leave rules (caps, backdate windows, disabled types) validated by database triggers.
+- Feature modules (documents, onboarding, org chart, reports) are access-checked in the database itself, not just hidden in the UI; the pricing plan catalogue is readable only by the platform owner.
+- Exported audit files and printed payslips neutralize injected formulas and scripts, so a crafted name or note cannot carry code into a downloaded spreadsheet or a printout.
+
 - Password breach (HIBP) check enabled; sessions managed by the auth service; password reset links never sign the user in.
 - Paid pay periods are locked in the database — payslips cannot be created, edited or imported for a locked month.
 - Imports run through security-definer functions restricted to HR/Admin of the active company, and every run is audit-logged.
