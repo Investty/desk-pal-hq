@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Plane } from "lucide-react";
 import { format } from "date-fns";
+import { Link } from "react-router-dom";
 
 export default function OnLeaveToday() {
   const { data: people } = useQuery({
@@ -20,34 +21,36 @@ export default function OnLeaveToday() {
     name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base flex items-center gap-2">
-          <Plane className="h-4 w-4" /> On Leave Today
-          {people && people.length > 0 && (
-            <Badge variant="info" className="ml-1">{people.length}</Badge>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {people?.map((p, i) => (
-          <div key={`${p.full_name}-${i}`} className="flex items-center gap-3">
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="text-xs">{initials(p.full_name)}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium truncate">{p.full_name}</p>
-              <p className="text-xs text-muted-foreground">
-                {format(new Date(p.start_date), "MMM d")} – {format(new Date(p.end_date), "MMM d")}
-              </p>
+    <Link to="/leave" className="block rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+      <Card className="h-full cursor-pointer transition-shadow hover:shadow-md">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Plane className="h-4 w-4" /> On Leave Today
+            {people && people.length > 0 && (
+              <Badge variant="info" className="ml-1">{people.length}</Badge>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {people?.map((p, i) => (
+            <div key={`${p.full_name}-${i}`} className="flex items-center gap-3">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="text-xs">{initials(p.full_name)}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium truncate">{p.full_name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {format(new Date(p.start_date), "MMM d")} – {format(new Date(p.end_date), "MMM d")}
+                </p>
+              </div>
+              <Badge variant="info" className="shrink-0">{p.leave_type}</Badge>
             </div>
-            <Badge variant="info" className="shrink-0">{p.leave_type}</Badge>
-          </div>
-        ))}
-        {people?.length === 0 && (
-          <p className="text-sm text-muted-foreground">Everyone is in today 🎉</p>
-        )}
-      </CardContent>
-    </Card>
+          ))}
+          {people?.length === 0 && (
+            <p className="text-sm text-muted-foreground">Everyone is in today 🎉</p>
+          )}
+        </CardContent>
+      </Card>
+    </Link>
   );
 }

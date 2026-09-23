@@ -11,9 +11,10 @@ import YesterdayAttendance from "@/components/dashboard/YesterdayAttendance";
 import { Link } from "react-router-dom";
 import { leaveLabel } from "@/lib/leave";
 
-function StatCard({ title, value, icon: Icon, description, variant = "default" }: {
+function StatCard({ title, value, icon: Icon, description, variant = "default", to }: {
   title: string; value: string | number; icon: React.ElementType; description?: string;
   variant?: "default" | "success" | "warning" | "info";
+  to?: string;
 }) {
   const colors = {
     default: "text-primary",
@@ -27,8 +28,8 @@ function StatCard({ title, value, icon: Icon, description, variant = "default" }
     warning: "border-l-[3px] border-l-warning",
     info: "border-l-[3px] border-l-info",
   };
-  return (
-    <Card className={accents[variant]}>
+  const card = (
+    <Card className={`h-full ${accents[variant]} ${to ? "cursor-pointer transition-shadow hover:shadow-md" : ""}`}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         <Icon className={`h-5 w-5 ${colors[variant]}`} />
@@ -38,6 +39,12 @@ function StatCard({ title, value, icon: Icon, description, variant = "default" }
         {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
       </CardContent>
     </Card>
+  );
+  if (!to) return card;
+  return (
+    <Link to={to} className="block h-full rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+      {card}
+    </Link>
   );
 }
 
@@ -168,31 +175,29 @@ export default function Dashboard() {
 
       {isAdmin && stats && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <StatCard title="Total Employees" value={stats.totalEmployees} icon={Users} variant="info" />
-          <StatCard title="Today's Attendance" value={stats.todayAttendance} icon={Clock} variant="success" />
-          <Link to="/approvals" className="block">
-            <StatCard
-              title="Pending Approvals"
-              value={stats.pendingLeaves + stats.pendingAttendance}
-              icon={AlertCircle}
-              variant="warning"
-              description={`${stats.pendingLeaves} leave · ${stats.pendingAttendance} attendance`}
-            />
-          </Link>
+          <StatCard title="Total Employees" value={stats.totalEmployees} icon={Users} variant="info" to="/employees" />
+          <StatCard title="Today's Attendance" value={stats.todayAttendance} icon={Clock} variant="success" to="/attendance-reports" />
+          <StatCard
+            title="Pending Approvals"
+            value={stats.pendingLeaves + stats.pendingAttendance}
+            icon={AlertCircle}
+            variant="warning"
+            description={`${stats.pendingLeaves} leave · ${stats.pendingAttendance} attendance`}
+            to="/approvals"
+          />
         </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {isManager && stats && (
-          <Link to="/approvals" className="block">
-            <StatCard
-              title="Pending Approvals"
-              value={stats.pendingLeaves + stats.pendingAttendance}
-              icon={AlertCircle}
-              variant="warning"
-              description={`${stats.pendingLeaves} leave · ${stats.pendingAttendance} attendance`}
-            />
-          </Link>
+          <StatCard
+            title="Pending Approvals"
+            value={stats.pendingLeaves + stats.pendingAttendance}
+            icon={AlertCircle}
+            variant="warning"
+            description={`${stats.pendingLeaves} leave · ${stats.pendingAttendance} attendance`}
+            to="/approvals"
+          />
         )}
         <StatCard
           title="Today's Status"
@@ -200,6 +205,7 @@ export default function Dashboard() {
           icon={Clock}
           description={myTodayAttendance?.check_in ? `Since ${format(new Date(myTodayAttendance.check_in), "hh:mm a")}` : "Mark your attendance"}
           variant={myTodayAttendance?.check_in ? "success" : "default"}
+          to="/attendance"
         />
         {myLeaveBalances?.map((bal) => (
           <StatCard
@@ -208,6 +214,7 @@ export default function Dashboard() {
             value={`${bal.remaining_days}/${bal.total_days}`}
             icon={CalendarDays}
             description="Days remaining"
+            to="/leave"
           />
         ))}
       </div>
@@ -218,37 +225,41 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base flex items-center gap-2"><CalendarOff className="h-4 w-4" /> Upcoming Holidays</CardTitle>
-            <Link to="/holidays" className="text-xs text-primary hover:underline">View all</Link>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {upcomingHolidays?.map((h) => (
-              <div key={h.id} className="flex items-center justify-between text-sm">
-                <span>{h.name}</span>
-                <span className="text-muted-foreground">{format(new Date(h.date), "EEE, MMM d")}</span>
-              </div>
-            ))}
-            {upcomingHolidays?.length === 0 && <p className="text-sm text-muted-foreground">No upcoming holidays</p>}
-          </CardContent>
-        </Card>
+        <Link to="/holidays" className="block rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+          <Card className="h-full cursor-pointer transition-shadow hover:shadow-md">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-base flex items-center gap-2"><CalendarOff className="h-4 w-4" /> Upcoming Holidays</CardTitle>
+              <span className="text-xs text-primary">View all</span>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {upcomingHolidays?.map((h) => (
+                <div key={h.id} className="flex items-center justify-between text-sm">
+                  <span>{h.name}</span>
+                  <span className="text-muted-foreground">{format(new Date(h.date), "EEE, MMM d")}</span>
+                </div>
+              ))}
+              {upcomingHolidays?.length === 0 && <p className="text-sm text-muted-foreground">No upcoming holidays</p>}
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base flex items-center gap-2"><Megaphone className="h-4 w-4" /> Announcements</CardTitle>
-            <Link to="/announcements" className="text-xs text-primary hover:underline">View all</Link>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {latestAnnouncements?.map((a) => (
-              <div key={a.id} className="text-sm">
-                <p className="font-medium">{a.title}</p>
-                <p className="text-muted-foreground line-clamp-1">{a.body}</p>
-              </div>
-            ))}
-            {latestAnnouncements?.length === 0 && <p className="text-sm text-muted-foreground">No announcements yet</p>}
-          </CardContent>
-        </Card>
+        <Link to="/announcements" className="block rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+          <Card className="h-full cursor-pointer transition-shadow hover:shadow-md">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-base flex items-center gap-2"><Megaphone className="h-4 w-4" /> Announcements</CardTitle>
+              <span className="text-xs text-primary">View all</span>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {latestAnnouncements?.map((a) => (
+                <div key={a.id} className="text-sm">
+                  <p className="font-medium">{a.title}</p>
+                  <p className="text-muted-foreground line-clamp-1">{a.body}</p>
+                </div>
+              ))}
+              {latestAnnouncements?.length === 0 && <p className="text-sm text-muted-foreground">No announcements yet</p>}
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {isAdmin && <AdminInsights />}
