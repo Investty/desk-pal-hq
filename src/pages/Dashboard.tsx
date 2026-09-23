@@ -190,15 +190,14 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {isManager && stats && (
-          <Link to="/approvals" className="block">
-            <StatCard
-              title="Pending Approvals"
-              value={stats.pendingLeaves + stats.pendingAttendance}
-              icon={AlertCircle}
-              variant="warning"
-              description={`${stats.pendingLeaves} leave · ${stats.pendingAttendance} attendance`}
-            />
-          </Link>
+          <StatCard
+            title="Pending Approvals"
+            value={stats.pendingLeaves + stats.pendingAttendance}
+            icon={AlertCircle}
+            variant="warning"
+            description={`${stats.pendingLeaves} leave · ${stats.pendingAttendance} attendance`}
+            to="/approvals"
+          />
         )}
         <StatCard
           title="Today's Status"
@@ -206,6 +205,7 @@ export default function Dashboard() {
           icon={Clock}
           description={myTodayAttendance?.check_in ? `Since ${format(new Date(myTodayAttendance.check_in), "hh:mm a")}` : "Mark your attendance"}
           variant={myTodayAttendance?.check_in ? "success" : "default"}
+          to="/attendance"
         />
         {myLeaveBalances?.map((bal) => (
           <StatCard
@@ -214,6 +214,7 @@ export default function Dashboard() {
             value={`${bal.remaining_days}/${bal.total_days}`}
             icon={CalendarDays}
             description="Days remaining"
+            to="/leave"
           />
         ))}
       </div>
