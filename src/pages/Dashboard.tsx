@@ -11,9 +11,10 @@ import YesterdayAttendance from "@/components/dashboard/YesterdayAttendance";
 import { Link } from "react-router-dom";
 import { leaveLabel } from "@/lib/leave";
 
-function StatCard({ title, value, icon: Icon, description, variant = "default" }: {
+function StatCard({ title, value, icon: Icon, description, variant = "default", to }: {
   title: string; value: string | number; icon: React.ElementType; description?: string;
   variant?: "default" | "success" | "warning" | "info";
+  to?: string;
 }) {
   const colors = {
     default: "text-primary",
@@ -27,8 +28,8 @@ function StatCard({ title, value, icon: Icon, description, variant = "default" }
     warning: "border-l-[3px] border-l-warning",
     info: "border-l-[3px] border-l-info",
   };
-  return (
-    <Card className={accents[variant]}>
+  const card = (
+    <Card className={`h-full ${accents[variant]} ${to ? "cursor-pointer transition-shadow hover:shadow-md" : ""}`}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         <Icon className={`h-5 w-5 ${colors[variant]}`} />
@@ -38,6 +39,12 @@ function StatCard({ title, value, icon: Icon, description, variant = "default" }
         {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
       </CardContent>
     </Card>
+  );
+  if (!to) return card;
+  return (
+    <Link to={to} className="block h-full rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+      {card}
+    </Link>
   );
 }
 
