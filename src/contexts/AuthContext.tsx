@@ -303,6 +303,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
+    sessionStorage.removeItem(SESSION_START_KEY);
     await supabase.auth.signOut();
     setProfile(null);
     setRole(null);
