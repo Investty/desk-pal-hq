@@ -2031,6 +2031,7 @@ export type Database = {
         Args: { _policy_id: string; _user_id: string }
         Returns: number
       }
+      feature_enabled: { Args: { _key: string }; Returns: boolean }
       get_celebrations: {
         Args: never
         Returns: {
@@ -2147,6 +2148,16 @@ export type Database = {
         }[]
       }
       notify_incomplete_profiles: { Args: never; Returns: number }
+      org_chart: {
+        Args: never
+        Returns: {
+          department: string
+          employee_id: string
+          full_name: string
+          id: string
+          manager_id: string
+        }[]
+      }
       owner_audit: {
         Args: { _action: string; _company_id: string; _details: Json }
         Returns: undefined
