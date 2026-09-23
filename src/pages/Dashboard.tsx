@@ -1,6 +1,9 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Clock, CalendarDays, AlertCircle, CalendarOff, Megaphone } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Users, Clock, CalendarDays, AlertCircle, CalendarOff, Megaphone, CalendarPlus, FilePlus2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
@@ -166,11 +169,33 @@ export default function Dashboard() {
     },
   });
 
+  const navigate = useNavigate();
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Welcome back, {profile?.full_name?.split(" ")[0]}</h1>
-        <p className="text-muted-foreground">{format(new Date(), "EEEE, MMMM d, yyyy")}</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Welcome back, {profile?.full_name?.split(" ")[0]}</h1>
+          <p className="text-muted-foreground">{format(new Date(), "EEEE, MMMM d, yyyy")}</p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline"><FilePlus2 className="h-4 w-4 mr-2" /> Raise a request</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => navigate("/attendance", { state: { openRequest: true, type: "regularization" } })}>
+                <Clock className="h-4 w-4 mr-2" /> Fix attendance (regularize)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/attendance", { state: { openRequest: true, type: "early_leave" } })}>
+                <AlertCircle className="h-4 w-4 mr-2" /> Early leave request
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button onClick={() => navigate("/leave", { state: { open: true } })}>
+            <CalendarPlus className="h-4 w-4 mr-2" /> Apply leave
+          </Button>
+        </div>
       </div>
 
       {isAdmin && stats && (
