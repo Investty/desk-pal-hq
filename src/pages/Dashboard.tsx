@@ -225,37 +225,41 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base flex items-center gap-2"><CalendarOff className="h-4 w-4" /> Upcoming Holidays</CardTitle>
-            <Link to="/holidays" className="text-xs text-primary hover:underline">View all</Link>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {upcomingHolidays?.map((h) => (
-              <div key={h.id} className="flex items-center justify-between text-sm">
-                <span>{h.name}</span>
-                <span className="text-muted-foreground">{format(new Date(h.date), "EEE, MMM d")}</span>
-              </div>
-            ))}
-            {upcomingHolidays?.length === 0 && <p className="text-sm text-muted-foreground">No upcoming holidays</p>}
-          </CardContent>
-        </Card>
+        <Link to="/holidays" className="block rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+          <Card className="h-full cursor-pointer transition-shadow hover:shadow-md">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-base flex items-center gap-2"><CalendarOff className="h-4 w-4" /> Upcoming Holidays</CardTitle>
+              <span className="text-xs text-primary">View all</span>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {upcomingHolidays?.map((h) => (
+                <div key={h.id} className="flex items-center justify-between text-sm">
+                  <span>{h.name}</span>
+                  <span className="text-muted-foreground">{format(new Date(h.date), "EEE, MMM d")}</span>
+                </div>
+              ))}
+              {upcomingHolidays?.length === 0 && <p className="text-sm text-muted-foreground">No upcoming holidays</p>}
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base flex items-center gap-2"><Megaphone className="h-4 w-4" /> Announcements</CardTitle>
-            <Link to="/announcements" className="text-xs text-primary hover:underline">View all</Link>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {latestAnnouncements?.map((a) => (
-              <div key={a.id} className="text-sm">
-                <p className="font-medium">{a.title}</p>
-                <p className="text-muted-foreground line-clamp-1">{a.body}</p>
-              </div>
-            ))}
-            {latestAnnouncements?.length === 0 && <p className="text-sm text-muted-foreground">No announcements yet</p>}
-          </CardContent>
-        </Card>
+        <Link to="/announcements" className="block rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+          <Card className="h-full cursor-pointer transition-shadow hover:shadow-md">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-base flex items-center gap-2"><Megaphone className="h-4 w-4" /> Announcements</CardTitle>
+              <span className="text-xs text-primary">View all</span>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {latestAnnouncements?.map((a) => (
+                <div key={a.id} className="text-sm">
+                  <p className="font-medium">{a.title}</p>
+                  <p className="text-muted-foreground line-clamp-1">{a.body}</p>
+                </div>
+              ))}
+              {latestAnnouncements?.length === 0 && <p className="text-sm text-muted-foreground">No announcements yet</p>}
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {isAdmin && <AdminInsights />}
