@@ -78,6 +78,11 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Session lifetime guards (HR data — short leash).
+const SESSION_START_KEY = "hrms.session_started_at";
+const IDLE_LIMIT_MS = 30 * 60 * 1000; // sign out after 30 minutes of inactivity
+const ABSOLUTE_LIMIT_MS = 12 * 60 * 60 * 1000; // and after 12 hours regardless
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -196,6 +201,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, [fetchUserData, queryClient]);
 
+  // Expire the session after inactivity, and after an absolute maximum age,
+  // so an unattended or stolen browser session cannot stay valid forever.
+  useEffect(() => {
+    if (!user) return;
+
+    if (!sessionStorage.getItem(SESSION_START_KEY)) {
+      sessionStorage.setItem(SESSION_START_KEY, String(Date.now()));
+    }
+
+    let lastActivity = Date.now();
+    const bump = () => { lastActivity = Date.now(); };
+    const events = ["mousedown", "keydown", "touchstart", "scroll", "visibilitychange"];
+    events.forEach((e) => window.addEventListener(e, bump, { passive: true }));
+
+    const expire = async () => {
+      sessionStorage.removeItem(SESSION_START_KEY);
+      await supabase.auth.signOut();
+      window.location.replace("/login");
+    };
+
+    const timer = window.setInterval(() => {
+      const startedAt = Number(sessionStorage.getItem(SESSION_START_KEY) ?? Date.now());
+      if (Date.now() - lastActivity > IDLE_LIMIT_MS || Date.now() - startedAt > ABSOLUTE_LIMIT_MS) {
+        void expire();
+      }
+    }, 60 * 1000);
+
+    return () => {
+      window.clearInterval(timer);
+      events.forEach((e) => window.removeEventListener(e, bump));
+    };
+  }, [user]);
+
+
   const refresh = async () => {
     if (user) await fetchUserData(user.id);
   };
@@ -208,8 +247,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error as Error | null };
+    const addr = email.trim().toLowerCase();
+
+    // Server-side brute-force lockout: 5 failures in 15 minutes locks the
+    // address for 15 minutes. Enforced in the database, not just here.
+    const { data: lockedFor } = await supabase.rpc("login_lockout_seconds", { _email: addr });
+    if (typeof lockedFor === "number" && lockedFor > 0) {
+      const mins = Math.ceil(lockedFor / 60);
+      return {
+        error: new Error(
+          `Too many failed sign-in attempts. Please try again in ${mins} minute${mins === 1 ? "" : "s"}.`,
+        ),
+      };
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({ email: addr, password });
+
+    if (error) {
+      const { data: lockSecs } = await supabase.rpc("record_login_failure", { _email: addr });
+      if (typeof lockSecs === "number" && lockSecs > 0) {
+        return {
+          error: new Error(
+            "Too many failed sign-in attempts. This account is locked for 15 minutes.",
+          ),
+        };
+      }
+      // Never leak whether the address exists.
+      return { error: new Error("Invalid email or password") };
+    }
+
+    await supabase.rpc("clear_login_attempts", { _email: addr });
+    sessionStorage.setItem(SESSION_START_KEY, String(Date.now()));
+    return { error: null };
   };
 
   const signUp = async (
@@ -234,6 +303,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
+    sessionStorage.removeItem(SESSION_START_KEY);
     await supabase.auth.signOut();
     setProfile(null);
     setRole(null);

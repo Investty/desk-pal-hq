@@ -56,7 +56,7 @@ export default function Login() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <PasswordInput id="password" value={password} onChange={(e) => setPassword(e.target.value)} required requiredMessage="Please enter Password" minLength={6} />
+              <PasswordInput id="password" value={password} onChange={(e) => setPassword(e.target.value)} required requiredMessage="Please enter Password"  />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Please wait..." : "Sign In"}

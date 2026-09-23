@@ -1166,6 +1166,30 @@ export type Database = {
           },
         ]
       }
+      login_throttle: {
+        Row: {
+          attempts: number
+          email_key: string
+          first_attempt_at: string
+          last_attempt_at: string
+          locked_until: string | null
+        }
+        Insert: {
+          attempts?: number
+          email_key: string
+          first_attempt_at?: string
+          last_attempt_at?: string
+          locked_until?: string | null
+        }
+        Update: {
+          attempts?: number
+          email_key?: string
+          first_attempt_at?: string
+          last_attempt_at?: string
+          locked_until?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           company_id: string
@@ -1974,6 +1998,7 @@ export type Database = {
           policy_id: string
         }[]
       }
+      clear_login_attempts: { Args: { _email: string }; Returns: undefined }
       clock_in: {
         Args: never
         Returns: {
@@ -2136,6 +2161,8 @@ export type Database = {
         Args: { _company_id: string; _email: string; _user_id: string }
         Returns: undefined
       }
+      login_lockout_seconds: { Args: { _email: string }; Returns: number }
+      login_throttle_key: { Args: { _email: string }; Returns: string }
       my_broadcasts: {
         Args: never
         Returns: {
@@ -2340,6 +2367,7 @@ export type Database = {
           storage_mb: number
         }[]
       }
+      record_login_failure: { Args: { _email: string }; Returns: number }
       redeem_invite: { Args: { _code: string }; Returns: string }
       remove_employee: {
         Args: { _last_working_day?: string; _reason?: string; _user_id: string }

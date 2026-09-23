@@ -27,6 +27,10 @@ export default function ResetPassword() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
     if (password !== confirm) {
       toast.error("Passwords do not match");
       return;
@@ -58,11 +62,11 @@ export default function ResetPassword() {
           <form onSubmit={submit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="pw">New password</Label>
-              <PasswordInput id="pw" minLength={6} required requiredMessage="Please enter New Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <PasswordInput id="pw" minLength={8} required requiredMessage="Please enter New Password" value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="pw2">Confirm password</Label>
-              <PasswordInput id="pw2" minLength={6} required requiredMessage="Please confirm Password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+              <PasswordInput id="pw2" minLength={8} required requiredMessage="Please confirm Password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
             </div>
             <Button type="submit" className="w-full" disabled={loading || !ready}>
               {loading ? "Saving..." : "Update password"}
