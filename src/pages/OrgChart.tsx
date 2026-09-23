@@ -52,16 +52,17 @@ export default function OrgChart() {
   const { data: roots } = useQuery({
     queryKey: ["org-chart"],
     queryFn: async () => {
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, full_name, employee_id, manager_id, departments(name)")
-        .eq("is_active", true);
-      const nodes: Node[] = (profiles || []).map((p) => ({
+      const { data, error } = await supabase.rpc("org_chart");
+      if (error) throw error;
+      const people = (data || []) as {
+        id: string; full_name: string; employee_id: string; manager_id: string | null; department: string | null;
+      }[];
+      const nodes: Node[] = people.map((p) => ({
         id: p.id,
         full_name: p.full_name,
         employee_id: p.employee_id,
         manager_id: p.manager_id,
-        department: (p.departments as { name?: string } | null)?.name || null,
+        department: p.department || null,
         children: [],
       }));
       const byId = new Map(nodes.map((n) => [n.id, n]));

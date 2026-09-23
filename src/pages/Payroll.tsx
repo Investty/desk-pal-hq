@@ -166,6 +166,13 @@ export default function Payroll() {
     const p = viewSlip;
     const win = window.open("", "_blank", "width=800,height=900");
     if (!win) return;
+    const esc = (v: unknown) =>
+      String(v ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
     const row = (l: string, v: string, strong = false) =>
       `<tr><td>${l}</td><td style="text-align:right;${strong ? "font-weight:700" : ""}">${v}</td></tr>`;
     win.document.write(`<!doctype html><html><head><title>Payslip ${MONTHS[p.month - 1]} ${p.year}</title>
@@ -179,14 +186,14 @@ export default function Payroll() {
         td{padding:6px 0;border-bottom:1px solid #E2E8F0}
         .total td{border-top:2px solid #0F172A;border-bottom:none;font-size:15px}
       </style></head><body>
-      <h1>${e?.company || "Payslip"}</h1>
-      <div class="muted">Payslip for ${MONTHS[p.month - 1]} ${p.year}</div>
+      <h1>${esc(e?.company || "Payslip")}</h1>
+      <div class="muted">Payslip for ${esc(MONTHS[p.month - 1])} ${esc(p.year)}</div>
       <div class="grid">
-        <div><b>Employee:</b> ${e?.full_name || "—"}</div>
-        <div><b>Employee ID:</b> ${e?.employee_id || "—"}</div>
-        <div><b>Designation:</b> ${e?.designation || "—"}</div>
-        <div><b>Department:</b> ${e?.departments?.name || "—"}</div>
-        <div><b>Employment type:</b> ${e?.employment_type || "—"}</div>
+        <div><b>Employee:</b> ${esc(e?.full_name || "—")}</div>
+        <div><b>Employee ID:</b> ${esc(e?.employee_id || "—")}</div>
+        <div><b>Designation:</b> ${esc(e?.designation || "—")}</div>
+        <div><b>Department:</b> ${esc(e?.departments?.name || "—")}</div>
+        <div><b>Employment type:</b> ${esc(e?.employment_type || "—")}</div>
         <div><b>Date of joining:</b> ${e?.joining_date ? format(new Date(e.joining_date), "dd MMM yyyy") : "—"}</div>
       </div>
       <h2>Earnings</h2>
