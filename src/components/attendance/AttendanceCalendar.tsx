@@ -146,6 +146,7 @@ export default function AttendanceCalendar() {
           <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-success/40 inline-block" /> Full shift</span>
           <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-warning/40 inline-block" /> Late</span>
           <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-info/40 inline-block" /> Not checked out</span>
+          <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-primary/40 inline-block" /> On leave</span>
           <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-destructive/80 inline-block" /> Absent</span>
           <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-destructive/30 inline-block" /> Holiday</span>
           <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-muted inline-block" /> Weekly off</span>
