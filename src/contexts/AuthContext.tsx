@@ -78,6 +78,11 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Session lifetime guards (HR data — short leash).
+const SESSION_START_KEY = "hrms.session_started_at";
+const IDLE_LIMIT_MS = 30 * 60 * 1000; // sign out after 30 minutes of inactivity
+const ABSOLUTE_LIMIT_MS = 12 * 60 * 60 * 1000; // and after 12 hours regardless
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
