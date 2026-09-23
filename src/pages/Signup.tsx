@@ -49,6 +49,10 @@ export default function Signup() {
       return;
     }
     setEmail(normalizedEmail);
+    if (password.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
     setLoading(true);
     const { error } = await signUp(
       normalizedEmail,
