@@ -246,6 +246,11 @@ export default function Owner() {
 
   const exportAudit = () => {
     const rows = auditLog ?? [];
+    // Neutralise values a spreadsheet would otherwise run as a formula.
+    const safe = (v: unknown) => {
+      const s = String(v ?? "");
+      return /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
+    };
     const csv = [
       ["When", "Who", "Action", "Company", "Details"].join(","),
       ...rows.map((r) => [
@@ -254,7 +259,7 @@ export default function Owner() {
         r.action,
         r.company_name ?? "",
         JSON.stringify(r.details ?? {}).replace(/"/g, "'"),
-      ].map((v) => `"${v}"`).join(",")),
+      ].map((v) => `"${safe(v).replace(/"/g, '""')}"`).join(",")),
     ].join("\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
     const a = document.createElement("a");
