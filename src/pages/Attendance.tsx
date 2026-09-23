@@ -147,7 +147,14 @@ export default function Attendance() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4 flex-wrap">
-            {!todayRecord?.check_in ? (
+            {onFullDayLeave && !todayRecord?.check_in ? (
+              <div className="flex items-center gap-3">
+                <Badge variant="info">On leave</Badge>
+                <p className="text-sm text-muted-foreground">
+                  You are on approved {leaveLabel} today, so attendance cannot be marked.
+                </p>
+              </div>
+            ) : !todayRecord?.check_in ? (
               <Button onClick={() => checkIn.mutate()} disabled={checkIn.isPending}>
                 <LogIn className="h-4 w-4 mr-2" /> Check In
               </Button>
