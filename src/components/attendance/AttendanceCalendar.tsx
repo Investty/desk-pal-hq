@@ -102,6 +102,11 @@ export default function AttendanceCalendar() {
     const rec = byDate.get(key);
     const holiday = holidayByDate.get(key);
     const isFuture = key > todayKey;
+    const leave = leaveByDate.get(key);
+
+    if (leave && !(rec && rec.check_in)) {
+      return { cls: "bg-primary/20 text-primary font-semibold", note: `On leave — ${leave}` };
+    }
 
     if (rec && rec.check_in && rec.check_out) {
       return {
