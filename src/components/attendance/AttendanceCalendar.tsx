@@ -53,6 +53,37 @@ export default function AttendanceCalendar() {
     },
   });
 
+  const { data: leaves } = useQuery({
+    queryKey: ["attendance-calendar-leave", user?.id, monthStart],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from("leave_requests")
+        .select("start_date, end_date, day_portion, leave_type, policy_id, leave_policies(label)")
+        .eq("user_id", user.id)
+        .eq("status", "approved")
+        .lte("start_date", monthEnd)
+        .gte("end_date", monthStart);
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const leaveByDate = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const l of (leaves || []) as Array<{ start_date: string; end_date: string; day_portion: string; leave_type: string | null; leave_policies: { label: string } | null }>) {
+      const label = l.leave_policies?.label || l.leave_type?.replace(/_/g, " ") || "Leave";
+      const portion = l.day_portion && l.day_portion !== "full_day" ? " (half day)" : "";
+      const start = new Date(l.start_date + "T00:00:00");
+      const end = new Date(l.end_date + "T00:00:00");
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        map.set(iso(d.getFullYear(), d.getMonth(), d.getDate()), `${label}${portion}`);
+      }
+    }
+    return map;
+  }, [leaves]);
+
   const byDate = useMemo(() => {
     const map = new Map<string, { status: string; check_in: string | null; check_out: string | null; working_hours: number | null }>();
     for (const r of records || []) map.set(r.date, r);
@@ -71,6 +102,11 @@ export default function AttendanceCalendar() {
     const rec = byDate.get(key);
     const holiday = holidayByDate.get(key);
     const isFuture = key > todayKey;
+    const leave = leaveByDate.get(key);
+
+    if (leave && !(rec && rec.check_in)) {
+      return { cls: "bg-primary/20 text-primary font-semibold", note: `On leave — ${leave}` };
+    }
 
     if (rec && rec.check_in && rec.check_out) {
       return {
@@ -110,6 +146,7 @@ export default function AttendanceCalendar() {
           <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-success/40 inline-block" /> Full shift</span>
           <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-warning/40 inline-block" /> Late</span>
           <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-info/40 inline-block" /> Not checked out</span>
+          <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-primary/40 inline-block" /> On leave</span>
           <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-destructive/80 inline-block" /> Absent</span>
           <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-destructive/30 inline-block" /> Holiday</span>
           <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-muted inline-block" /> Weekly off</span>
