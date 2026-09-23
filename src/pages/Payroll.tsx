@@ -166,6 +166,13 @@ export default function Payroll() {
     const p = viewSlip;
     const win = window.open("", "_blank", "width=800,height=900");
     if (!win) return;
+    const esc = (v: unknown) =>
+      String(v ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
     const row = (l: string, v: string, strong = false) =>
       `<tr><td>${l}</td><td style="text-align:right;${strong ? "font-weight:700" : ""}">${v}</td></tr>`;
     win.document.write(`<!doctype html><html><head><title>Payslip ${MONTHS[p.month - 1]} ${p.year}</title>
