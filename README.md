@@ -19,7 +19,9 @@ The mandatory interface source of truth is [`docs/brand-tokens.html`](docs/brand
 ### Attendance
 - Daily check-in / check-out with late marking based on the employee's **shift** (shift start + grace), not a fixed rule.
 - **Shifts per employee, per month** — HR defines company shifts (e.g. General, Evening, Night crossing midnight) and sets a monthly roster per employee, with bulk-apply and copy-last-month.
-- **Attendance requests** — early leave and missed check-in/out regularization, governed by per-company HR rules (toggle, max hours, monthly caps, backdate window). Reason is compulsory (min 10 chars).
+- **Attendance requests** — early leave and missed check-in/out regularization, governed by per-company HR rules (toggle, max hours, monthly caps, backdate window). Reason is compulsory (min 10 chars). Requests go to the reporting manager and HR/Admin; when approved the attendance record is fixed automatically.
+- **Leave and attendance work together** — approved full-day leave blocks check-in/out (enforced in the database), and approved leave days appear on the attendance calendar with the leave name.
+
 - Night shifts crossing midnight record against the day the shift starts; check-in/out is stamped server-side so it cannot be faked from the browser.
 - **Attendance flags** — HR flags a period for an employee; the employee sees a banner and submits corrections, which HR approves or rejects with a note.
 
@@ -43,7 +45,9 @@ The mandatory interface source of truth is [`docs/brand-tokens.html`](docs/brand
 - Attendance reports with date ranges, search, paging and CSV export.
 
 ### Dashboard & communication
-- Role-aware dashboard: quick check-in/out, pending approvals, balances, who's on leave today, announcements.
+- Role-aware dashboard: quick check-in/out, pending approvals, balances, who's on leave today, announcements. Every card is clickable and opens the matching section, and "Apply leave" / "Raise a request" quick actions sit at the top right.
+- **Pending Approvals** counts both leave requests and attendance corrections waiting on you, broken down ("2 leave · 1 attendance"); managers see only their direct reports' items, while company-wide headcount cards are hidden from managers entirely.
+
 - **Celebrations** — only today's birthdays and work anniversaries are shown; anyone can send a wish with a message, the person is notified and can reply with a thank-you.
 - **Notifications** — a new leave request alerts the person's reporting manager and HR/Admin; every approval, rejection or cancellation notifies the employee, their manager and HR as relevant. Attendance-request events, flags and wishes also notify. Platform-wide broadcasts from the owner console appear as banners.
 - **Profile-completion reminders** — a scheduled job (1st & 16th of each month) nudges employees whose personal details (phone, DOB, address, emergency contact) are missing, with no repeat within 14 days.
@@ -261,6 +265,9 @@ The service-role key is **not available** on Lovable Cloud by design — all pri
 - Self-approval/self-edit guards on attendance, leave, performance reviews and profiles (enforced in the database, not just the UI).
 - Tamper-proof audit logs; platform-owner actions logged server-side.
 - Attendance-request and leave rules (caps, backdate windows, disabled types) validated by database triggers.
+- Feature modules (documents, onboarding, org chart, reports) are access-checked in the database itself, not just hidden in the UI; the pricing plan catalogue is readable only by the platform owner.
+- Exported audit files and printed payslips neutralize injected formulas and scripts, so a crafted name or note cannot carry code into a downloaded spreadsheet or a printout.
+
 - Password breach (HIBP) check enabled; sessions managed by the auth service; password reset links never sign the user in.
 - Paid pay periods are locked in the database — payslips cannot be created, edited or imported for a locked month.
 - Imports run through security-definer functions restricted to HR/Admin of the active company, and every run is audit-logged.
