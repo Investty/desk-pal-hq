@@ -208,8 +208,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error as Error | null };
+    const addr = email.trim().toLowerCase();
+
+    // Server-side brute-force lockout: 5 failures in 15 minutes locks the
+    // address for 15 minutes. Enforced in the database, not just here.
+    const { data: lockedFor } = await supabase.rpc("login_lockout_seconds", { _email: addr });
+    if (typeof lockedFor === "number" && lockedFor > 0) {
+      const mins = Math.ceil(lockedFor / 60);
+      return {
+        error: new Error(
+          `Too many failed sign-in attempts. Please try again in ${mins} minute${mins === 1 ? "" : "s"}.`,
+        ),
+      };
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({ email: addr, password });
+
+    if (error) {
+      const { data: lockSecs } = await supabase.rpc("record_login_failure", { _email: addr });
+      if (typeof lockSecs === "number" && lockSecs > 0) {
+        return {
+          error: new Error(
+            "Too many failed sign-in attempts. This account is locked for 15 minutes.",
+          ),
+        };
+      }
+      // Never leak whether the address exists.
+      return { error: new Error("Invalid email or password") };
+    }
+
+    await supabase.rpc("clear_login_attempts", { _email: addr });
+    sessionStorage.setItem(SESSION_START_KEY, String(Date.now()));
+    return { error: null };
   };
 
   const signUp = async (
