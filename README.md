@@ -268,7 +268,10 @@ The service-role key is **not available** on Lovable Cloud by design — all pri
 - Feature modules (documents, onboarding, org chart, reports) are access-checked in the database itself, not just hidden in the UI; the pricing plan catalogue is readable only by the platform owner.
 - Exported audit files and printed payslips neutralize injected formulas and scripts, so a crafted name or note cannot carry code into a downloaded spreadsheet or a printout.
 
-- Password breach (HIBP) check enabled; sessions managed by the auth service; password reset links never sign the user in.
+- Passwords are stored only as bcrypt hashes by the auth service; the app never sees or stores them. Minimum length 8, breach (HIBP) check enabled, and a signed-in user must confirm their current password to change it.
+- Sign-in is rate limited in the database: 5 failed attempts for the same email within 15 minutes lock that address for 15 minutes (a successful sign-in resets the counter). The attempt log stores a one-way fingerprint of the email, is readable by nobody, and sign-in errors stay generic so they never reveal whether an account exists.
+- Sessions expire after 30 minutes of inactivity and after 12 hours in total, then sign out automatically. Access tokens are short-lived and refreshed by the auth service; password reset links expire and never sign the user in.
+- Only the public publishable key is present in frontend code — service keys and database credentials exist only server-side.
 - Paid pay periods are locked in the database — payslips cannot be created, edited or imported for a locked month.
 - Imports run through security-definer functions restricted to HR/Admin of the active company, and every run is audit-logged.
 
