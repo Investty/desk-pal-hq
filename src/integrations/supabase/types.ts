@@ -1669,6 +1669,21 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_owner_allowlist: {
+        Row: {
+          created_at: string
+          email: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string | null
