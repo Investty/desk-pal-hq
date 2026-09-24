@@ -3,17 +3,13 @@ import {
   LayoutDashboard, Users, Clock, CalendarDays, CheckSquare,
   Building2, Bell, FileText, LogOut, ChevronLeft, ChevronRight,
   ShieldCheck, CalendarOff, Megaphone, BarChart3, UserCircle,
-  Network, PieChart, Settings2, IndianRupee, ShieldAlert, Check, PlusCircle, Upload,
+  Network, PieChart, Settings2, IndianRupee, ShieldAlert, Upload,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
-  DropdownMenuSeparator, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 const ALL = ["admin", "hr", "manager", "employee"];
 
