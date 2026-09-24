@@ -85,7 +85,7 @@ export default function AppSidebar() {
       </div>
 
       <nav className="flex-1 py-4 space-y-1 px-2 overflow-y-auto">
-        {filteredItems.map((item) => {
+        {items.map((item) => {
           const children = (item.children ?? []).filter(
             (c) => role && c.roles.includes(role) && (!c.feature || hasFeature(c.feature)),
           );
