@@ -33,6 +33,7 @@ import Shifts from "@/pages/Shifts";
 import AttendanceRules from "@/pages/AttendanceRules";
 import DataImport from "@/pages/DataImport";
 import Owner from "@/pages/Owner";
+import OwnerLogin from "@/pages/OwnerLogin";
 import JoinCompany from "@/pages/JoinCompany";
 import Suspended from "@/pages/Suspended";
 import Setup from "@/pages/Setup";
@@ -86,7 +87,7 @@ function SetupRoute() {
 function OwnerRoute() {
   const { user, loading, isPlatformAdmin } = useAuth();
   if (loading) return <Loading />;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/owner-login" replace />;
   if (!isPlatformAdmin) return <Navigate to="/" replace />;
   return <Owner />;
 }
@@ -112,6 +113,7 @@ const AppRoutes = () => (
     <Route path="/reset-password" element={<ResetPassword />} />
     <Route path="/join" element={<JoinRoute />} />
     <Route path="/owner" element={<OwnerRoute />} />
+    <Route path="/owner-login" element={<OwnerLogin />} />
     <Route path="/setup" element={<SetupRoute />} />
     <Route element={<WorkspaceRoute />}>
       <Route path="/" element={<Dashboard />} />
