@@ -3,17 +3,13 @@ import {
   LayoutDashboard, Users, Clock, CalendarDays, CheckSquare,
   Building2, Bell, FileText, LogOut, ChevronLeft, ChevronRight,
   ShieldCheck, CalendarOff, Megaphone, BarChart3, UserCircle,
-  Network, PieChart, Settings2, IndianRupee, ShieldAlert, Check, PlusCircle, Upload,
+  Network, PieChart, Settings2, IndianRupee, ShieldAlert, Upload,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
-  DropdownMenuSeparator, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 const ALL = ["admin", "hr", "manager", "employee"];
 
@@ -52,11 +48,14 @@ const navItems: NavItem[] = [
 
 export default function AppSidebar() {
   const { pathname } = useLocation();
-  const { profile, role, signOut, company, memberships, switchCompany, hasFeature, isPlatformAdmin } = useAuth();
+  const { profile, role, signOut, company, hasFeature, isPlatformAdmin } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const filteredItems = navItems.filter(
     (item) => role && item.roles.includes(role) && (!item.feature || hasFeature(item.feature)),
   );
+  const items = isPlatformAdmin
+    ? [...filteredItems, { label: "Owner console", icon: ShieldAlert, path: "/owner", roles: ALL }]
+    : filteredItems;
 
   const initials = profile?.full_name?.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase() || "?";
 
@@ -67,30 +66,10 @@ export default function AppSidebar() {
     )}>
       <div className="flex items-center gap-2 px-4 h-16 border-b border-sidebar-border">
         {!collapsed && (
-          <DropdownMenu>
-            <DropdownMenuTrigger className="min-w-0 text-left">
-              <span className="block text-lg font-bold text-sidebar-foreground leading-tight">MiniHRMS</span>
-              <span className="block text-xs text-sidebar-muted truncate">{company?.name} ▾</span>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuLabel>Your companies</DropdownMenuLabel>
-              {memberships.map((m) => (
-                <DropdownMenuItem key={m.company_id} onClick={() => switchCompany(m.company_id)}>
-                  <span className="flex-1 truncate">{m.company_name}</span>
-                  {m.company_id === company?.id && <Check className="h-4 w-4" />}
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/join"><PlusCircle className="h-4 w-4 mr-2" /> Join another company</Link>
-              </DropdownMenuItem>
-              {isPlatformAdmin && (
-                <DropdownMenuItem asChild>
-                  <Link to="/owner"><ShieldAlert className="h-4 w-4 mr-2" /> Owner console</Link>
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="min-w-0">
+            <span className="block text-lg font-bold text-sidebar-foreground leading-tight">MiniHRMS</span>
+            <span className="block text-xs text-sidebar-muted truncate">{company?.name}</span>
+          </div>
         )}
         <Button
           type="button"
@@ -106,7 +85,7 @@ export default function AppSidebar() {
       </div>
 
       <nav className="flex-1 py-4 space-y-1 px-2 overflow-y-auto">
-        {filteredItems.map((item) => {
+        {items.map((item) => {
           const children = (item.children ?? []).filter(
             (c) => role && c.roles.includes(role) && (!c.feature || hasFeature(c.feature)),
           );
