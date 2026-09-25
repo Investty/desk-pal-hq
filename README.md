@@ -64,9 +64,13 @@ The mandatory interface source of truth is [`docs/brand-tokens.html`](docs/brand
 - Revenue dashboard (MRR/ARR/ARPU/churn from plan data), editable plans, broadcasts, usage/storage per company, support (read-only impersonation) sessions, global audit log.
 - Resource limits: seats, document storage, monthly notifications — soft warnings at 90%, hard stops enforced in the database.
 - Visible only to the platform owner — never shown to regular company users.
+- **Separate owner sign-in (`/owner-login`)** — a dedicated door for the platform owner, kept apart from the normal company login/signup. Only allow-listed owner emails can sign in; company accounts (admin/HR/manager/employee) are rejected and signed out. A one-time "set up owner account" mode creates the allow-listed owner login, after which the setup option closes permanently. The owner account belongs to no company, so it only ever sees the console.
 
 ### Setup wizard
 - New-company onboarding at `/setup`: company details + timezone, weekly offs, departments, HR invite codes, finish.
+- **Resumable** — the step you reached is saved, so returning to setup continues where you left off instead of restarting.
+- **Skippable** — "Skip for now" takes the admin to the dashboard and keeps them there; setup no longer reopens by itself. A "Finish company setup" card stays on the dashboard until setup is completed.
+
 
 ## Roles & access
 
