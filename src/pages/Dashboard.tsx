@@ -52,7 +52,7 @@ function StatCard({ title, value, icon: Icon, description, variant = "default", 
 }
 
 export default function Dashboard() {
-  const { isAdmin, isManager, profile, user } = useAuth();
+  const { isAdmin, isManager, profile, user, role, company } = useAuth();
   const today = format(new Date(), "yyyy-MM-dd");
 
   // Only the people who directly report to the signed-in user (same rule as the Approvals page)
@@ -173,6 +173,17 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+      {role === "admin" && company && !company.setup_completed_at && (
+        <Card>
+          <CardContent className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4">
+            <div>
+              <p className="font-semibold">Finish company setup</p>
+              <p className="text-sm text-muted-foreground">Pick up where you left off: work week, departments and HR invites.</p>
+            </div>
+            <Button asChild size="sm"><Link to="/setup">Continue setup</Link></Button>
+          </CardContent>
+        </Card>
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Welcome back, {profile?.full_name?.split(" ")[0]}</h1>

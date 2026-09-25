@@ -478,6 +478,8 @@ export type Database = {
           plan_started_at: string
           seat_limit: number
           setup_completed_at: string | null
+          setup_skipped_at: string | null
+          setup_step: number
           status: string
           timezone: string
           trial_ends_at: string | null
@@ -496,6 +498,8 @@ export type Database = {
           plan_started_at?: string
           seat_limit?: number
           setup_completed_at?: string | null
+          setup_skipped_at?: string | null
+          setup_step?: number
           status?: string
           timezone?: string
           trial_ends_at?: string | null
@@ -514,6 +518,8 @@ export type Database = {
           plan_started_at?: string
           seat_limit?: number
           setup_completed_at?: string | null
+          setup_skipped_at?: string | null
+          setup_step?: number
           status?: string
           timezone?: string
           trial_ends_at?: string | null
@@ -2404,6 +2410,10 @@ export type Database = {
         Returns: undefined
       }
       run_leave_carry_forward: { Args: never; Returns: number }
+      save_setup_progress: {
+        Args: { _skip?: boolean; _step: number }
+        Returns: undefined
+      }
       set_active_company: { Args: { _company_id: string }; Returns: undefined }
       set_company_weekly_offs: {
         Args: { _weekly_offs: number[] }

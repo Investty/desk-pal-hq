@@ -70,7 +70,7 @@ function WorkspaceRoute() {
   if (!user) return <Navigate to="/login" replace />;
   if (!supportSession && memberships.length === 0) return <Navigate to={isPlatformAdmin ? "/owner" : "/join"} replace />;
   if (companySuspended) return <Suspended />;
-  if (pathname === "/" && role === "admin" && company && !company.setup_completed_at && !supportSession)
+  if (pathname === "/" && role === "admin" && company && !company.setup_completed_at && !company.setup_skipped_at && !supportSession)
     return <Navigate to="/setup" replace />;
   return <AppLayout />;
 }

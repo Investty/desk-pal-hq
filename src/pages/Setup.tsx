@@ -36,7 +36,17 @@ export default function Setup() {
   const queryClient = useQueryClient();
   const { company, user, refresh } = useAuth();
 
-  const [step, setStep] = useState(0);
+  const [step, setStepState] = useState(0);
+  const [resumed, setResumed] = useState(false);
+  const setStep = (s: number) => {
+    setStepState(s);
+    void supabase.rpc("save_setup_progress" as never, { _step: s, _skip: false } as never);
+  };
+  const skipSetup = async () => {
+    await supabase.rpc("save_setup_progress" as never, { _step: step, _skip: true } as never);
+    await refresh();
+    navigate("/", { replace: true });
+  };
   const [saving, setSaving] = useState(false);
 
   const [name, setName] = useState("");
@@ -57,6 +67,14 @@ export default function Setup() {
       return data;
     },
   });
+
+  useEffect(() => {
+    if (resumed || !companyRow) return;
+    const saved = Number((companyRow as { setup_step?: number }).setup_step ?? 0);
+    if (saved > 0 && saved <= 4) setStepState(saved);
+    setResumed(true);
+  }, [companyRow, resumed]);
+
 
   useEffect(() => {
     if (!companyRow) return;
@@ -410,7 +428,7 @@ export default function Setup() {
         )}
 
         <div className="text-center">
-          <Button type="button" variant="link" size="sm" onClick={() => navigate("/", { replace: true })} className="h-auto p-0 text-xs text-muted-foreground">
+          <Button type="button" variant="link" size="sm" onClick={skipSetup} className="h-auto p-0 text-xs text-muted-foreground">
             Skip for now
           </Button>
         </div>
