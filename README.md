@@ -82,7 +82,7 @@ The mandatory interface source of truth is [`docs/brand-tokens.html`](docs/brand
 | **Admin** | HR + User Roles management, company settings |
 | **Platform owner** | `/owner` console only — invisible to regular users |
 
-A user can belong to multiple companies; roles are **per company**, and all data follows the active company (switcher in the sidebar).
+A user can belong to multiple companies; roles are **per company**, and all data follows the active company. The sidebar shows the active company as plain text (no switcher dropdown) — switching or joining another company is done from the `/join` page.
 
 ### Role permissions in detail
 
