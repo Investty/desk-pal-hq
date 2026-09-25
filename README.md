@@ -176,6 +176,8 @@ Bring existing records in from Excel, CSV or a Tally export instead of typing th
 | Route | Screen | Who can open it |
 |---|---|---|
 | `/login`, `/signup`, `/reset-password` | Sign in, sign up (new company or invite code), password reset | Signed-out visitors |
+| `/owner-login` | Platform owner sign-in (and one-time owner account setup) | Allow-listed owner email only |
+
 | `/join` | Join a company with an invite code / pick the active company | Signed-in users with no active company |
 | `/setup` | Company setup wizard | Admin of a company that hasn't finished setup |
 | `/` | Dashboard (role-aware) | Everyone |
