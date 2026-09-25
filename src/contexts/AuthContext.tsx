@@ -77,7 +77,9 @@ interface AuthContextType {
 }
 
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Keep one context instance across hot reloads so live edits never orphan consumers.
+const g = globalThis as unknown as { __hrmsAuthContext?: React.Context<AuthContextType | undefined> };
+const AuthContext = g.__hrmsAuthContext ?? (g.__hrmsAuthContext = createContext<AuthContextType | undefined>(undefined));
 
 // Session lifetime guards (HR data — short leash).
 const SESSION_START_KEY = "hrms.session_started_at";
