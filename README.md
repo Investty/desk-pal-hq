@@ -209,7 +209,16 @@ Bring existing records in from Excel, CSV or a Tally export instead of typing th
 | `/owner` | Platform owner console | Platform owner |
 | `/suspended` | Shown when the company is suspended | Members of a suspended company |
 
+## Usability & interface quality
+
+- **Consistent forms** — every mandatory field across the platform shows a custom, plain-English message ("Please enter your full name", "Please enter the invite code"), and every password field has a show/hide eye toggle.
+- **One notification style** — all in-app toasts run through a single branded renderer with semantic colours, icons, consistent timing and responsive placement.
+- **No cross-account leakage in the interface** — cached page data is cleared on sign-in, sign-out and company switch, and all personal reads (attendance, requests, calendar) are bound to the signed-in user, so one person's records can never flash up under another account.
+- **Invite hygiene** — an invite cannot be generated for an email that already belongs to the company or already has a pending invite; it reports "user already exists" instead of silently issuing a second code.
+- **Loading states** — lists (e.g. Departments) show a loading state rather than briefly flashing their empty/"getting started" screen.
+
 ## Feature flags & plans
+
 
 Each company is on a plan (Free / Starter / Pro / Enterprise) and the platform owner can switch individual modules on or off per company: payroll, performance, onboarding, documents, attendance regularization, announcements, reports, org chart, audit logs. A disabled module disappears from the sidebar and its route is blocked. Seats, document storage and monthly notifications are limited per company — a banner warns at 90% and the database blocks the action at the limit.
 
