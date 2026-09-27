@@ -706,6 +706,50 @@ export type Database = {
           },
         ]
       }
+      employee_bank_details: {
+        Row: {
+          account_holder: string
+          account_number: string
+          bank_name: string | null
+          company_id: string
+          created_at: string
+          id: string
+          ifsc: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_holder: string
+          account_number: string
+          bank_name?: string | null
+          company_id?: string
+          created_at?: string
+          id?: string
+          ifsc: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_holder?: string
+          account_number?: string
+          bank_name?: string | null
+          company_id?: string
+          created_at?: string
+          id?: string
+          ifsc?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_bank_details_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_documents: {
         Row: {
           company_id: string
