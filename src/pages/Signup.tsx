@@ -61,7 +61,10 @@ export default function Signup() {
       mode === "create" ? { companyName: companyName.trim() } : { inviteCode: inviteCode.trim() },
     );
     if (error) {
-      toast.error(error.message.replace(/^Database error saving new user$/, "Sign-up failed. Check your invite code."));
+      toast.error(error.message.replace(
+        /^Database error saving new user$/,
+        mode === "join" ? "Sign-up failed. Check your invite code." : "Sign-up failed. Please try again.",
+      ));
     } else {
       toast.success(mode === "create" ? "Company created! You are its admin." : "Account created!");
     }
