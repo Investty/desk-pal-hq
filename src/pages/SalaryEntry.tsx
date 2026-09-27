@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/components/ui/sonner";
 import { format } from "date-fns";
-import { IndianRupee, Save, Wallet } from "lucide-react";
+import { IndianRupee, Save, Wallet, Wand2, Download } from "lucide-react";
+import { downloadCsv } from "@/lib/csv";
 import { Link } from "react-router-dom";
 import { computeSalary, formatINR as fmt, type SalaryComponents } from "@/lib/salary";
 
@@ -30,6 +31,10 @@ export default function SalaryEntry() {
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState("");
   const [form, setForm] = useState({ ...EMPTY });
+  const [grossInput, setGrossInput] = useState("");
+  const [metro, setMetro] = useState(true);
+  const [bank, setBank] = useState({ account_holder: "", account_number: "", ifsc: "", bank_name: "" });
+  const [exportMonth, setExportMonth] = useState(new Date().toISOString().slice(0, 7));
   const [effectiveFrom, setEffectiveFrom] = useState(new Date().toISOString().slice(0, 10));
 
   const { data: employees } = useQuery({
@@ -55,6 +60,42 @@ export default function SalaryEntry() {
     },
   });
 
+  const { data: banks } = useQuery({
+    queryKey: ["bank-details"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("employee_bank_details").select("*");
+      if (error) throw error;
+      return data || [];
+    },
+  });
+  const bankOf = (uid: string) => banks?.find((b) => b.user_id === uid);
+
+  const autoSplit = () => {
+    const g = Number(grossInput) || 0;
+    if (g <= 0) return toast.error("Please enter monthly gross salary");
+    const basic = Math.round(g * 0.5);
+    const hra = Math.round(basic * (metro ? 0.5 : 0.4));
+    setForm({ ...form, basic: String(basic), da: "0", hra: String(hra), special_allowance: String(g - basic - hra), pf_rate: "12" });
+  };
+
+  const exportBank = async () => {
+    const [y, m] = exportMonth.split("-").map(Number);
+    const { data, error } = await supabase.from("payslips").select("user_id, net").eq("year", y).eq("month", m);
+    if (error) return toast.error(error.message);
+    const rows: unknown[][] = [];
+    const missing: string[] = [];
+    const source = data && data.length ? data.map((p) => ({ uid: p.user_id, net: Number(p.net) }))
+      : (employees || []).filter((e) => salaryOf(e.user_id)).map((e) => ({ uid: e.user_id, net: computeSalary(salaryOf(e.user_id)).net }));
+    source.forEach(({ uid, net }) => {
+      const b = bankOf(uid); const e = emp(uid);
+      if (!b) { missing.push(e?.full_name || uid); return; }
+      rows.push([b.account_holder, b.account_number, b.ifsc, b.bank_name || "", net.toFixed(2), e?.employee_id || "", `Salary ${exportMonth}`]);
+    });
+    if (!rows.length) return toast.error("No employees with bank details and salary to export");
+    downloadCsv(`bank-transfer-${exportMonth}.csv`, ["Beneficiary Name", "Account Number", "IFSC", "Bank", "Amount", "Employee Code", "Narration"], rows);
+    toast.success(`${rows.length} payments exported${data?.length ? "" : " (from salary structures — no payslips for this month)"}` + (missing.length ? `. Missing bank details: ${missing.join(", ")}` : ""));
+  };
+
   const salaryOf = (uid: string) => salaries?.find((s) => s.user_id === uid);
   const emp = (uid: string) => employees?.find((e) => e.user_id === uid);
 
@@ -69,6 +110,8 @@ export default function SalaryEntry() {
 
   const onSelect = (uid: string) => {
     setSelected(uid);
+    const b = bankOf(uid);
+    setBank({ account_holder: b?.account_holder || "", account_number: b?.account_number || "", ifsc: b?.ifsc || "", bank_name: b?.bank_name || "" });
     const s = salaryOf(uid);
     if (s) {
       setForm({
@@ -77,8 +120,10 @@ export default function SalaryEntry() {
         professional_tax: String(s.professional_tax ?? ""), tds: String(s.tds ?? ""),
       });
       setEffectiveFrom(s.effective_from);
+      setGrossInput(String(computeSalary(s).gross));
     } else {
       setForm({ ...EMPTY });
+      setGrossInput("");
       setEffectiveFrom(new Date().toISOString().slice(0, 10));
     }
   };
@@ -102,8 +147,19 @@ export default function SalaryEntry() {
         effective_from: effectiveFrom,
       }, { onConflict: "user_id" });
       if (error) throw error;
+      if (bank.account_number || bank.ifsc) {
+        const ifsc = bank.ifsc.trim().toUpperCase();
+        if (!/^[0-9]{9,18}$/.test(bank.account_number.trim())) throw new Error("Account number must be 9–18 digits");
+        if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)) throw new Error("Please enter a valid IFSC code (e.g. HDFC0001234)");
+        const { error: be } = await supabase.from("employee_bank_details").upsert({
+          user_id: selected, account_holder: bank.account_holder.trim() || emp(selected)?.full_name || "",
+          account_number: bank.account_number.trim(), ifsc, bank_name: bank.bank_name.trim() || null,
+        }, { onConflict: "company_id,user_id" });
+        if (be) throw be;
+      }
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["bank-details"] });
       toast.success("Salary saved — payslips will use these figures.");
       queryClient.invalidateQueries({ queryKey: ["salary-structures"] });
     },
@@ -158,6 +214,28 @@ export default function SalaryEntry() {
             </p>
           )}
 
+          <div className="rounded-lg border p-4 space-y-3">
+            <p className="text-sm font-medium">Standard Indian structure</p>
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="space-y-1 w-48">
+                <Label>Monthly gross salary</Label>
+                <Input type="number" min="0" value={grossInput} onChange={(e) => setGrossInput(e.target.value)} />
+              </div>
+              <div className="space-y-1 w-48">
+                <Label>City type</Label>
+                <Select value={metro ? "metro" : "non"} onValueChange={(v) => setMetro(v === "metro")}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="metro">Metro (HRA 50% of Basic)</SelectItem>
+                    <SelectItem value="non">Non-metro (HRA 40% of Basic)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button type="button" variant="outline" onClick={autoSplit}><Wand2 className="h-4 w-4 mr-2" /> Auto-split</Button>
+            </div>
+            <p className="text-xs text-muted-foreground">Basic = 50% of gross, HRA from Basic, Special allowance = remainder, PF = 12% of Basic. You can adjust any figure below.</p>
+          </div>
+
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {field("basic", "Basic pay (monthly)")}
             {field("da", "Dearness Allowance (DA)")}
@@ -175,6 +253,13 @@ export default function SalaryEntry() {
             <div><p className="text-xs text-muted-foreground">Net pay</p><p className="font-bold text-primary">{fmt(preview.net)}</p></div>
           </div>
 
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-1"><Label>Account holder name</Label><Input value={bank.account_holder} onChange={(e) => setBank({ ...bank, account_holder: e.target.value })} /></div>
+            <div className="space-y-1"><Label>Account number</Label><Input inputMode="numeric" value={bank.account_number} onChange={(e) => setBank({ ...bank, account_number: e.target.value.replace(/\D/g, "") })} /></div>
+            <div className="space-y-1"><Label>IFSC code</Label><Input value={bank.ifsc} maxLength={11} onChange={(e) => setBank({ ...bank, ifsc: e.target.value.toUpperCase() })} /></div>
+            <div className="space-y-1"><Label>Bank name</Label><Input value={bank.bank_name} onChange={(e) => setBank({ ...bank, bank_name: e.target.value })} /></div>
+          </div>
+
           <Button onClick={() => save.mutate()} disabled={save.isPending || !selected}>
             <Save className="h-4 w-4 mr-2" /> Save salary
           </Button>
@@ -182,7 +267,13 @@ export default function SalaryEntry() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">All Salary Structures</CardTitle></CardHeader>
+        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3">
+          <CardTitle className="text-base">All Salary Structures</CardTitle>
+          <div className="flex items-center gap-2">
+            <Input type="month" className="w-40" value={exportMonth} onChange={(e) => setExportMonth(e.target.value)} />
+            <Button variant="outline" onClick={exportBank}><Download className="h-4 w-4 mr-2" /> Bank transfer file</Button>
+          </div>
+        </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
