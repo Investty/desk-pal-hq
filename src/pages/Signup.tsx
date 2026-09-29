@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -54,6 +55,21 @@ export default function Signup() {
       return;
     }
     setLoading(true);
+    if (mode === "join") {
+      const code = inviteCode.trim().toUpperCase();
+      const { data: status } = await supabase.rpc("check_invite_code", { _code: code });
+      const msg: Record<string, string> = {
+        invalid: "We couldn't find that invite code. Check it for typos, or ask your HR team to share it again.",
+        used: "This invite code has already been used. Ask your HR team for a new one, or sign in if the account is yours.",
+        expired: "This invite code has expired. Ask your HR team to send you a fresh invite.",
+        inactive: "This company's account is not active right now. Please contact your HR team.",
+      };
+      if (status && status !== "valid") {
+        setLoading(false);
+        toast.error(msg[status as string] ?? msg.invalid);
+        return;
+      }
+    }
     const { error } = await signUp(
       normalizedEmail,
       password,
@@ -63,7 +79,7 @@ export default function Signup() {
     if (error) {
       toast.error(error.message.replace(
         /^Database error saving new user$/,
-        mode === "join" ? "Sign-up failed. Check your invite code." : "Sign-up failed. Please try again.",
+        mode === "join" ? "Sign-up failed. Your invite may be for a different email address, or it just expired. Ask your HR team for a new invite." : "Sign-up failed. Please try again.",
       ));
     } else {
       toast.success(mode === "create" ? "Company created! You are its admin." : "Account created!");

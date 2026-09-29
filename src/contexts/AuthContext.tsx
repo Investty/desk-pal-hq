@@ -67,6 +67,7 @@ interface AuthContextType {
   features: Record<string, boolean>;
   hasFeature: (key: string) => boolean;
   isPlatformAdmin: boolean;
+  passwordExpired: boolean;
   companySuspended: boolean;
   supportSession: SupportSession | null;
   endSupport: () => Promise<void>;
@@ -84,6 +85,7 @@ const AuthContext = g.__hrmsAuthContext ?? (g.__hrmsAuthContext = createContext<
 // Session lifetime guards (HR data — short leash).
 const SESSION_START_KEY = "hrms.session_started_at";
 const IDLE_LIMIT_MS = 30 * 60 * 1000; // sign out after 30 minutes of inactivity
+const PASSWORD_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
 const ABSOLUTE_LIMIT_MS = 12 * 60 * 60 * 1000; // and after 12 hours regardless
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -97,6 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
   const [supportSession, setSupportSession] = useState<SupportSession | null>(null);
   const [loading, setLoading] = useState(true);
+  const [passwordExpired, setPasswordExpired] = useState(false);
   const queryClient = useQueryClient();
 
   const loadCompanyContext = async (companyId: string, userId: string) => {
@@ -113,11 +116,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const fetchUserData = useCallback(async (userId: string) => {
-    const [membershipRes, ownerRes, supportRes] = await Promise.all([
+    const [membershipRes, ownerRes, supportRes, pwRes] = await Promise.all([
       supabase.rpc("get_my_memberships"),
       supabase.rpc("is_platform_admin", {}),
       supabase.rpc("current_support_session"),
+      supabase.from("user_password_meta").select("changed_at").eq("user_id", userId).maybeSingle(),
     ]);
+
+    // Passwords must be renewed every 90 days.
+    if (pwRes.data?.changed_at) {
+      setPasswordExpired(Date.now() - new Date(pwRes.data.changed_at).getTime() > PASSWORD_MAX_AGE_MS);
+    } else {
+      setPasswordExpired(false);
+      if (!pwRes.error) void supabase.rpc("mark_password_changed");
+    }
 
     setIsPlatformAdmin(Boolean(ownerRes.data));
 
@@ -328,7 +340,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <AuthContext.Provider value={{
       session, user, profile, role, loading, company, memberships, features, hasFeature,
-      isPlatformAdmin, companySuspended: !supportSession && !!company && company.status !== "active" && company.status !== "trial",
+      isPlatformAdmin, passwordExpired, companySuspended: !supportSession && !!company && company.status !== "active" && company.status !== "trial",
       supportSession, endSupport,
       switchCompany, refresh,
 

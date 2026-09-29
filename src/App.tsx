@@ -64,10 +64,11 @@ function ProtectedRoute({ children, roles, feature }: { children: React.ReactNod
 }
 
 function WorkspaceRoute() {
-  const { user, loading, memberships, companySuspended, isPlatformAdmin, supportSession, role, company } = useAuth();
+  const { user, loading, memberships, companySuspended, isPlatformAdmin, supportSession, role, company, passwordExpired } = useAuth();
   const { pathname } = useLocation();
   if (loading) return <Loading />;
   if (!user) return <Navigate to="/login" replace />;
+  if (passwordExpired && !supportSession) return <Navigate to="/reset-password?expired=1" replace />;
   if (!supportSession && memberships.length === 0) return <Navigate to={isPlatformAdmin ? "/owner" : "/join"} replace />;
   if (companySuspended) return <Suspended />;
   if (pathname === "/" && role === "admin" && company && !company.setup_completed_at && !company.setup_skipped_at && !supportSession)
