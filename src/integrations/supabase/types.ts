@@ -570,6 +570,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           email: string | null
+          expires_at: string | null
           id: string
           role: Database["public"]["Enums"]["app_role"]
           used_at: string | null
@@ -581,6 +582,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           email?: string | null
+          expires_at?: string | null
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           used_at?: string | null
@@ -592,6 +594,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           email?: string | null
+          expires_at?: string | null
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           used_at?: string | null
@@ -2015,6 +2018,21 @@ export type Database = {
           },
         ]
       }
+      user_password_meta: {
+        Row: {
+          changed_at: string
+          user_id: string
+        }
+        Insert: {
+          changed_at?: string
+          user_id: string
+        }
+        Update: {
+          changed_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           company_id: string
@@ -2063,6 +2081,7 @@ export type Database = {
           policy_id: string
         }[]
       }
+      check_invite_code: { Args: { _code: string }; Returns: string }
       clear_login_attempts: { Args: { _email: string }; Returns: undefined }
       clock_in: {
         Args: never
@@ -2228,6 +2247,7 @@ export type Database = {
       }
       login_lockout_seconds: { Args: { _email: string }; Returns: number }
       login_throttle_key: { Args: { _email: string }; Returns: string }
+      mark_password_changed: { Args: never; Returns: undefined }
       my_broadcasts: {
         Args: never
         Returns: {
