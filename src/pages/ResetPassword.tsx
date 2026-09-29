@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -10,6 +11,9 @@ import { KeyRound } from "lucide-react";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const expired = params.get("expired") === "1";
+  const { refresh } = useAuth();
   const [ready, setReady] = useState(false);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -37,11 +41,14 @@ export default function ResetPassword() {
     }
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
-    setLoading(false);
     if (error) {
-      toast.error(error.message);
+      setLoading(false);
+      toast.error(/same|different/i.test(error.message) ? "Choose a password different from your current one" : error.message);
       return;
     }
+    await supabase.rpc("mark_password_changed");
+    await refresh();
+    setLoading(false);
     toast.success("Password updated. You are signed in.");
     navigate("/", { replace: true });
   };
@@ -55,7 +62,7 @@ export default function ResetPassword() {
           </div>
           <CardTitle className="text-2xl">Set a new password</CardTitle>
           <CardDescription>
-            {ready ? "Choose a new password for your account" : "Open the link from your email to continue"}
+            {expired ? "Your password is over 90 days old. Please choose a new one to continue." : ready ? "Choose a new password for your account" : "Open the link from your email to continue"}
           </CardDescription>
         </CardHeader>
         <CardContent>
