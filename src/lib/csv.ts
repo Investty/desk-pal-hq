@@ -1,6 +1,9 @@
 const cell = (v: unknown) => {
-  const s = v === null || v === undefined ? "" : String(v);
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  const raw = v === null || v === undefined ? "" : String(v);
+  // Neutralise spreadsheet formula injection: a leading =, +, -, @, tab or CR
+  // makes Excel/Sheets execute the value as a formula when the file is opened.
+  const s = /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw;
+  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 
 export function downloadCsv(filename: string, headers: string[], rows: unknown[][]) {
