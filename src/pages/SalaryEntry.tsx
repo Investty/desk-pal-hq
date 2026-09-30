@@ -145,7 +145,7 @@ export default function SalaryEntry() {
         allowances: draft.hra + draft.special_allowance,
         deductions: preview.deductions,
         effective_from: effectiveFrom,
-      }, { onConflict: "user_id" });
+      }, { onConflict: "company_id,user_id" });
       if (error) throw error;
       if (bank.account_number || bank.ifsc) {
         const ifsc = bank.ifsc.trim().toUpperCase();
