@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { BarChart3, Download } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend } from "date-fns";
+import { downloadCsv } from "@/lib/csv";
 
 export default function AttendanceReports() {
   const [month, setMonth] = useState(format(new Date(), "yyyy-MM"));
@@ -39,15 +40,11 @@ export default function AttendanceReports() {
 
   const exportCsv = () => {
     if (!report) return;
-    const header = "Employee ID,Name,Present,Late,Absent,Not Marked,Working Hours";
-    const rows = report.map((r) => [r.employee_id, `"${r.full_name}"`, r.present, r.late, r.absent, r.notMarked, r.hours].join(","));
-    const blob = new Blob([[header, ...rows].join("\n")], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `attendance-report-${month}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadCsv(
+      `attendance-report-${month}.csv`,
+      ["Employee ID", "Name", "Present", "Late", "Absent", "Not Marked", "Working Hours"],
+      report.map((r) => [r.employee_id, r.full_name, r.present, r.late, r.absent, r.notMarked, r.hours]),
+    );
   };
 
   return (
