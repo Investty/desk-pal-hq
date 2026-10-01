@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { BarChart3, Download } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend } from "date-fns";
+import { downloadCsv } from "@/lib/csv";
 
 export default function AttendanceReports() {
   const [month, setMonth] = useState(format(new Date(), "yyyy-MM"));
