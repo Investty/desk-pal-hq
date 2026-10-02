@@ -34,6 +34,9 @@ The mandatory interface source of truth is [`docs/brand-tokens.html`](docs/brand
 - **Carry forward** — HR decides per leave type whether unused balance carries forward at year end (and a max), with a one-click year-end run.
 
 ### Payroll
+- **Indian salary auto-split** — enter monthly gross on Salary Entry and it splits into Basic (50% of gross), HRA (50% of Basic metro / 40% non-metro), Special Allowance (remainder) and PF (12% of Basic). Every value stays editable after the split.
+- **Employee bank details** — HR/Admin manage account holder, account number (9–18 digits) and IFSC (11 characters, 5th is `0`); employees can view only their own.
+- **Bank transfer export** — monthly bank-transfer CSV built from payslips (falls back to salary structures when no payslips exist), protected against spreadsheet formula injection.
 - **Salary structures** per employee — Basic, DA, HRA, other allowances, PF rate, professional tax, TDS, effective from a date.
 - **Pay periods** — every month/year is a period with a status: Draft → In progress → Paid. Marking a period paid **locks** its payslips against edits, re-runs and imports; HR/Admin can reopen it. A Pay periods table shows status, payslip count, net paid and pay date per month.
 - **Payroll run** — generates payslips for everyone with a salary structure for the chosen month; PF is computed on Basic + DA.
@@ -215,6 +218,9 @@ Bring existing records in from Excel, CSV or a Tally export instead of typing th
 - **One notification style** — all in-app toasts run through a single branded renderer with semantic colours, icons, consistent timing and responsive placement.
 - **No cross-account leakage in the interface** — cached page data is cleared on sign-in, sign-out and company switch, and all personal reads (attendance, requests, calendar) are bound to the signed-in user, so one person's records can never flash up under another account.
 - **Invite hygiene** — an invite cannot be generated for an email that already belongs to the company or already has a pending invite; it reports "user already exists" instead of silently issuing a second code.
+- **Clear invite errors** — sign-up checks the invite code first and explains invalid, already-used, expired or inactive codes with next steps. New invites expire after 30 days.
+- **90-day password expiry** — users whose password is older than 90 days are sent to reset it.
+- **Safe CSV exports** — every export runs through one sanitizer that neutralizes cells starting with `=`, `+`, `-`, `@`, tab or carriage return.
 - **Loading states** — lists (e.g. Departments) show a loading state rather than briefly flashing their empty/"getting started" screen.
 
 ## Feature flags & plans
@@ -291,7 +297,12 @@ The service-role key is **not available** on Lovable Cloud by design — all pri
 - Imports run through security-definer functions restricted to HR/Admin of the active company, and every run is audit-logged.
 
 ### Testing done
-69 scripted access-control scenarios have been run against the live app and all passed: 24 authentication/session tests, 12 employee, 15 manager and 18 HR permission tests, plus 14 attendance shift/rule scenarios (shift assignment, monthly changes, midnight crossing, early-leave and regularization limits).
+- 69 earlier access-control scenarios (authentication/session, employee, manager, HR permissions, attendance shift rules) — all passed.
+- Master regression suite of 80 automated cases run against the live preview (last run 1 Oct 2026) — 80/80 passed:
+  - 27 functional checks: multi-tenancy isolation, auth/session limits, setup wizard, directory and org chart, attendance and leave punch blocking, leave approvals and comp-off, salary auto-split and saving, import center, owner console guard, audit logs, CSV export.
+  - 53 boundary cases: CSV neutralization (12), bank account/IFSC (9), regularization reason length (8), salary math (8), leave day portions and date ranges (7), password length / lockout / session / password-age / invite-expiry limits (9).
+- Bugs found and fixed during testing: salary save failed (wrong unique key on save) and attendance report CSV skipped the sanitizer.
+- Honest limits: many functional checks confirm screens and controls render rather than driving a full multi-user workflow (e.g. employee applies → manager approves). Not yet tested: real email delivery, real mobile devices, flaky networks, bank-specific upload formats, and first-time setup of the separate owner account.
 
 ## Project structure
 
@@ -321,7 +332,7 @@ This section exists so nobody — including future maintainers — mistakes "fea
 
 - **Stop building platform governance** (owner console extras, plans, broadcasts, cosmetic perks) until there are ~5 paying companies. The engine is done; the product needs customers, not features.
 - **Wedge: very small companies (under ~25 people)** — agencies, clinics, small offices — that find greytHR/Keka overwhelming. They need clean leave tracking, simple attendance and one-click payslips, and hate clunky incumbent UI. Own that slice instead of out-featuring the market leaders.
-- **Add the minimal non-negotiable compliance first:** standard salary structure (Basic ~50%, HRA, special allowance), PF (12%), and a bank batch-transfer CSV — enough for an accountant to run one real payroll end-to-end.
+- **Done — minimal compliance:** standard salary structure (Basic ~50%, HRA, special allowance), PF (12%), and a bank batch-transfer CSV — enough for an accountant to run one real payroll end-to-end.
 - **Then get 3 real companies to run on it for 30 consecutive days** (founder friends, local businesses), sitting beside their HR during the first payroll run. That feedback — not more features — defines what to build next.
 
 **The realistic path:** the foundations here (multi-tenancy, per-company roles, audit trail, tested RBAC) are genuinely better than most day-1 SaaS. But the moat in this market is boring enterprise work: compliance, migration, mobile, uptime, certifications. Pick the small-company wedge above, make it bulletproof, and ignore everything else until paying customers force it. Trying to build all of greytHR before the first paying customer is how this dies.
